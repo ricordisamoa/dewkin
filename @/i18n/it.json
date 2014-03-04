@@ -1,0 +1,9 @@
+{
+    "loading": "Caricamento...",
+    "first edit": "Prima modifica",
+    "most recent edit": "Modifica più recente",
+    "longest streak": "Serie più lunga",
+    "edited in ns": "$1 {{PLURAL:$1|pagina modificata|pagine modificate}} nel namespace \"$2\"",
+    "top edited in ns": "Le $1 pagine più modificate nel namespace \"$2\"",
+    "executed in": "Eseguito in $1."
+}

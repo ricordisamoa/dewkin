@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+
+DEep WiKi INspector (DEWKIN)
+Copyright (C) 2013-2014 Ricordisamoa
+
+meta.wikimedia.org/wiki/User:Ricordisamoa
+tools.wmflabs.org/ricordisamoa/
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>DEWKIN by Ricordisamoa</title>
+<!--
+Twitter Bootstrap 3.0.0
+
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+-->
+<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<!-- g.Raphael - JavaScript charting library
+(the main script needs to be up-to-date) -->
+<script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib//g.raphael/g.raphael.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/graphael/0.5.1/g.bar-min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/graphael/0.5.1/g.dot-min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/graphael/0.5.1/g.pie-min.js"></script>
+
+<!-- Leaflet - JavaScript map library -->
+<link rel="stylesheet" href="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.css">
+<!--[if lte IE 8]>
+     <link rel="stylesheet" href="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.ie.css" />
+<![endif]-->
+<script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.js"></script>
+
+<link rel="stylesheet" href="//tools.wmflabs.org/dewkin/@/dewkin.css">
+<script type="text/javascript" src="//tools.wmflabs.org/dewkin/@/dewkin.js"></script>
+</head>
+<body>
+<div class="hero-unit pagination-centered">
+<h1><abbr title="Deep Wiki Inspector">DEWKIN</abbr><span>DE<span>ep </span>W<span>i</span>K<span>i </span>IN<span>spector</span></span></h1><br>
+<noscript>
+<div class="alert alert-error">
+You need JavaScript to be enabled to use DEWKIN.
+</div>
+<style type="text/css">
+#form,
+.hero-unit + *{
+	display:none;
+}
+</style>
+</noscript>
+<form id="form">
+	<label for="u" data-msg="yourname">User name:</label>
+	<input type="text" required id="u" name="u" data-provide="typeahead" autocomplete="off" placeholder="Jimbo Wales" value="Ricordisamoa">
+	<label for="p">Project:</label>
+	<input type="text" required id="p" name="p" placeholder="en.wikipedia" value="it.wikiversity">
+	<p>You are going to run an extremely heavy operation. Do you <b>really</b> want to continue?</p>
+	<button type="submit" role="button" class="btn btn-large btn-primary" id="init"><i class="icon-white icon-arrow-right"></i> Yes</button>
+</form>
+</div>
+<ul class="nav nav-tabs">
+	<li class="active"><a href="#overview" data-toggle="tab">Overview</a></li>
+	<li><a href="#advanced" data-toggle="tab" data-msg="wikieditor-toolbar-section-advanced">Advanced</a></li>
+	<li><a href="#timeline" data-toggle="tab">Timeline</a></li>
+	<li><a href="#rights" data-toggle="tab" data-msg="listgrouprights-rights">Rights</a></li>
+	<li><a href="#tags" data-toggle="tab" data-msg="tags-title">Tags</a></li>
+	<li><a href="#uploads" data-toggle="tab" data-msg="statistics-files">Uploads</a></li>
+	<li><a href="#punch-card" data-toggle="tab">Punchcard</a></li>
+	<li><a href="#map" data-toggle="tab">Map</a></li>
+	<li><a href="#votes" data-toggle="tab">Votes</a></li>
+	<li style="float:right;margin-right:12em"><a href="//meta.wikimedia.org/wiki/User_talk:Ricordisamoa" target="_blank">Feedback</a></li>
+</ul>
+<div class="tab-content">
+	<div class="tab-pane active container-fluid" id="overview">
+		<div id="general" class="span3" style="float:left"></div>
+		<div class="span4">
+			<div id="ns-chart"></div>
+		</div>
+		<div id="top-edited" class="span4"></div>
+	</div>
+	<div class="tab-pane container-fluid" id="advanced">
+		<div id="week-chart"></div>
+		<div id="month-chart"></div>
+	</div>
+	<div class="tab-pane" id="timeline">
+		<h3>Coming soon! :)</h3>
+	</div>
+	<div class="tab-pane container-fluid" id="tags">
+		Warning: only edits with 0 or 1 tag are shown.
+		<div id="tag-chart"></div>
+	</div>
+	<div class="tab-pane" id="rights">
+	</div>
+	<div class="tab-pane" id="uploads">
+		<h3>Coming soon! :)</h3>
+	</div>
+	<div class="tab-pane container-fluid" id="punch-card">
+		<div id="punchcard"></div>
+	</div>
+	<div class="tab-pane" id="map">
+	</div>
+	<div class="tab-pane" id="votes">
+	</div>
+</div>
+<footer>
+<span id="credits">Charts powered by <a href="http://g.raphaeljs.com">g.Raphaël</a>. </span>All dates are UTC.
+</footer>
+<a href="//github.com/ricordisamoa/dewkin"><img style="position: fixed; top: 0; right: 0; border: 0;" src="//s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+</body>
+</html>

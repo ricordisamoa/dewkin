@@ -1,0 +1,3 @@
+DirectoryIndex @/home.html
+RewriteEngine On
+RewriteRule ^[^/@]+(/[^/]+)?/?$ /dewkin/ [L,NC]
