@@ -7,6 +7,7 @@ New features and bugfixes
 * Suggestions while typing user names
 * Really submittable form
 * Warning for users with JavaScript disabled
+* Better i18n
 * Permalinks!
 
 Todo
