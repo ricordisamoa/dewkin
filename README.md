@@ -4,7 +4,7 @@ DEWKIN (DEep WiKi INspector)
 New features and bugfixes
 ------
 * Clean internal classes and methods
-* Suggestions while typing user names
+* Suggestions while typing user name and project
 * Really submittable form
 * Warning for users with JavaScript disabled
 * Better i18n
@@ -13,6 +13,5 @@ New features and bugfixes
 Todo
 ------
 * Make it working!
-* Suggestions for wiki project
 * Multiple-user inspection
 * Timeline

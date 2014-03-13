@@ -302,15 +302,15 @@ return ContribsList;
 
 var getData = {
 
-	allUsers: function(prefix,project,callback){
+	allUsers: function(prefix, project, callback){
 		var api = vars.globalApi,
 		params = {
-			action:'query',
-			format:'json'
+			action: 'query',
+			format: 'json'
 		};
 		if(project && project.trim() != ''){
-			api = '//'+project+'.org/w/api.php';
-			params = $.extend(params,{
+			api = sites[$('#p').val()] + '/w/api.php';
+			params = $.extend(params, {
 				list: 'allusers',
 				auwitheditsonly: 1,
 				auprefix: prefix,
@@ -331,6 +331,30 @@ var getData = {
 			params,
 			function(data){
 				callback(data.query[Object.keys(data.query)[0]]);
+			},
+			'jsonp'
+		);
+	},
+
+	siteMatrix: function(callback){
+		$.get(
+			vars.globalApi,
+			{
+				action: 'sitematrix',
+				format: 'json',
+				smsiteprop: 'dbname|url',
+				smlangprop: 'site'
+			},
+			function(data){
+				var dbNames = {};
+				$.each(data.sitematrix, function(){
+					$.each(this.site || ($.isArray(this) ? this : []), function(){
+						if(this.dbname && this.url && typeof this['private'] === 'undefined' && typeof this.fishbowl === 'undefined'){
+							dbNames[this.dbname] = this.url.replace(/^http\:\/\//, '//');
+						}
+					});
+				});
+				callback(dbNames);
 			},
 			'jsonp'
 		);
@@ -824,362 +848,372 @@ i18n = function(msg){
 
 $(document).ready(function(){
 
-	// suggestions while typing "User name"
-	$('#u').typeahead({
-		source: function (query, process) {
-			getData.allUsers(query, $('#p').val(), function(users){
-				return process($.map(users,function(user){
-					return user.name;
-				}));
-			});
-		}
-	});
+	getData.siteMatrix(function(sites){
 
-	$('#form').on('submit',function(event){
-		event.preventDefault();
-		vars.wikipath='//'+$('#p').val()+'.org/wiki/';
-		vars.api='//'+$('#p').val()+'.org/w/api.php';
-		vars.user=$('#u').val().replace(/_/g, ' ');
-		if(window.history.pushState && window.location.pathname.split(/[^\/]\/[^\/]/).length === 1){
-			window.history.pushState({}, '', window.location.pathname.replace(/\/$/,'') + '/' + $('#p').val() + '/' + vars.user.replace(/ /g, '_'));
-		}
-		$(this)
-		.children('button')
-		.attr('data-loading-text','Loading...')
-		.button('loading')
-		.siblings()
-		.remove();
-		(function(){
-			var editCounterInitDate = new Date();
-			getData.namespaces(function(namespaces){
-				vars.namespaces = namespaces;
-				var toLoadMsgs = $('[data-msg]').map(function(){
-					return this.dataset.msg;
-				}).get()
-				.concat(['ago','just-now','seconds','duration-seconds','minutes','hours','days','weeks','months','years'])
-				.concat(['and','comma-separator','colon-separator','word-separator','parentheses','percent','nchanges','tags-hitcount'])
-				.concat(util.weekdays)
-				.concat(util.weekdaysShort)
-				.concat(util.months);
-				getData.rightsLog(function(rights){
-					$('#rights')
-					.append(
-						rights.length === 0 ? '<h3>No log entries found.</h3>' : $('<ul>')
-						.append($.map(rights,function(logevt){
-							var oldGroups = logevt.rights.old.split(', '),
-							newGroups = logevt.rights.new.split(', '),
-							addedGroups = $.grep(newGroups,function(el){
-								return el!='' && oldGroups.indexOf(el) === -1;
-							}),
-							removedGroups = $.grep(oldGroups,function(el){
-								return el!='' && newGroups.indexOf(el) === -1;
-							}),
-							msg = [];
-							if(addedGroups.length>0) msg.push('became '+util.listToText($.map(addedGroups,util.rightColor)));
-							if(removedGroups.length>0) msg.push('removed '+util.listToText($.map(removedGroups,util.rightColor)));
-							return $('<li>').html('<a href="'+vars.wikipath+'Special:Log/'+logevt.logid+'">'+new Date(logevt.timestamp).toLocaleString()+'</a>: '+util.listToText(msg));
-						}))
-					);
-					$('<span>')
-					.addClass('badge')
-					.text(rights.length)
-					.appendTo('li>a[href="#rights"]');
-					getData.messages(vars.userLang,toLoadMsgs,function(){
-						util.months = $.map(util.months,function(el){
-							return vars.messages[el];
-						});
-						util.weekdays = $.map(util.weekdays,function(el){
-							return vars.messages[el];
-						});
-						util.weekdaysShort = $.map(util.weekdaysShort,function(el){
-							return vars.messages[el];
-						});
-						util.weekdaysAlt = util.weekdays.slice(1).concat(util.weekdays[0]).reverse();
-						$('[data-msg]').each(function(){
-							$(this).text(vars.messages[this.dataset.msg]);
-						});
-						getData.contribs(function(contribs){
-							vars.contribs = ContribsList(contribs);
-							contribs = vars.contribs;
-							contribs.log();
-							var firstContribDate = new Date(contribs.older().timestamp),
-							latestContribDate = new Date(contribs.newer().timestamp),
-							filtered = contribs.filterBy.namespace(true),
-							nsNumbers = Object.keys(filtered),
-							nsNames = $.map(nsNumbers,function(e){
-								return util.namespaceName(e)+': '+filtered[e].length+' ('+Math.floor(filtered[e].length/contribs.length*10000)/100+'%)';
-							}),
-							nsContribs = $.map(filtered,function(e){
-								return e.length;
-							}),
-							nsColors = $.map(nsNumbers.sort(function(a,b){
-								return filtered[b].length - filtered[a].length;
-							}),function(e){
-								return ['#'+util.namespaceColors[e]];
+		// suggestions while typing "User name"
+		$('#u').typeahead({
+			source: function(query, process){
+				getData.allUsers(query, $('#p').val(), function(users){
+					return process($.map(users, function(user){
+						return user.name;
+					}));
+				});
+			}
+		});
+
+		// suggestions while typing "Project"
+		$('#p').typeahead({
+			source: function(query, process){
+				process(Object.keys(sites));
+			}
+		});
+
+		$('#form').on('submit',function(event){
+			event.preventDefault();
+			vars.wikipath = sites[$('#p').val()] + '/wiki/';
+			vars.api = sites[$('#p').val()] + '/w/api.php';
+			vars.user = $('#u').val().replace(/_/g, ' ');
+			if(window.history.pushState && window.location.pathname.split(/[^\/]\/[^\/]/).length === 1){
+				window.history.pushState({}, '', window.location.pathname.replace(/\/$/,'') + '/' + $('#p').val() + '/' + vars.user.replace(/ /g, '_'));
+			}
+			$(this)
+			.children('button')
+			.attr('data-loading-text','Loading...')
+			.button('loading')
+			.siblings()
+			.remove();
+			(function(){
+				var editCounterInitDate = new Date();
+				getData.namespaces(function(namespaces){
+					vars.namespaces = namespaces;
+					var toLoadMsgs = $('[data-msg]').map(function(){
+						return this.dataset.msg;
+					}).get()
+					.concat(['ago','just-now','seconds','duration-seconds','minutes','hours','days','weeks','months','years'])
+					.concat(['and','comma-separator','colon-separator','word-separator','parentheses','percent','nchanges','tags-hitcount'])
+					.concat(util.weekdays)
+					.concat(util.weekdaysShort)
+					.concat(util.months);
+					getData.rightsLog(function(rights){
+						$('#rights')
+						.append(
+							rights.length === 0 ? '<h3>No log entries found.</h3>' : $('<ul>')
+							.append($.map(rights,function(logevt){
+								var oldGroups = logevt.rights.old.split(', '),
+								newGroups = logevt.rights.new.split(', '),
+								addedGroups = $.grep(newGroups,function(el){
+									return el!='' && oldGroups.indexOf(el) === -1;
+								}),
+								removedGroups = $.grep(oldGroups,function(el){
+									return el!='' && newGroups.indexOf(el) === -1;
+								}),
+								msg = [];
+								if(addedGroups.length>0) msg.push('became '+util.listToText($.map(addedGroups,util.rightColor)));
+								if(removedGroups.length>0) msg.push('removed '+util.listToText($.map(removedGroups,util.rightColor)));
+								return $('<li>').html('<a href="'+vars.wikipath+'Special:Log/'+logevt.logid+'">'+new Date(logevt.timestamp).toLocaleString()+'</a>: '+util.listToText(msg));
+							}))
+						);
+						$('<span>')
+						.addClass('badge')
+						.text(rights.length)
+						.appendTo('li>a[href="#rights"]');
+						getData.messages(vars.userLang,toLoadMsgs,function(){
+							util.months = $.map(util.months,function(el){
+								return vars.messages[el];
 							});
-							vars.firstMonth = util.yearMonth(firstContribDate);
-							$('.hero-unit').removeClass('hero-unit');
-							$('#form').remove();
-							var nsCanvas = Raphael('ns-chart',520,400),
-							nsChart = nsCanvas.piechart(170, 200, 150, nsContribs, { legend: nsNames, legendpos: 'east', colors: nsColors, minPercent: 0 })
-							.hover(function () {
-								this.sector.stop();
-								if(!this.sector[0].classList.contains('selected')) this.sector.scale(1.1, 1.1, this.cx, this.cy);
-								if (this.label) {
-									this.label[0].stop();
-									this.label[0].attr({ r: 7.5 });
-									this.label[1].attr({ 'font-weight': 800 });
-								}
-							}, function () {
-								if(!this.sector[0].classList.contains('selected')) this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, 'bounce');
-								if (this.label) {
-									this.label[0].animate({ r: 5 }, 500, 'bounce');
-									this.label[1].attr({ 'font-weight': 400 });
-								}
-							})
-							.click(function () {
-								this.sector.stop();
-								this.sector.attr({transform:'s1 1 ' + this.cx + ' ' + this.cy });
-								if(this.sector[0].classList.contains('selected')){
-									this.sector[0].classList.remove('selected');
-									$('#top-edited').hide('fast');
-									nsCanvas.canvas.setAttribute('width',520);
-								}
-								else{
-									nsCanvas.canvas.setAttribute('width',340);
-									nsChart.each(function(){
-										this.sector.attr({transform:'s1 1 ' + this.cx + ' ' + this.cy });
+							util.weekdays = $.map(util.weekdays,function(el){
+								return vars.messages[el];
+							});
+							util.weekdaysShort = $.map(util.weekdaysShort,function(el){
+								return vars.messages[el];
+							});
+							util.weekdaysAlt = util.weekdays.slice(1).concat(util.weekdays[0]).reverse();
+							$('[data-msg]').each(function(){
+								$(this).text(vars.messages[this.dataset.msg]);
+							});
+							getData.contribs(function(contribs){
+								vars.contribs = ContribsList(contribs);
+								contribs = vars.contribs;
+								contribs.log();
+								var firstContribDate = new Date(contribs.older().timestamp),
+								latestContribDate = new Date(contribs.newer().timestamp),
+								filtered = contribs.filterBy.namespace(true),
+								nsNumbers = Object.keys(filtered),
+								nsNames = $.map(nsNumbers,function(e){
+									return util.namespaceName(e)+': '+filtered[e].length+' ('+Math.floor(filtered[e].length/contribs.length*10000)/100+'%)';
+								}),
+								nsContribs = $.map(filtered,function(e){
+									return e.length;
+								}),
+								nsColors = $.map(nsNumbers.sort(function(a,b){
+									return filtered[b].length - filtered[a].length;
+								}),function(e){
+									return ['#'+util.namespaceColors[e]];
+								});
+								vars.firstMonth = util.yearMonth(firstContribDate);
+								$('.hero-unit').removeClass('hero-unit');
+								$('#form').remove();
+								var nsCanvas = Raphael('ns-chart',520,400),
+								nsChart = nsCanvas.piechart(170, 200, 150, nsContribs, { legend: nsNames, legendpos: 'east', colors: nsColors, minPercent: 0 })
+								.hover(function () {
+									this.sector.stop();
+									if(!this.sector[0].classList.contains('selected')) this.sector.scale(1.1, 1.1, this.cx, this.cy);
+									if (this.label) {
+										this.label[0].stop();
+										this.label[0].attr({ r: 7.5 });
+										this.label[1].attr({ 'font-weight': 800 });
+									}
+								}, function () {
+									if(!this.sector[0].classList.contains('selected')) this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, 'bounce');
+									if (this.label) {
+										this.label[0].animate({ r: 5 }, 500, 'bounce');
+										this.label[1].attr({ 'font-weight': 400 });
+									}
+								})
+								.click(function () {
+									this.sector.stop();
+									this.sector.attr({transform:'s1 1 ' + this.cx + ' ' + this.cy });
+									if(this.sector[0].classList.contains('selected')){
 										this.sector[0].classList.remove('selected');
-									});
-									this.sector.scale(1.1, 1.1, this.cx, this.cy);
-									this.sector[0].classList.add('selected');					
-									var ns = this.value.order,
-									fff = console.log(ns),
-									te = contribs.topEdited(ns);
-									$('#top-edited')
-									.empty()
-									.append(
-										$('<h2>')
-										.text(i18n((te[1] ? 'top ':'') + 'edited in ns', Object.keys(te[0]).length, util.namespaceName(ns)))
-									)
-									.append(
-										$('<ul>').append(
-											$.map(te[0],function(v,k){
-												return $('<a>')
-												.text(k)
-												.attr('href',vars.wikipath+k)
-												.appendTo('<li>'+v+' - </li>')
-												.parent();
-											})
-										)
-									).show('fast');
-								}
-							} ) ;
-							var dayColors = ['#4d89f9','#c6d9fd'],
-							dayFiltered = $.map(contribs.filterBy.day(), function(e){
-								return [e];
-							});
-							while(dayColors.length<dayFiltered.length){
-								dayColors = dayColors.concat(dayColors.slice(0,2)).slice(0,dayFiltered.length);
-							}
-							var weekCanvas = Raphael('week-chart'),
-							fin = function () {
-								this.flag = weekCanvas.popup(this.bar.x, this.bar.y, this.bar.value || '0', 'up').insertBefore(this);
-							},
-							fin2 = function () {
-								this.flag = weekCanvas.popup(this.bar.x, this.bar.y, util.namespaceName(namespaceFromColor(this.bar.attrs.fill))+': '+this.bar.value || '0', 'right').insertBefore(this);
-							},
-							fout = function () {
-								this.flag.animate({opacity: 0}, 100, function () {
-									this.remove();
-								});
-							},
-							weekChart = weekCanvas.barchart(0, 20, 400, 300, dayFiltered, { colors: dayColors }).hover(fin, fout);
-							
-							/* Tags chart */
-							$('li>a[href="#tags"]').one('shown',function(){
-								var tagsData = contribs.filterBy.tag(),
-								tagsCanvas = Raphael('tag-chart',750,600),
-								tagsChart = tagsCanvas.piechart(220, 220, 180, tagsData.data, { legend: tagsData.legend, minPercent: 0 });
-							});
-							
-							/* GitHub-like Punchcard */
-							var punch = $.map([1,2,3,4,5,6,0],function(j){
-								return contribs.grepBy.day(j).filterBy.hour();
-							});
-							$('li>a[href="#punch-card"]').one('shown',function(){
-								var r = Raphael('punchcard',1200,500),
-								xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-								ys = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-								r.dotchart(10, 0, 1200, 500, xs, ys, punch, {
-									symbol: 'o',
-									max: 21,
-									axis: '0 0 1 1',
-									axisxstep: 23,
-									axisystep: 6,
-									axisxlabels: ['12am', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12pm', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
-									axisxtype: ' ',
-									axisytype: ' ',
-									axisylabels: util.weekdaysAlt,
-									init: true
-								}).hover(function () {
-									var self = this,
-									s = $('circle').filter(function(){
-										return parseInt(self.x) === parseInt(this.getAttribute('cx'))&&
-										parseInt(self.y) === parseInt(this.getAttribute('cy'));
-									});
-									try{
-										s.get(0).classList.add('day-hover');
-										s.get(1).style.zIndex = 0;
-										this.flag = r.popup(this.x, this.y-this.r, this.value+' edit'+(this.value==1?'':'s') || '0', 'up', 8).insertBefore(this);
+										$('#top-edited').hide('fast');
+										nsCanvas.canvas.setAttribute('width',520);
 									}
-									catch(e){
-									}
-								},function () {
-									var self = this,
-									s = $('circle').filter(function(){
-										return parseInt(self.x) === parseInt(this.getAttribute('cx'))&&
-										parseInt(self.y) === parseInt(this.getAttribute('cy'));
-									});
-									try{
-										s.get(0).classList.remove('day-hover');
-										s.get(1).style.zIndex = null;
-										this.flag.animate({opacity: 0}, 100, function () {this.remove();});
-									}
-									catch(e){
-									}
-								});
-							});
-							var hideCreditsOnShow=$('li>a[href="#map"],li>a[href="#votes"]');
-							hideCreditsOnShow.on('show',function(){
-								$('#credits').hide();
-							});
-							$('a[data-toggle="tab"]').not(hideCreditsOnShow).on('show',function(){
-								$('#credits').show();
-							});
-							$('li>a[href="#map"]')
-							.one('shown',function(){
-								$('#map').append('Loading geodata...');
-								getData.geoData(contribs.grepBy.namespace([0,6]),function(geodata){
-									if(geodata.length>0){
-										$('#map').empty().css('height','400px');
-										var maxedits = geodata[0].numedits,
-										map = L.map('map').setView([0,0],2);
-										new L.TileLayer(
-											'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-											{
-												minZoom: 2,
-												maxZoom: 18,
-												attribution: 'Map data © <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-											}
-										)
-										.addTo(map);
-										$.each(geodata,function(index,marker){
-											var sizediff = marker.sizediff,
-											sizedifftag = Math.abs(sizediff) > 500 ? 'strong' : 'span',
-											iconSize = Math.max(9,marker.numedits/maxedits*22),
-											sizediff = '<'+sizedifftag+' class="mw-plusminus-'+(sizediff==0?'null':(sizediff>0?'pos':'neg'))+'">'+(sizediff>0?'+':'')+sizediff+' byte'+(sizediff==1?'':'s')+'</'+sizedifftag+'>';
-											if(marker.revid){
-												var edits = '<a href="'+vars.wikipath+'?diff='+marker.revid+'">'+i18n('nchanges','1')+'</a>';
-											}
-											else{
-												var edits = i18n('nchanges',marker.numedits);
-											}
-											L.marker(marker.coords,{
-												icon:L.icon({
-													iconUrl:'//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[Math.floor(Math.random()*util.markerColors.length)] + '.svg',
-													iconSize:[iconSize,iconSize]
-												})
-											}).addTo(map).bindPopup('<strong><a href="'+vars.wikipath+marker.title+'">'+marker.title+'</a></strong><br>'+sizediff+' with '+edits);
+									else{
+										nsCanvas.canvas.setAttribute('width',340);
+										nsChart.each(function(){
+											this.sector.attr({transform:'s1 1 ' + this.cx + ' ' + this.cy });
+											this.sector[0].classList.remove('selected');
 										});
-									}
-									else $('#map').empty().append('<h3>Hey! No geo data here ;(</h3>');
-								});
-							});
-							$('footer').show();
-							var byMonth = contribs.filterBy.month(),
-							axisData = $.map(Object.keys(byMonth),function(e){
-								return byMonth[e].length.toString();
-							}).reverse(),
-							filtered = contribs.filterBy.namespaceAndMonth(),
-							nsNumbers = Object.keys(filtered),
-							nsNames = $.map(nsNumbers,function(e){
-								return util.namespaceName(e);
-							}),
-							nsData = $.map(filtered,function(months){
-								return [$.map(months,function(c){
-									return c.length;
-								})];
-							}),
-							nsColors = $.map(nsNumbers,function(e){
-								return '#'+util.namespaceColors[e];
-							}),
-							axisLabels=Object.keys(filtered[Object.keys(filtered)[0]]).reverse(),
-							mSize = 24.5*Object.keys(byMonth).length,
-							monthsCanvas = Raphael('month-chart',1200,mSize),
-							monthsChart = monthsCanvas.hbarchart(75, 0, 850, mSize, nsData, { stacked: true, colors: nsColors }).hover(fin2, fout);
-							$('li>a[href="#advanced"]').one('shown',function(){
-								Raphael.g.axis(31,320,331,0,7,6,2,weekdaysShort,' ',null,weekCanvas);
-								var aY = monthsChart.bars[0][monthsChart.bars[0].length -1].y;
-								var aH = aY - monthsChart.bars[0][0].y;
-								console.log(aY+'\n'+aH);
-								console.log(monthsChart.bars[0]);
-								Raphael.g.axis(50, aY-1.8, aH, 0, axisLabels.length, axisLabels.length-1, 1, axisLabels, ' ', null, monthsCanvas)
-								.text.attr({'font-weight':'bold'});
-								Raphael.g.axis(60, aY-1.8, aH, 0, axisData.length, axisData.length-1, 1, axisData, ' ', null, monthsCanvas)
-								.text.attr({'text-anchor':'start'});
-							});
-							var ls = contribs.longestStreak(),
-							summ = contribs.grepBy.editSummary().length;
-							getData.votes(function(polls){
-								console.log(polls);
-								$('#votes')
-								.append($.map(polls,function(poll,page){
-									return [
-										$('<h3>').append($('<a>',{'href':'//meta.wikimedia.org/wiki/'+page,'title':page}).text(poll.label)),
-										poll.votes.length>0?$('<ul>')
-										.append($.map(poll.votes,function(vote){
-											return $('<li>').text(new Date(vote.ts).toUTCString()+' - Voted for '+vote.candidate+' (')
-											.append($('<a>',{'href':'//meta.wikimedia.org/wiki/?diff='+vote.diff,'title':'diff '+vote.diff+' on Meta-Wiki'}).text('diff'))
-											.append(')');
-										})):'Did not vote.'
-									];
-								}));
-								getData.uploads(function(uploads){
-									getData.blockInfo(function(blockinfo){
-										$('#general')
-										.append(typeof blockinfo.blockid!='undefined'?('<strong>Currently blocked by '+blockinfo.blockedby+' with an expiry time of '+blockinfo.blockexpiry+' because "<i>'+blockinfo.blockreason+'</i>"<br>'):'')
-										.append('<a href="'+vars.wikipath+'?diff='+contribs[contribs.length-1].revid+'">'+i18n('first edit')+'</a>: '+firstContribDate.toUTCString()+' ('+util.dateDiff(firstContribDate,new Date(),4,true)+')<br>')
-										.append('<a href="'+vars.wikipath+'?diff='+contribs[0].revid+'">'+i18n('most recent edit')+'</a>'+i18n('colon-separator')+latestContribDate.toUTCString()+i18n('word-separator')+i18n('parentheses',util.dateDiff(latestContribDate,new Date(),5,true))+'<br>')
-										.append('Live edits: '+contribs.length.toLocaleString()+'<br>')
-										.append(typeof editcount=='undefined'?[]:['Deleted edits: '+(editcount-contribs.length).toLocaleString(),'<br>',
-										'<b>Total edits (including deleted): '+editcount.toLocaleString()+'</b>','<br>'])
-										.append('<a href="'+vars.wikipath+'Special:Log/upload?user='+vars.user+'">'+i18n('statistics-files')+'</a>'+i18n('colon-separator')+uploads.length.toLocaleString()+'<br>')
-										.append('Edits with non-empty summary: '+summ.toLocaleString()+i18n('word-separator')+i18n('parentheses',i18n('percent',Math.floor((summ/contribs.length)*10000)/100))+'<br>')
+										this.sector.scale(1.1, 1.1, this.cx, this.cy);
+										this.sector[0].classList.add('selected');					
+										var ns = this.value.order,
+										fff = console.log(ns),
+										te = contribs.topEdited(ns);
+										$('#top-edited')
+										.empty()
 										.append(
-											ls.length === 2 ?
-											(
-												i18n('longest streak') + i18n('colon-separator') + $.map(ls,function(d){
-													return new Date(d).toUTCString()
-												}).join(' - ') + i18n('parentheses',i18n('days',(new Date(ls[1])-new Date(ls[0]))/86400000+1)) + '<br>'
-											) : ''
+											$('<h2>')
+											.text(i18n((te[1] ? 'top ':'') + 'edited in ns', Object.keys(te[0]).length, util.namespaceName(ns)))
 										)
-										.append(i18n('executed in',i18n('duration-seconds',Math.floor((new Date().getTime()-editCounterInitDate.getTime())/10)/100)));
+										.append(
+											$('<ul>').append(
+												$.map(te[0],function(v,k){
+													return $('<a>')
+													.text(k)
+													.attr('href',vars.wikipath+k)
+													.appendTo('<li>'+v+' - </li>')
+													.parent();
+												})
+											)
+										).show('fast');
+									}
+								} ) ;
+								var dayColors = ['#4d89f9','#c6d9fd'],
+								dayFiltered = $.map(contribs.filterBy.day(), function(e){
+									return [e];
+								});
+								while(dayColors.length<dayFiltered.length){
+									dayColors = dayColors.concat(dayColors.slice(0,2)).slice(0,dayFiltered.length);
+								}
+								var weekCanvas = Raphael('week-chart'),
+								fin = function () {
+									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, this.bar.value || '0', 'up').insertBefore(this);
+								},
+								fin2 = function () {
+									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, util.namespaceName(namespaceFromColor(this.bar.attrs.fill))+': '+this.bar.value || '0', 'right').insertBefore(this);
+								},
+								fout = function () {
+									this.flag.animate({opacity: 0}, 100, function () {
+										this.remove();
+									});
+								},
+								weekChart = weekCanvas.barchart(0, 20, 400, 300, dayFiltered, { colors: dayColors }).hover(fin, fout);
+								
+								/* Tags chart */
+								$('li>a[href="#tags"]').one('shown',function(){
+									var tagsData = contribs.filterBy.tag(),
+									tagsCanvas = Raphael('tag-chart',750,600),
+									tagsChart = tagsCanvas.piechart(220, 220, 180, tagsData.data, { legend: tagsData.legend, minPercent: 0 });
+								});
+								
+								/* GitHub-like Punchcard */
+								var punch = $.map([1,2,3,4,5,6,0],function(j){
+									return contribs.grepBy.day(j).filterBy.hour();
+								});
+								$('li>a[href="#punch-card"]').one('shown',function(){
+									var r = Raphael('punchcard',1200,500),
+									xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+									ys = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+									r.dotchart(10, 0, 1200, 500, xs, ys, punch, {
+										symbol: 'o',
+										max: 21,
+										axis: '0 0 1 1',
+										axisxstep: 23,
+										axisystep: 6,
+										axisxlabels: ['12am', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12pm', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
+										axisxtype: ' ',
+										axisytype: ' ',
+										axisylabels: util.weekdaysAlt,
+										init: true
+									}).hover(function () {
+										var self = this,
+										s = $('circle').filter(function(){
+											return parseInt(self.x) === parseInt(this.getAttribute('cx'))&&
+											parseInt(self.y) === parseInt(this.getAttribute('cy'));
+										});
+										try{
+											s.get(0).classList.add('day-hover');
+											s.get(1).style.zIndex = 0;
+											this.flag = r.popup(this.x, this.y-this.r, this.value+' edit'+(this.value==1?'':'s') || '0', 'up', 8).insertBefore(this);
+										}
+										catch(e){
+										}
+									},function () {
+										var self = this,
+										s = $('circle').filter(function(){
+											return parseInt(self.x) === parseInt(this.getAttribute('cx'))&&
+											parseInt(self.y) === parseInt(this.getAttribute('cy'));
+										});
+										try{
+											s.get(0).classList.remove('day-hover');
+											s.get(1).style.zIndex = null;
+											this.flag.animate({opacity: 0}, 100, function () {this.remove();});
+										}
+										catch(e){
+										}
+									});
+								});
+								var hideCreditsOnShow=$('li>a[href="#map"],li>a[href="#votes"]');
+								hideCreditsOnShow.on('show',function(){
+									$('#credits').hide();
+								});
+								$('a[data-toggle="tab"]').not(hideCreditsOnShow).on('show',function(){
+									$('#credits').show();
+								});
+								$('li>a[href="#map"]')
+								.one('shown',function(){
+									$('#map').append('Loading geodata...');
+									getData.geoData(contribs.grepBy.namespace([0,6]),function(geodata){
+										if(geodata.length>0){
+											$('#map').empty().css('height','400px');
+											var maxedits = geodata[0].numedits,
+											map = L.map('map').setView([0,0],2);
+											new L.TileLayer(
+												'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+												{
+													minZoom: 2,
+													maxZoom: 18,
+													attribution: 'Map data © <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+												}
+											)
+											.addTo(map);
+											$.each(geodata,function(index,marker){
+												var sizediff = marker.sizediff,
+												sizedifftag = Math.abs(sizediff) > 500 ? 'strong' : 'span',
+												iconSize = Math.max(9,marker.numedits/maxedits*22),
+												sizediff = '<'+sizedifftag+' class="mw-plusminus-'+(sizediff==0?'null':(sizediff>0?'pos':'neg'))+'">'+(sizediff>0?'+':'')+sizediff+' byte'+(sizediff==1?'':'s')+'</'+sizedifftag+'>';
+												if(marker.revid){
+													var edits = '<a href="'+vars.wikipath+'?diff='+marker.revid+'">'+i18n('nchanges','1')+'</a>';
+												}
+												else{
+													var edits = i18n('nchanges',marker.numedits);
+												}
+												L.marker(marker.coords,{
+													icon:L.icon({
+														iconUrl:'//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[Math.floor(Math.random()*util.markerColors.length)] + '.svg',
+														iconSize:[iconSize,iconSize]
+													})
+												}).addTo(map).bindPopup('<strong><a href="'+vars.wikipath+marker.title+'">'+marker.title+'</a></strong><br>'+sizediff+' with '+edits);
+											});
+										}
+										else $('#map').empty().append('<h3>Hey! No geo data here ;(</h3>');
+									});
+								});
+								$('footer').show();
+								var byMonth = contribs.filterBy.month(),
+								axisData = $.map(Object.keys(byMonth),function(e){
+									return byMonth[e].length.toString();
+								}).reverse(),
+								filtered = contribs.filterBy.namespaceAndMonth(),
+								nsNumbers = Object.keys(filtered),
+								nsNames = $.map(nsNumbers,function(e){
+									return util.namespaceName(e);
+								}),
+								nsData = $.map(filtered,function(months){
+									return [$.map(months,function(c){
+										return c.length;
+									})];
+								}),
+								nsColors = $.map(nsNumbers,function(e){
+									return '#'+util.namespaceColors[e];
+								}),
+								axisLabels=Object.keys(filtered[Object.keys(filtered)[0]]).reverse(),
+								mSize = 24.5*Object.keys(byMonth).length,
+								monthsCanvas = Raphael('month-chart',1200,mSize),
+								monthsChart = monthsCanvas.hbarchart(75, 0, 850, mSize, nsData, { stacked: true, colors: nsColors }).hover(fin2, fout);
+								$('li>a[href="#advanced"]').one('shown',function(){
+									Raphael.g.axis(31,320,331,0,7,6,2,weekdaysShort,' ',null,weekCanvas);
+									var aY = monthsChart.bars[0][monthsChart.bars[0].length -1].y;
+									var aH = aY - monthsChart.bars[0][0].y;
+									console.log(aY+'\n'+aH);
+									console.log(monthsChart.bars[0]);
+									Raphael.g.axis(50, aY-1.8, aH, 0, axisLabels.length, axisLabels.length-1, 1, axisLabels, ' ', null, monthsCanvas)
+									.text.attr({'font-weight':'bold'});
+									Raphael.g.axis(60, aY-1.8, aH, 0, axisData.length, axisData.length-1, 1, axisData, ' ', null, monthsCanvas)
+									.text.attr({'text-anchor':'start'});
+								});
+								var ls = contribs.longestStreak(),
+								summ = contribs.grepBy.editSummary().length;
+								getData.votes(function(polls){
+									console.log(polls);
+									$('#votes')
+									.append($.map(polls,function(poll,page){
+										return [
+											$('<h3>').append($('<a>',{'href':'//meta.wikimedia.org/wiki/'+page,'title':page}).text(poll.label)),
+											poll.votes.length>0?$('<ul>')
+											.append($.map(poll.votes,function(vote){
+												return $('<li>').text(new Date(vote.ts).toUTCString()+' - Voted for '+vote.candidate+' (')
+												.append($('<a>',{'href':'//meta.wikimedia.org/wiki/?diff='+vote.diff,'title':'diff '+vote.diff+' on Meta-Wiki'}).text('diff'))
+												.append(')');
+											})):'Did not vote.'
+										];
+									}));
+									getData.uploads(function(uploads){
+										getData.blockInfo(function(blockinfo){
+											$('#general')
+											.append(typeof blockinfo.blockid!='undefined'?('<strong>Currently blocked by '+blockinfo.blockedby+' with an expiry time of '+blockinfo.blockexpiry+' because "<i>'+blockinfo.blockreason+'</i>"<br>'):'')
+											.append('<a href="'+vars.wikipath+'?diff='+contribs[contribs.length-1].revid+'">'+i18n('first edit')+'</a>: '+firstContribDate.toUTCString()+' ('+util.dateDiff(firstContribDate,new Date(),4,true)+')<br>')
+											.append('<a href="'+vars.wikipath+'?diff='+contribs[0].revid+'">'+i18n('most recent edit')+'</a>'+i18n('colon-separator')+latestContribDate.toUTCString()+i18n('word-separator')+i18n('parentheses',util.dateDiff(latestContribDate,new Date(),5,true))+'<br>')
+											.append('Live edits: '+contribs.length.toLocaleString()+'<br>')
+											.append(typeof editcount=='undefined'?[]:['Deleted edits: '+(editcount-contribs.length).toLocaleString(),'<br>',
+											'<b>Total edits (including deleted): '+editcount.toLocaleString()+'</b>','<br>'])
+											.append('<a href="'+vars.wikipath+'Special:Log/upload?user='+vars.user+'">'+i18n('statistics-files')+'</a>'+i18n('colon-separator')+uploads.length.toLocaleString()+'<br>')
+											.append('Edits with non-empty summary: '+summ.toLocaleString()+i18n('word-separator')+i18n('parentheses',i18n('percent',Math.floor((summ/contribs.length)*10000)/100))+'<br>')
+											.append(
+												ls.length === 2 ?
+												(
+													i18n('longest streak') + i18n('colon-separator') + $.map(ls,function(d){
+														return new Date(d).toUTCString()
+													}).join(' - ') + i18n('parentheses',i18n('days',(new Date(ls[1])-new Date(ls[0]))/86400000+1)) + '<br>'
+												) : ''
+											)
+											.append(i18n('executed in',i18n('duration-seconds',Math.floor((new Date().getTime()-editCounterInitDate.getTime())/10)/100)));
+										});
 									});
 								});
 							});
 						});
 					});
 				});
-			});
-		})();
+			})();
+		});
+		var path = window.location.pathname.split('/').slice(2);
+		if(path.length === 2){
+			$('#p').val(path[0]);
+			$('#u').val(path[1]);
+			$('#form').submit();
+		}
 	});
-	var path = window.location.pathname.split('/').slice(2);
-	if(path.length === 2){
-		$('#p').val(path[0]);
-		$('#u').val(path[1]);
-		$('#form').submit();
-	}
 });
-
+	
 })();
