@@ -103,7 +103,7 @@ ContribsList.prototype = {
 						contr[e.tags[0]] = [e];
 					}
 				}
-				else if(!e.tags||e.tags.length==0){
+				else if(!e.tags || e.tags.length==0){
 					if(contr['none']){
 						contr['none'].push(e);
 					}
@@ -855,7 +855,7 @@ $(document).ready(function(){
 		// suggestions while typing "User name"
 		$('#u').typeahead({
 			source: function(query, process){
-				getData.allUsers(query, vars.sites[$('#p').val()] + '/w/api.php', function(users){
+				getData.allUsers(query, $('#p').val().trim() !== '' && vars.sites[$('#p').val()] ? (vars.sites[$('#p').val()] + '/w/api.php') : '', function(users){
 					return process($.map(users, function(user){
 						return user.name;
 					}));
