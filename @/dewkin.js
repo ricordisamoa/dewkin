@@ -302,15 +302,14 @@ return ContribsList;
 
 var getData = {
 
-	allUsers: function(prefix, project, callback){
+	allUsers: function(prefix, localApi, callback){
 		var api = vars.globalApi,
 		params = {
 			action: 'query',
 			format: 'json'
 		};
-		if(project && project.trim() != ''){
-			api = sites[$('#p').val()] + '/w/api.php';
-			api = '//'+project+'.org/w/api.php';
+		if(localApi && localApi.trim() != ''){
+			api = localApi;
 			params = $.extend(params, {
 				list: 'allusers',
 				auwitheditsonly: 1,
@@ -851,10 +850,12 @@ $(document).ready(function(){
 
 	getData.siteMatrix(function(sites){
 
+		vars.sites = sites;
+
 		// suggestions while typing "User name"
 		$('#u').typeahead({
 			source: function(query, process){
-				getData.allUsers(query, $('#p').val(), function(users){
+				getData.allUsers(query, vars.sites[$('#p').val()] + '/w/api.php', function(users){
 					return process($.map(users, function(user){
 						return user.name;
 					}));
@@ -865,14 +866,14 @@ $(document).ready(function(){
 		// suggestions while typing "Project"
 		$('#p').typeahead({
 			source: function(query, process){
-				process(Object.keys(sites));
+				process(Object.keys(vars.sites));
 			}
 		});
 
 		$('#form').on('submit',function(event){
 			event.preventDefault();
-			vars.wikipath = sites[$('#p').val()] + '/wiki/';
-			vars.api = sites[$('#p').val()] + '/w/api.php';
+			vars.wikipath = vars.sites[$('#p').val()] + '/wiki/';
+			vars.api = vars.sites[$('#p').val()] + '/w/api.php';
 			vars.user = $('#u').val().replace(/_/g, ' ');
 			if(window.history.pushState && window.location.pathname.split(/[^\/]\/[^\/]/).length === 1){
 				window.history.pushState({}, '', window.location.pathname.replace(/\/$/,'') + '/' + $('#p').val() + '/' + vars.user.replace(/ /g, '_'));
@@ -1191,13 +1192,13 @@ $(document).ready(function(){
 											.append('<a href="'+vars.wikipath+'?diff='+contribs[0].revid+'">'+i18n('most recent edit')+'</a>'+i18n('colon-separator')+latestContribDate.toUTCString()+i18n('word-separator')+i18n('parentheses',util.dateDiff(latestContribDate,new Date(),5,true))+'<br>')
 											.append('Live edits: '+contribs.length.toLocaleString()+'<br>')
 											.append(typeof editcount=='undefined'?[]:['Deleted edits: '+(editcount-contribs.length).toLocaleString(),'<br>',
-											'<b>Total edits (including deleted): '+editcount.toLocaleString()+'</b>','<br>'])
-											.append('<a href="'+vars.wikipath+'Special:Log/upload?user='+vars.user+'">'+i18n('statistics-files')+'</a>'+i18n('colon-separator')+uploads.length.toLocaleString()+'<br>')
-											.append('Edits with non-empty summary: '+summ.toLocaleString()+i18n('word-separator')+i18n('parentheses',i18n('percent',Math.floor((summ/contribs.length)*10000)/100))+'<br>')
+											'<b>Total edits (including deleted): ' + editcount.toLocaleString() + '</b>','<br>'])
+											.append('<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' + i18n('statistics-files')+'</a>'+i18n('colon-separator')+uploads.length.toLocaleString()+'<br>')
+											.append('Edits with non-empty summary: ' + summ.toLocaleString() + i18n('word-separator') + i18n('parentheses',i18n('percent',Math.floor((summ/contribs.length)*10000)/100))+'<br>')
 											.append(
 												ls.length === 2 ?
 												(
-													i18n('longest streak') + i18n('colon-separator') + $.map(ls,function(d){
+													i18n('longest streak') + i18n('colon-separator') + $.map(ls, function(d){
 														return new Date(d).toUTCString()
 													}).join(' - ') + i18n('parentheses', i18n('days', (new Date(ls[1]) - new Date(ls[0])) / 86400000+1)) + '<br>'
 												) : ''
