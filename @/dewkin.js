@@ -115,7 +115,7 @@ ContribsList.prototype = {
 			return {
 				legend: $.map(Object.keys(contr),function(tag){
 					var l = contr[tag].length;
-					return tag + vars.messages['colon-separator'] + i18n('tags-hitcount',l) + vars.messages['word-separator'] + i18n('parentheses',i18n('percent',Math.floor(l/self.length*10000)/100));
+					return tag + i18n('colon-separator') + i18n('tags-hitcount', l) + i18n('word-separator') + i18n('parentheses', i18n('percent', Math.floor(l / self.length*10000) / 100));
 				}),
 				data: $.map(Object.keys(contr),function(tag){
 					return contr[tag].length;
@@ -310,6 +310,7 @@ var getData = {
 		};
 		if(project && project.trim() != ''){
 			api = sites[$('#p').val()] + '/w/api.php';
+			api = '//'+project+'.org/w/api.php';
 			params = $.extend(params, {
 				list: 'allusers',
 				auwitheditsonly: 1,
@@ -450,18 +451,18 @@ var getData = {
 		$.get(
 			vars.api,
 			{
-				action:'query',
-				format:'json',
-				meta:'allmessages',
-				amlang:lang,
-				ammessages:msgs.join('|')
+				action: 'query',
+				format: 'json',
+				meta: 'allmessages',
+				amlang: lang,
+				ammessages: msgs.join('|')
 			},
 			function(data){
 				vars.messages = {};
-				$.each(data.query.allmessages || [],function(i,v){
+				$.each(data.query.allmessages || [],function(i, v){
 					vars.messages[v['name']] = v['*'];
 				});
-				util.loadCustomMessages(lang,callback);
+				util.loadCustomMessages(lang, callback);
 			},
 			'jsonp'
 		);
@@ -471,18 +472,18 @@ var getData = {
 		$.get(
 			vars.api,
 			{
-				action:'query',
-				format:'json',
-				list:'logevents',
-				letype:'rights',
-				letitle:'User:'+vars.user,
-				ledir:'newer',
-				lelimit:'max'
+				action: 'query',
+				format: 'json',
+				list: 'logevents',
+				letype: 'rights',
+				letitle: 'User:' + vars.user,
+				ledir: 'newer',
+				lelimit: 'max'
 			},
 			function(data){
-				callback($.grep(data.query.logevents,function(el){
+				callback($.grep(data.query.logevents, function(el){
 					// hack for old log entries
-					return typeof el.rights!='undefined';
+					return typeof el.rights !== 'undefined';
 				}));
 			},
 			'jsonp'
@@ -493,11 +494,11 @@ var getData = {
 		$.get(
 			vars.api,
 			{
-				action:'query',
-				format:'json',
-				list:'users',
-				ususers:vars.user,
-				usprop:'blockinfo'
+				action: 'query',
+				format: 'json',
+				list: 'users',
+				ususers: vars.user,
+				usprop: 'blockinfo'
 			},
 			function(data){
 				var blk = data.query.users[0];
@@ -515,15 +516,15 @@ var getData = {
 		$.get(
 			vars.globalApi,
 			{
-				action:'query',
-				format:'json',
-				titles:Object.keys(polls).join('|'),
-				prop:'revisions',
-				rvprop:'content'
+				action: 'query',
+				format: 'json',
+				titles: Object.keys(polls).join('|'),
+				prop: 'revisions',
+				rvprop: 'content'
 			},
 			function(data){
-				$.each(data.query.pages,function(pageid,page){
-					var votes = JSON.parse(page.revisions[0]['*'].replace(/^\<nowiki\>|\<\/nowiki\>$/g,''));
+				$.each(data.query.pages,function(pageid, page){
+					var votes = JSON.parse(page.revisions[0]['*'].replace(/^\<nowiki\>|\<\/nowiki\>$/g, ''));
 					if(votes[vars.user]){
 						votes = votes[vars.user].votes.votesByTimestamp;
 					}
@@ -541,9 +542,9 @@ var getData = {
 		);
 	},
 
-	geoData: function(contribs,callback){
+	geoData: function(contribs, callback){
 		var occurr = {};
-		$.each(contribs,function(key,val){
+		$.each(contribs,function(key, val){
 			if(occurr[val.title]){
 				if(occurr[val.title].revid){
 					occurr[val.title] = {
@@ -616,7 +617,7 @@ var getData = {
 
 var util = {
 
-	dateDiff: function(olddate,newdate,precision,ago){
+	dateDiff: function(olddate, newdate, precision, ago){
 		var labels = [
 			'years',
 			'months',
@@ -629,16 +630,16 @@ var util = {
 		mult = [12,4.34,7,24,60,60,1000],
 		diff = (newdate || new Date())-olddate,
 		message = [];
-		$.each(mult,function(i,e){
-			if(typeof precision=='undefined'||precision==null||i<=precision||message.length===0){
+		$.each(mult,function(i, e){
+			if(typeof precision === 'undefined' || precision === null || i <= precision || message.length === 0){
 				var f = parseInt(eval(mult.slice(i).join('*')));
 				if(Math.floor(diff/f)>0){
-					message.push(i18n(labels[i],Math.floor(diff/f)));
-					diff-=Math.floor(diff/f)*f;
+					message.push(i18n(labels[i], Math.floor(diff/f)));
+					diff -= Math.floor(diff / f) * f;
 				}
 			}
 		});
-		return message.length > 0 ? (ago === true ? vars.messages.ago.replace(/\$1/g,util.listToText(message)) : util.listToText(message)) : vars.messages['just-now'];
+		return message.length > 0 ? (ago === true ? i18n('ago', util.listToText(message)) : util.listToText(message)) : i18n('just-now');
 	},
 
 	/* canonical day and month names to load MediaWiki translated messages */
@@ -647,11 +648,11 @@ var util = {
 	months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
 
 	yearMonth: function(date){
-		var month = (date.getUTCMonth()+1).toString();
+		var month = (date.getUTCMonth() + 1).toString();
 		if(month.length === 1){
-			month = '0'+month;
+			month = '0' + month;
 		}
-		return date.getUTCFullYear()+'/'+month;
+		return date.getUTCFullYear() + '/' + month;
 	},
 
 	/*
@@ -898,19 +899,23 @@ $(document).ready(function(){
 						$('#rights')
 						.append(
 							rights.length === 0 ? '<h3>No log entries found.</h3>' : $('<ul>')
-							.append($.map(rights,function(logevt){
+							.append($.map(rights, function(logevt){
 								var oldGroups = logevt.rights.old.split(', '),
 								newGroups = logevt.rights.new.split(', '),
-								addedGroups = $.grep(newGroups,function(el){
-									return el!='' && oldGroups.indexOf(el) === -1;
+								addedGroups = $.grep(newGroups, function(el){
+									return el !== '' && oldGroups.indexOf(el) === -1;
 								}),
-								removedGroups = $.grep(oldGroups,function(el){
-									return el!='' && newGroups.indexOf(el) === -1;
+								removedGroups = $.grep(oldGroups, function(el){
+									return el !== '' && newGroups.indexOf(el) === -1;
 								}),
 								msg = [];
-								if(addedGroups.length>0) msg.push('became '+util.listToText($.map(addedGroups,util.rightColor)));
-								if(removedGroups.length>0) msg.push('removed '+util.listToText($.map(removedGroups,util.rightColor)));
-								return $('<li>').html('<a href="'+vars.wikipath+'Special:Log/'+logevt.logid+'">'+new Date(logevt.timestamp).toLocaleString()+'</a>: '+util.listToText(msg));
+								if(addedGroups.length > 0){
+									msg.push('became ' + util.listToText($.map(addedGroups, util.rightColor)));
+								}
+								if(removedGroups.length > 0){
+									msg.push('removed ' + util.listToText($.map(removedGroups, util.rightColor)));
+								}
+								return $('<li>').html('<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' + new Date(logevt.timestamp).toLocaleString() + '</a>: ' + util.listToText(msg));
 							}))
 						);
 						$('<span>')
@@ -1194,10 +1199,10 @@ $(document).ready(function(){
 												(
 													i18n('longest streak') + i18n('colon-separator') + $.map(ls,function(d){
 														return new Date(d).toUTCString()
-													}).join(' - ') + i18n('parentheses',i18n('days',(new Date(ls[1])-new Date(ls[0]))/86400000+1)) + '<br>'
+													}).join(' - ') + i18n('parentheses', i18n('days', (new Date(ls[1]) - new Date(ls[0])) / 86400000+1)) + '<br>'
 												) : ''
 											)
-											.append(i18n('executed in',i18n('duration-seconds',Math.floor((new Date().getTime()-editCounterInitDate.getTime())/10)/100)));
+											.append(i18n('executed in', i18n('duration-seconds', Math.floor((new Date().getTime() - editCounterInitDate.getTime()) / 10) / 100)));
 										});
 									});
 								});
