@@ -8,6 +8,7 @@ New features and bugfixes
 * Really submittable form
 * Warning for users with JavaScript disabled
 * Better i18n
+* Up-to-date jQuery library
 * Permalinks!
 
 Todo
