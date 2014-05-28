@@ -69,7 +69,7 @@ ContribsList.prototype = {
 		sorted.sort();
 		return sorted[sorted.length - 1];
 	},
-	
+
 	log: function(){
 		console.log(this);
 	},
@@ -710,7 +710,16 @@ var util = {
 		}
 	},
 
-	markerColors: ['bisque','black','blue','coral','cyan','darkslategray','deeppink','green','lightgrey','lime','magenta','orange','purple','red','teal','yellow'],
+	markerColors: ['bisque', 'black', 'blue', 'coral', 'cyan', 'darkslategray', 'deeppink', 'green',
+	               'lightgrey', 'lime', 'magenta', 'orange', 'purple', 'red', 'teal', 'yellow'],
+
+	/*
+	 * A 'span' or 'strong' HTML element for a given sizediff
+	 */
+	sizediffIndicator: function(sizediff){
+		var sizedifftag = Math.abs(sizediff) > 500 ? 'strong' : 'span';
+		return '<' + sizedifftag + ' class="mw-plusminus-' + (sizediff === 0 ? 'null' : (sizediff > 0 ? 'pos' : 'neg')) + '">' + (sizediff > 0 ? '+' : '') + i18n('size-bytes', sizediff) + '</' + sizedifftag + '>';
+	},
 
 	/*
 	 * Set of arbitrary HTML colors by MediaWiki user group
@@ -868,7 +877,7 @@ $(document).ready(function(){
 						return this.dataset.msg;
 					}).get()
 					.concat(['ago', 'just-now', 'seconds', 'duration-seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])
-					.concat(['and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'nchanges', 'tags-hitcount'])
+					.concat(['and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'nchanges', 'size-bytes', 'tags-hitcount'])
 					.concat(util.weekdays)
 					.concat(util.weekdaysShort)
 					.concat(util.months);
@@ -967,7 +976,7 @@ $(document).ready(function(){
 											this.sector[0].classList.remove('selected');
 										});
 										this.sector.scale(1.1, 1.1, this.cx, this.cy);
-										this.sector[0].classList.add('selected');					
+										this.sector[0].classList.add('selected');
 										var ns = this.value.order,
 										fff = console.log(ns),
 										te = contribs.topEdited(ns);
@@ -1010,14 +1019,14 @@ $(document).ready(function(){
 									});
 								},
 								weekChart = weekCanvas.barchart(0, 20, 400, 300, dayFiltered, { colors: dayColors }).hover(fin, fout);
-								
+
 								/* Tags chart */
 								$('li>a[href="#tags"]').one('shown', function(){
 									var tagsData = contribs.filterBy.tag(),
 									tagsCanvas = Raphael('tag-chart', 750, 600),
 									tagsChart = tagsCanvas.piechart(220, 220, 180, tagsData.data, { legend: tagsData.legend, minPercent: 0 });
 								});
-								
+
 								/* GitHub-like Punchcard */
 								var punch = $.map([1, 2, 3, 4, 5, 6, 0], function(j){
 									return contribs.grepBy.day(j).filterBy.hour();
@@ -1090,10 +1099,8 @@ $(document).ready(function(){
 											)
 											.addTo(map);
 											$.each(geodata, function(index, marker){
-												var sizediff = marker.sizediff,
-												sizedifftag = Math.abs(sizediff) > 500 ? 'strong' : 'span',
-												iconSize = Math.max(9, marker.numedits / maxedits * 22),
-												sizediff = '<' + sizedifftag + ' class="mw-plusminus-' + (sizediff === 0 ? 'null' : (sizediff > 0 ? 'pos' : 'neg')) + '">' + (sizediff > 0 ? '+' : '') + sizediff + ' byte' + (sizediff === 1 ? '' : 's') + '</' + sizedifftag + '>';
+												var sizediff = util.sizediffIndicator(marker.sizediff),
+												iconSize = Math.max(9, marker.numedits / maxedits * 22);
 												if(marker.revid){
 													var edits = '<a href="' + vars.wikipath + '?diff=' + marker.revid + '">' + i18n('nchanges', '1') + '</a>';
 												}
@@ -1196,5 +1203,5 @@ $(document).ready(function(){
 		}
 	});
 });
-	
+
 })();
