@@ -508,37 +508,11 @@ var getData = {
 	},
 
 	votes: function(callback){
-		var polls = {
-			'Wikivoyage/Logo/2013/R1/Results/JSON':'2013 Wikivoyage logo elections - 1st round',
-			'Wikivoyage/Logo/2013/R2/Results/JSON':'2013 Wikivoyage logo elections - 2nd round'
-		};
-		$.get(
-			vars.globalApi,
-			{
-				action: 'query',
-				format: 'json',
-				titles: Object.keys(polls).join('|'),
-				prop: 'revisions',
-				rvprop: 'content'
-			},
-			function(data){
-				$.each(data.query.pages,function(pageid, page){
-					var votes = JSON.parse(page.revisions[0]['*'].replace(/^\<nowiki\>|\<\/nowiki\>$/g, ''));
-					if(votes[vars.user]){
-						votes = votes[vars.user].votes.votesByTimestamp;
-					}
-					else{
-						votes = [];
-					}
-					polls[page.title] = {
-						label: polls[page.title],
-						votes: votes
-					};
-				});
-				callback(polls);
-			},
-			'jsonp'
-		);
+		return $.getJSON('//tools.wmflabs.org/octodata/sucker.php', {
+			action: 'votelookup',
+			username: vars.user,
+			groupby: 'ballot'
+		});
 	},
 
 	geoData: function(contribs, callback){
@@ -1170,18 +1144,17 @@ $(document).ready(function(){
 								});
 								var ls = contribs.longestStreak(),
 								summ = contribs.grepBy.editSummary().length;
-								getData.votes(function(polls){
-									console.log(polls);
+								getData.votes().done(function(result){
 									$('#votes')
-									.append($.map(polls,function(poll,page){
+									.append($.map(result.votelookup.ballots, function(poll){
 										return [
-											$('<h3>').append($('<a>',{'href':'//meta.wikimedia.org/wiki/'+page,'title':page}).text(poll.label)),
-											poll.votes.length>0?$('<ul>')
-											.append($.map(poll.votes,function(vote){
-												return $('<li>').text(new Date(vote.ts).toUTCString()+' - Voted for '+vote.candidate+' (')
-												.append($('<a>',{'href':'//meta.wikimedia.org/wiki/?diff='+vote.diff,'title':'diff '+vote.diff+' on Meta-Wiki'}).text('diff'))
+											$('<h3>').append($('<a>', {'href': poll.b_url, 'title': poll.b_title}).text(poll.b_title)),
+											poll.votes.length > 0 ? $('<ul>')
+											.append($.map(poll.votes, function(vote){
+												return $('<li>').text(new Date(vote.vt_timestamp).toUTCString() + ' - Voted for ' + vote.s_name + ' (')
+												.append($('<a>', {'href': poll.b_project + '?diff=' + vote.vt_diff, 'title': 'diff ' + vote.vt_diff + ' on ' + poll.b_project}).text('diff'))
 												.append(')');
-											})):'Did not vote.'
+											})) : 'Did not vote.'
 										];
 									}));
 									getData.uploads(function(uploads){
