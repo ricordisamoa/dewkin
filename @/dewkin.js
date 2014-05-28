@@ -605,7 +605,9 @@ var util = {
 		message = [];
 		$.each(mult, function(i, e){
 			if(typeof precision === 'undefined' || precision === null || i <= precision || message.length === 0){
-				var f = parseInt(eval(mult.slice(i).join('*')));
+				var f = parseInt(mult.slice(i).reduce(function(a, b){
+					return a * b;
+				}));
 				if(Math.floor(diff / f) > 0){
 					message.push(i18n(labels[i], Math.floor(diff / f)));
 					diff -= Math.floor(diff / f) * f;
