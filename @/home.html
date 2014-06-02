@@ -50,8 +50,8 @@ Twitter Bootstrap 3.0.0
 <![endif]-->
 <script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.js"></script>
 
-<link rel="stylesheet" href="//tools.wmflabs.org/dewkin/@/dewkin.css">
-<script type="text/javascript" src="//tools.wmflabs.org/dewkin/@/dewkin.js"></script>
+<link rel="stylesheet" href="dewkin.css">
+<script type="text/javascript" src="dewkin.js"></script>
 </head>
 <body>
 <div class="hero-unit pagination-centered">
@@ -63,30 +63,30 @@ You need JavaScript to be enabled to use DEWKIN.
 <style type="text/css">
 #form,
 .hero-unit + *{
-	display:none;
+	display: none;
 }
 </style>
 </noscript>
 <form id="form">
 	<label for="u" data-msg="yourname">User name:</label>
-	<input type="text" required id="u" name="u" data-provide="typeahead" autocomplete="off" placeholder="Jimbo Wales" value="Ricordisamoa">
+	<input type="text" required id="u" name="u" autocomplete="off" placeholder="Jimbo Wales" value="Ricordisamoa">
 	<label for="p">Project:</label>
-	<input type="text" required id="p" name="p" placeholder="enwiki" value="itwikiversity">
+	<input type="text" required id="p" name="p" autocomplete="off" placeholder="enwiki" value="itwikiversity">
 	<p>You are going to run an extremely heavy operation. Do you <b>really</b> want to continue?</p>
 	<button type="submit" role="button" class="btn btn-large btn-primary" id="init"><i class="icon-white icon-arrow-right"></i> Yes</button>
 </form>
 </div>
 <ul class="nav nav-tabs">
-	<li class="active"><a href="#overview" data-toggle="tab">Overview</a></li>
+	<li class="active"><a href="#overview" data-toggle="tab" data-msg="overview"></a></li>
 	<li><a href="#advanced" data-toggle="tab" data-msg="wikieditor-toolbar-section-advanced">Advanced</a></li>
-	<li><a href="#timeline" data-toggle="tab">Timeline</a></li>
+	<li><a href="#timeline" data-toggle="tab" data-msg="timeline"></a></li>
 	<li><a href="#rights" data-toggle="tab" data-msg="listgrouprights-rights">Rights</a></li>
 	<li><a href="#tags" data-toggle="tab" data-msg="tags-title">Tags</a></li>
 	<li><a href="#uploads" data-toggle="tab" data-msg="statistics-files">Uploads</a></li>
 	<li><a href="#punch-card" data-toggle="tab">Punchcard</a></li>
-	<li><a href="#map" data-toggle="tab">Map</a></li>
-	<li><a href="#votes" data-toggle="tab">Votes</a></li>
-	<li style="float:right;margin-right:12em"><a href="//meta.wikimedia.org/wiki/User_talk:Ricordisamoa" target="_blank">Feedback</a></li>
+	<li><a href="#map" data-toggle="tab" data-msg="map"></a></li>
+	<li><a href="#votes" data-toggle="tab" data-msg="votes"></a></li>
+	<li style="float:right;margin-right:12em"><a href="//meta.wikimedia.org/wiki/User_talk:Ricordisamoa" target="_blank" data-msg="feedback"></a></li>
 </ul>
 <div class="tab-content">
 	<div class="tab-pane active container-fluid" id="overview">

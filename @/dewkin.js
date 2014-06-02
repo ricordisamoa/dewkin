@@ -54,7 +54,9 @@ ContribsList.prototype = {
 
 	sort: function(){
 		return Array.prototype.sort.call(this, function(a, b){
-			return ((new Date(a.timestamp) > new Date(b.timestamp)) ? -1 : ((new Date(a.timestamp) < new Date(b.timestamp)) ? 1 : 0));
+			var ts1 = new Date(a.timestamp),
+			ts2 = new Date(b.timestamp);
+			return ((ts1 > ts2) ? -1 : ((ts1 < ts2) ? 1 : 0));
 		});
 	},
 
@@ -78,7 +80,7 @@ ContribsList.prototype = {
 
 		day: function(){
 			var contr = {};
-			for(var j =0;j<7;j++){
+			for(var j = 0; j<7; j++){
 				contr[j] = self.grepBy.day(j).length;
 			}
 			return contr;
@@ -86,7 +88,7 @@ ContribsList.prototype = {
 
 		hour: function(){
 			var contr = [];
-			for(var j =0;j<24;j++){
+			for(var j = 0; j<24; j++){
 				contr = contr.concat(self.grepBy.hour(j).length);
 			}
 			return contr;
@@ -115,7 +117,7 @@ ContribsList.prototype = {
 			return {
 				legend: $.map(Object.keys(contr), function(tag){
 					var l = contr[tag].length;
-					return tag + i18n('colon-separator') + i18n('tags-hitcount', l) + i18n('word-separator') + i18n('parentheses', i18n('percent', Math.floor(l / self.length*10000) / 100));
+					return tag + i18n('colon-separator') + util.percent(l, self.length, undefined, i18n('tags-hitcount', l));
 				}),
 				data: $.map(Object.keys(contr), function(tag){
 					return contr[tag].length;
@@ -193,7 +195,7 @@ ContribsList.prototype = {
 					if(!summary && e.comment !== ''){
 						return e;
 					}
-					else if(summary && e.comment == summary){
+					else if(summary && e.comment === summary){
 						return e;
 					}
 				}
@@ -349,7 +351,7 @@ var getData = {
 				var dbNames = {};
 				$.each(data.sitematrix, function(){
 					$.each(this.site || ($.isArray(this) ? this : []), function(){
-						if(this.dbname && this.url && typeof this['private'] === 'undefined' && typeof this.fishbowl === 'undefined'){
+						if(this.dbname && this.url && this['private'] === undefined && this.fishbowl === undefined){
 							dbNames[this.dbname] = this.url.replace(/^http\:\/\//, '//');
 						}
 					});
@@ -604,7 +606,7 @@ var util = {
 		diff = (newdate || new Date()) - olddate,
 		message = [];
 		$.each(mult, function(i, e){
-			if(typeof precision === 'undefined' || precision === null || i <= precision || message.length === 0){
+			if(precision === undefined || precision === null || i <= precision || message.length === 0){
 				var f = parseInt(mult.slice(i).reduce(function(a, b){
 					return a * b;
 				}));
@@ -711,7 +713,7 @@ var util = {
 	},
 
 	markerColors: ['bisque', 'black', 'blue', 'coral', 'cyan', 'darkslategray', 'deeppink', 'green',
-	               'lightgrey', 'lime', 'magenta', 'orange', 'purple', 'red', 'teal', 'yellow'],
+				   'lightgrey', 'lime', 'magenta', 'orange', 'purple', 'red', 'teal', 'yellow'],
 
 	/*
 	 * A 'span' or 'strong' HTML element for a given sizediff
@@ -770,6 +772,14 @@ var util = {
 			case 2: return array.join(vars.messages['word-separator'] + vars.messages.and + vars.messages['word-separator']);
 			default: return array.slice(0, -1).join(vars.messages['comma-separator']) + vars.messages['comma-separator'] + vars.messages.and + vars.messages['word-separator'] + array[array.length - 1];
 		}
+	},
+
+	percent: function(num, outof, precision, format){
+		if(precision === undefined){
+			precision = 2;
+		}
+		var power = Math.pow(10, p);
+		return (format || num.toLocaleString()) + i18n('word-separator') + i18n('parentheses', i18n('percent', Math.floor(n * power) / power));
 	},
 
 	loadCustomMessages: function(lang, callback){
@@ -865,18 +875,20 @@ $(document).ready(function(){
 			}
 			$(this)
 			.children('button')
-			.attr('data-loading-text','Loading...')
+			.attr('data-loading-text', 'Loading...')
 			.button('loading')
 			.siblings()
 			.remove();
 			(function(){
-				var editCounterInitDate = new Date();
+				var dewkinInitDate = new Date();
 				getData.namespaces(function(namespaces){
 					vars.namespaces = namespaces;
 					var toLoadMsgs = $('[data-msg]').map(function(){
 						return this.dataset.msg;
 					}).get()
+					// time-related messages
 					.concat(['ago', 'just-now', 'seconds', 'duration-seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])
+					// miscellaneous
 					.concat(['and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'nchanges', 'size-bytes', 'tags-hitcount'])
 					.concat(util.weekdays)
 					.concat(util.weekdaysShort)
@@ -931,7 +943,7 @@ $(document).ready(function(){
 								filtered = contribs.filterBy.namespace(true),
 								nsNumbers = Object.keys(filtered),
 								nsNames = $.map(nsNumbers, function(e){
-									return util.namespaceName(e) + ': ' + filtered[e].length + ' (' + Math.floor(filtered[e].length / contribs.length * 10000) / 100 + '%)';
+									return util.namespaceName(e) + i18n('colon-separator') + util.percent(filtered[e].length, contribs.length);
 								}),
 								nsContribs = $.map(filtered, function(e){
 									return e.length;
@@ -1049,21 +1061,19 @@ $(document).ready(function(){
 									}).hover(function () {
 										var self = this,
 										s = $('circle').filter(function(){
-											return parseInt(self.x) === parseInt(this.getAttribute('cx'))&&
-											parseInt(self.y) === parseInt(this.getAttribute('cy'));
+											return parseInt(self.x) === parseInt(this.getAttribute('cx')) && parseInt(self.y) === parseInt(this.getAttribute('cy'));
 										});
 										try{
 											s.get(0).classList.add('day-hover');
 											s.get(1).style.zIndex = 0;
-											this.flag = r.popup(this.x, this.y - this.r, this.value + ' edit' + (this.value === 1 ? '' : 's') || '0', 'up', 8).insertBefore(this);
+											this.flag = r.popup(this.x, this.y - this.r, i18n('nchanges', this.value) || '0', 'up', 8).insertBefore(this);
 										}
 										catch(e){
 										}
 									}, function () {
 										var self = this,
 										s = $('circle').filter(function(){
-											return parseInt(self.x) === parseInt(this.getAttribute('cx'))&&
-											parseInt(self.y) === parseInt(this.getAttribute('cy'));
+											return parseInt(self.x) === parseInt(this.getAttribute('cx')) && parseInt(self.y) === parseInt(this.getAttribute('cy'));
 										});
 										try{
 											s.get(0).classList.remove('day-hover');
@@ -1074,7 +1084,7 @@ $(document).ready(function(){
 										}
 									});
 								});
-								var hideCreditsOnShow=$('li>a[href="#map"],li>a[href="#votes"]');
+								var hideCreditsOnShow = $('li>a[href="#map"],li>a[href="#votes"]');
 								hideCreditsOnShow.on('show', function(){
 									$('#credits').hide();
 								});
@@ -1112,10 +1122,12 @@ $(document).ready(function(){
 														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[Math.floor(Math.random() * util.markerColors.length)] + '.svg',
 														iconSize: [iconSize, iconSize]
 													})
-												}).addTo(map).bindPopup('<strong><a href="' + vars.wikipath + marker.title + '">' + marker.title + '</a></strong><br>' + sizediff + ' with ' + edits);
+												}).addTo(map).bindPopup('<strong><a href="' + vars.wikipath + marker.title + '">' + marker.title + '</a></strong><br>' + i18n('bytes with nchanges', sizediff, edits));
 											});
 										}
-										else $('#map').empty().append('<h3>Hey! No geo data here ;(</h3>');
+										else{
+											$('#map').empty().append(i18n('no geodata'));
+										}
 									});
 								});
 								$('footer').show();
@@ -1146,10 +1158,10 @@ $(document).ready(function(){
 									aH = aY - monthsChart.bars[0][0].y;
 									console.log(aY + '\n' + aH);
 									console.log(monthsChart.bars[0]);
-									Raphael.g.axis(50, aY-1.8, aH, 0, axisLabels.length, axisLabels.length-1, 1, axisLabels, ' ', null, monthsCanvas)
-									.text.attr({'font-weight':'bold'});
-									Raphael.g.axis(60, aY-1.8, aH, 0, axisData.length, axisData.length-1, 1, axisData, ' ', null, monthsCanvas)
-									.text.attr({'text-anchor':'start'});
+									Raphael.g.axis(50, aY - 1.8, aH, 0, axisLabels.length, axisLabels.length - 1, 1, axisLabels, ' ', null, monthsCanvas)
+									.text.attr({'font-weight': 'bold'});
+									Raphael.g.axis(60, aY - 1.8, aH, 0, axisData.length, axisData.length - 1, 1, axisData, ' ', null, monthsCanvas)
+									.text.attr({'text-anchor': 'start'});
 								});
 								var ls = contribs.longestStreak(),
 								summ = contribs.grepBy.editSummary().length;
@@ -1169,14 +1181,14 @@ $(document).ready(function(){
 									getData.uploads(function(uploads){
 										getData.blockInfo(function(blockinfo){
 											$('#general')
-											.append(typeof blockinfo.blockid!='undefined' ? ('<strong>Currently blocked by '+ blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>') : '')
+											.append(blockinfo.blockid !== undefined ? ('<strong>Currently blocked by '+ blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>') : '')
 											.append('<a href="' + vars.wikipath + '?diff=' + contribs[contribs.length - 1].revid + '">' + i18n('first edit') + '</a>: '+ firstContribDate.toUTCString() + ' (' + util.dateDiff(firstContribDate, new Date(), 4, true) + ')<br>')
 											.append('<a href="' + vars.wikipath + '?diff=' + contribs[0].revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
 											.append('Live edits: ' + contribs.length.toLocaleString() + '<br>')
 											.append(editcount === undefined ? [] : ['Deleted edits: ' + (editcount - contribs.length).toLocaleString(), '<br>',
 											'<b>Total edits (including deleted): ' + editcount.toLocaleString() + '</b>', '<br>'])
 											.append('<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' + i18n('statistics-files') + '</a>' + i18n('colon-separator') + uploads.length.toLocaleString() + '<br>')
-											.append('Edits with non-empty summary: ' + summ.toLocaleString() + i18n('word-separator') + i18n('parentheses', i18n('percent', Math.floor((summ / contribs.length) * 10000) / 100)) + '<br>')
+											.append('Edits with non-empty summary: ' + util.percent(summ, contribs.length) + '<br>')
 											.append(
 												ls.length === 2 ?
 												(
@@ -1185,7 +1197,7 @@ $(document).ready(function(){
 													}).join(' - ') + i18n('parentheses', i18n('days', (new Date(ls[1]) - new Date(ls[0])) / 86400000 + 1)) + '<br>'
 												) : ''
 											)
-											.append(i18n('executed in', i18n('duration-seconds', Math.floor((new Date().getTime() - editCounterInitDate.getTime()) / 10) / 100)));
+											.append(i18n('executed in', i18n('duration-seconds', Math.floor((new Date().getTime() - dewkinInitDate.getTime()) / 10) / 100)));
 										});
 									});
 								});
