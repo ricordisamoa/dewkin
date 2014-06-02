@@ -778,8 +778,7 @@ var util = {
 		if(precision === undefined){
 			precision = 2;
 		}
-		var power = Math.pow(10, p);
-		return (format || num.toLocaleString()) + i18n('word-separator') + i18n('parentheses', i18n('percent', Math.floor(n * power) / power));
+		return (format || num.toLocaleString()) + i18n('word-separator') + i18n('parentheses', i18n('percent', parseFloat((num / outof * 100).toFixed(precision))));
 	},
 
 	loadCustomMessages: function(lang, callback){
