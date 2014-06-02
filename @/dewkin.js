@@ -871,7 +871,7 @@ $(document).ready(function(){
 			vars.api = vars.sites[$('#p').val()] + '/w/api.php';
 			vars.user = $('#u').val().replace(/_/g, ' ');
 			if(window.history.pushState && window.location.pathname.split(/[^\/]\/[^\/]/).length === 1){
-				window.history.pushState({}, '', window.location.pathname.replace(/\/$/,'') + '/' + $('#p').val() + '/' + vars.user.replace(/ /g, '_'));
+				window.history.pushState({}, '', window.location.pathname.replace(/\/$/, '') + '/' + vars.user.replace(/ /g, '_') + '@' + $('#p').val());
 			}
 			$(this)
 			.children('button')
@@ -1207,11 +1207,14 @@ $(document).ready(function(){
 				});
 			})();
 		});
-		var path = window.location.pathname.split('/').slice(2);
-		if(path.length === 2){
-			$('#p').val(path[0]);
-			$('#u').val(path[1]);
-			$('#form').submit();
+		var path = window.location.pathname.split('/');
+		if(path.length === 3){
+			var inspData = path[2].split('@');
+			if(inspData.length === 2){
+				$('#u').val(inspData[0]);
+				$('#p').val(inspData[1]);
+				$('#form').submit();
+			}
 		}
 	});
 });
