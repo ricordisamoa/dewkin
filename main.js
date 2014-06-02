@@ -784,7 +784,7 @@ var util = {
 
 	loadCustomMessages: function(lang, callback){
 		var self = this;
-		$.get('//tools.wmflabs.org/dewkin/@/i18n/' + lang + '.json', {}, 'jsonp')
+		$.get('//tools.wmflabs.org/dewkin/i18n/' + lang + '.json', {}, 'jsonp')
 		.done(function(data){
 			$.extend(vars.messages, data);
 			callback(true);
