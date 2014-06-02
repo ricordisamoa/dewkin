@@ -51,6 +51,12 @@ Twitter Bootstrap 3.0.0
 <script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.js"></script>
 
 <link rel="stylesheet" href="main.css">
+
+<!-- override some rules if JavaScript is disabled -->
+<noscript>
+	<link rel="stylesheet" href="noscript.css">
+</noscript>
+
 <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
@@ -60,12 +66,6 @@ Twitter Bootstrap 3.0.0
 <div class="alert alert-error">
 You need JavaScript to be enabled to use DEWKIN.
 </div>
-<style type="text/css">
-#form,
-.hero-unit + *{
-	display: none;
-}
-</style>
 </noscript>
 <form id="form">
 	<label for="u" data-msg="yourname">User name:</label>
