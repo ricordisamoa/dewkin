@@ -58,24 +58,15 @@ function ContribsList(){
 
 ContribsList.prototype = {
 
+	/*
+	 * sort the items by timestamp, in ascending order
+	 */
 	sort: function(){
-		return Array.prototype.sort.call(this, function(a, b){
+		return ContribsList(Array.prototype.sort.call(this, function(a, b){
 			var ts1 = new Date(a.timestamp),
 			ts2 = new Date(b.timestamp);
-			return ((ts1 > ts2) ? -1 : ((ts1 < ts2) ? 1 : 0));
-		});
-	},
-
-	oldest: function(){
-		var sorted = this;
-		sorted.sort();
-		return sorted[0];
-	},
-
-	newest: function(){
-		var sorted = this;
-		sorted.sort();
-		return sorted[sorted.length - 1];
+			return ((ts1 < ts2) ? -1 : ((ts1 > ts2) ? 1 : 0));
+		}));
 	},
 
 	log: function(){
@@ -86,7 +77,7 @@ ContribsList.prototype = {
 
 		day: function(){
 			var contr = {};
-			for(var j = 0; j<7; j++){
+			for(var j = 0; j < 7; j++){
 				contr[j] = self.grepBy.day(j).length;
 			}
 			return contr;
@@ -94,7 +85,7 @@ ContribsList.prototype = {
 
 		hour: function(){
 			var contr = [];
-			for(var j = 0; j<24; j++){
+			for(var j = 0; j < 24; j++){
 				contr = contr.concat(self.grepBy.hour(j).length);
 			}
 			return contr;
@@ -922,7 +913,7 @@ $(document).ready(function(){
 								if(removedGroups.length > 0){
 									msg.push('removed ' + util.listToText($.map(removedGroups, util.rightColor)));
 								}
-								return $('<li>').html('<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' + new Date(logevt.timestamp).toLocaleString() + '</a>: ' + util.listToText(msg));
+								return $('<li>').html('<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' + new Date(logevt.timestamp).toLocaleString() + '</a>' + i18n('colon-separator') + util.listToText(msg));
 							}))
 						);
 						$('<span>')
@@ -945,10 +936,11 @@ $(document).ready(function(){
 							});
 							getData.contribs(function(contribs){
 								vars.contribs = ContribsList(contribs);
+								vars.contribs.sort();
 								contribs = vars.contribs;
 								contribs.log();
-								var firstContribDate = new Date(contribs.oldest().timestamp),
-								latestContribDate = new Date(contribs.newest().timestamp),
+								var firstContribDate = new Date(contribs[0].timestamp),
+								latestContribDate = new Date(contribs[contribs.length -1].timestamp),
 								filtered = contribs.filterBy.namespace(true),
 								nsNumbers = Object.keys(filtered),
 								nsNames = $.map(nsNumbers, function(e){
@@ -1202,9 +1194,9 @@ $(document).ready(function(){
 									getData.uploads(function(uploads){
 										getData.blockInfo(function(blockinfo){
 											$('#general')
-											.append(blockinfo.blockid !== undefined ? ('<strong>Currently blocked by '+ blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>') : '')
-											.append('<a href="' + vars.wikipath + '?diff=' + contribs.oldest().revid + '">' + i18n('first edit') + '</a>' + i18n('colon-separator') + firstContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(firstContribDate, new Date(), 4, true)) + '<br>')
-											.append('<a href="' + vars.wikipath + '?diff=' + contribs.newest().revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
+											.append(blockinfo.blockid !== undefined ? ('<strong>Currently blocked by ' + blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>') : '')
+											.append('<a href="' + vars.wikipath + '?diff=' + contribs[0].revid + '">' + i18n('first edit') + '</a>' + i18n('colon-separator') + firstContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(firstContribDate, new Date(), 4, true)) + '<br>')
+											.append('<a href="' + vars.wikipath + '?diff=' + contribs[contribs.length -1].revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
 											.append('Live edits: ' + contribs.length.toLocaleString() + '<br>')
 											.append(vars.editcount === undefined ? [] : ['Deleted edits: ' + (vars.editcount - contribs.length).toLocaleString(), '<br>',
 											'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>'])
