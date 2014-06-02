@@ -1152,7 +1152,7 @@ $(document).ready(function(){
 								monthsCanvas = Raphael('month-chart', 1200, mSize),
 								monthsChart = monthsCanvas.hbarchart(75, 0, 850, mSize, nsData, { stacked: true, colors: nsColors }).hover(fin2, fout);
 								$('li>a[href="#advanced"]').one('shown', function(){
-									Raphael.g.axis(31, 320, 331, 0, 7, 6, 2, weekdaysShort, ' ', null, weekCanvas);
+									Raphael.g.axis(31, 320, 331, 0, 7, 6, 2, util.weekdaysShort, ' ', null, weekCanvas);
 									var aY = monthsChart.bars[0][monthsChart.bars[0].length - 1].y,
 									aH = aY - monthsChart.bars[0][0].y;
 									console.log(aY + '\n' + aH);
@@ -1184,8 +1184,8 @@ $(document).ready(function(){
 											.append('<a href="' + vars.wikipath + '?diff=' + contribs[contribs.length - 1].revid + '">' + i18n('first edit') + '</a>: '+ firstContribDate.toUTCString() + ' (' + util.dateDiff(firstContribDate, new Date(), 4, true) + ')<br>')
 											.append('<a href="' + vars.wikipath + '?diff=' + contribs[0].revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
 											.append('Live edits: ' + contribs.length.toLocaleString() + '<br>')
-											.append(editcount === undefined ? [] : ['Deleted edits: ' + (editcount - contribs.length).toLocaleString(), '<br>',
-											'<b>Total edits (including deleted): ' + editcount.toLocaleString() + '</b>', '<br>'])
+											.append(vars.editcount === undefined ? [] : ['Deleted edits: ' + (vars.editcount - contribs.length).toLocaleString(), '<br>',
+											'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>'])
 											.append('<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' + i18n('statistics-files') + '</a>' + i18n('colon-separator') + uploads.length.toLocaleString() + '<br>')
 											.append('Edits with non-empty summary: ' + util.percent(summ, contribs.length) + '<br>')
 											.append(
