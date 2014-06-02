@@ -66,13 +66,13 @@ ContribsList.prototype = {
 		});
 	},
 
-	older: function(){
+	oldest: function(){
 		var sorted = this;
 		sorted.sort();
 		return sorted[0];
 	},
 
-	newer: function(){
+	newest: function(){
 		var sorted = this;
 		sorted.sort();
 		return sorted[sorted.length - 1];
@@ -327,7 +327,7 @@ var getData = {
 			});
 		}
 		else{
-			params = $.extend(params,{
+			params = $.extend(params, {
 				list: 'globalallusers',
 				aguprefix: prefix,
 				agulimit: 8,
@@ -772,11 +772,14 @@ var util = {
 	},
 
 	listToText: function(array){
+		var comma = i18n('comma-separator'),
+		sep = i18n('word-separator'),
+		and = i18n('and');
 		switch(array.length){
 			case 0: return '';
 			case 1: return array[0];
-			case 2: return array.join(vars.messages['word-separator'] + vars.messages.and + vars.messages['word-separator']);
-			default: return array.slice(0, -1).join(vars.messages['comma-separator']) + vars.messages['comma-separator'] + vars.messages.and + vars.messages['word-separator'] + array[array.length - 1];
+			case 2: return array.join(sep + and + sep);
+			default: return array.slice(0, -1).join(comma) + comma + and + sep + array[array.length - 1];
 		}
 	},
 
@@ -789,7 +792,7 @@ var util = {
 
 	loadCustomMessages: function(lang, callback){
 		var self = this;
-		$.get('//tools.wmflabs.org/dewkin/i18n/' + lang + '.json', {}, 'jsonp')
+		$.get('i18n/' + lang + '.json', {}, 'jsonp')
 		.done(function(data){
 			$.extend(vars.messages, data);
 			callback(true);
@@ -943,8 +946,8 @@ $(document).ready(function(){
 								vars.contribs = ContribsList(contribs);
 								contribs = vars.contribs;
 								contribs.log();
-								var firstContribDate = new Date(contribs.older().timestamp),
-								latestContribDate = new Date(contribs.newer().timestamp),
+								var firstContribDate = new Date(contribs.oldest().timestamp),
+								latestContribDate = new Date(contribs.newest().timestamp),
 								filtered = contribs.filterBy.namespace(true),
 								nsNumbers = Object.keys(filtered),
 								nsNames = $.map(nsNumbers, function(e){
@@ -1123,7 +1126,7 @@ $(document).ready(function(){
 													var edits = i18n('nchanges', marker.numedits);
 												}
 												L.marker(marker.coords, {
-													icon:L.icon({
+													icon: L.icon({
 														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[Math.floor(Math.random() * util.markerColors.length)] + '.svg',
 														iconSize: [iconSize, iconSize]
 													})
@@ -1187,8 +1190,8 @@ $(document).ready(function(){
 										getData.blockInfo(function(blockinfo){
 											$('#general')
 											.append(blockinfo.blockid !== undefined ? ('<strong>Currently blocked by '+ blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>') : '')
-											.append('<a href="' + vars.wikipath + '?diff=' + contribs[contribs.length - 1].revid + '">' + i18n('first edit') + '</a>: '+ firstContribDate.toUTCString() + ' (' + util.dateDiff(firstContribDate, new Date(), 4, true) + ')<br>')
-											.append('<a href="' + vars.wikipath + '?diff=' + contribs[0].revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
+											.append('<a href="' + vars.wikipath + '?diff=' + contribs.older().revid + '">' + i18n('first edit') + '</a>' + i18n('colon-separator') + firstContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(firstContribDate, new Date(), 4, true)) + '<br>')
+											.append('<a href="' + vars.wikipath + '?diff=' + contribs.newer().revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
 											.append('Live edits: ' + contribs.length.toLocaleString() + '<br>')
 											.append(vars.editcount === undefined ? [] : ['Deleted edits: ' + (vars.editcount - contribs.length).toLocaleString(), '<br>',
 											'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>'])
@@ -1199,7 +1202,7 @@ $(document).ready(function(){
 												(
 													i18n('longest streak') + i18n('colon-separator') + $.map(ls, function(d){
 														return new Date(d).toUTCString();
-													}).join(' - ') + i18n('parentheses', i18n('days', (new Date(ls[1]) - new Date(ls[0])) / 86400000 + 1)) + '<br>'
+													}).join(' - ') + i18n('word-separator') + i18n('parentheses', i18n('days', (new Date(ls[1]) - new Date(ls[0])) / 86400000 + 1)) + '<br>'
 												) : ''
 											)
 											.append(i18n('executed in', i18n('duration-seconds', Math.floor((new Date().getTime() - dewkinInitDate.getTime()) / 10) / 100)));
