@@ -805,13 +805,13 @@ var util = {
 	},
 
 	parseMsg: function(msg){
-		var regex = /(^|[^\/])\$(\d+)(\D|$)/g,
+		var regex = /(^|[^\/])\$(\d+)(?=\D|$)/g,
 		regex2 = new RegExp(regex.source, ''),
 		args = Array.prototype.slice.call(arguments);
 		msg = msg.replace(regex, function(el){
 			var m = el.match(regex2);
-			if(m && args[parseInt(m[2])]){
-				return m[1] + args[parseInt(m[2])] + m[3];
+			if(m && args[parseInt(m[2])] !== undefined){
+				return m[1] + args[parseInt(m[2])];
 			}
 			else{
 				return el;
