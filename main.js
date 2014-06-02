@@ -897,7 +897,8 @@ $(document).ready(function(){
 					// time-related messages
 					.concat(['ago', 'just-now', 'seconds', 'duration-seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])
 					// miscellaneous
-					.concat(['and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'nchanges', 'size-bytes', 'tags-hitcount'])
+					.concat(['and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'diff',
+					         'nchanges', 'size-bytes', 'tags-hitcount'])
 					.concat(util.weekdays)
 					.concat(util.weekdaysShort)
 					.concat(util.months);
@@ -1180,18 +1181,30 @@ $(document).ready(function(){
 											$('<h3>').append($('<a>', {'href': poll.b_url, 'title': poll.b_title}).text(poll.b_title)),
 											poll.votes.length > 0 ? $('<ul>')
 											.append($.map(poll.votes, function(vote){
-												return $('<li>').text(new Date(vote.vt_timestamp).toUTCString() + ' - Voted for ' + vote.s_name + ' (')
-												.append($('<a>', {'href': poll.b_project + '?diff=' + vote.vt_diff, 'title': 'diff ' + vote.vt_diff + ' on ' + poll.b_project}).text('diff'))
-												.append(')');
-											})) : 'Did not vote.'
+												return $('<li>')
+												.html(
+													i18n(
+														'voted for',
+														new Date(vote.vt_timestamp).toUTCString(),
+														vote.s_name,
+														$('<a>')
+														.attr({
+															'href': poll.b_project + '?diff=' + vote.vt_diff,
+															'title': i18n('diff on project', vote.vt_diff, poll.b_project)
+														})
+														.text(i18n('diff'))
+														.get(0).outerHTML
+													)
+												);
+											})) : i18n('did not vote')
 										];
 									}));
 									getData.uploads(function(uploads){
 										getData.blockInfo(function(blockinfo){
 											$('#general')
 											.append(blockinfo.blockid !== undefined ? ('<strong>Currently blocked by '+ blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>') : '')
-											.append('<a href="' + vars.wikipath + '?diff=' + contribs.older().revid + '">' + i18n('first edit') + '</a>' + i18n('colon-separator') + firstContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(firstContribDate, new Date(), 4, true)) + '<br>')
-											.append('<a href="' + vars.wikipath + '?diff=' + contribs.newer().revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
+											.append('<a href="' + vars.wikipath + '?diff=' + contribs.oldest().revid + '">' + i18n('first edit') + '</a>' + i18n('colon-separator') + firstContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(firstContribDate, new Date(), 4, true)) + '<br>')
+											.append('<a href="' + vars.wikipath + '?diff=' + contribs.newest().revid + '">' + i18n('most recent edit') + '</a>' + i18n('colon-separator') + latestContribDate.toUTCString() + i18n('word-separator') + i18n('parentheses', util.dateDiff(latestContribDate, new Date(), 5, true)) + '<br>')
 											.append('Live edits: ' + contribs.length.toLocaleString() + '<br>')
 											.append(vars.editcount === undefined ? [] : ['Deleted edits: ' + (vars.editcount - contribs.length).toLocaleString(), '<br>',
 											'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>'])
