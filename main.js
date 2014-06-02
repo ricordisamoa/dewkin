@@ -260,11 +260,11 @@ ContribsList.prototype = {
 		console.log(this);
 		var prev = [],
 		cur = [],
-		cc = this.slice(0),
+		cc = ContribsList(this.slice(0)),
 		sameOrNext = function(d1, d2){
 			return d1 === d2 || (d2 - d1 === 86400000);
 		};
-		cc.reverse();
+		cc.sort();
 		$.each(cc, function(i, ct){
 			var d = new Date(ct.timestamp).setHours(0, 0, 0, 0);
 			if(cur.length === 0){
