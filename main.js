@@ -37,9 +37,15 @@ var self;
  * @constructor
  */
 function ContribsList(){
-	var list = Object.create(Array.prototype);
+	var args = Array.prototype.slice.call(arguments);
 
-	list = (Array.apply(list, arguments) || list);
+	if(args.length === 1 && $.isArray(args[0])){
+		var list = args[0];
+	}
+	else{
+		var list = Object.create(Array.prototype);
+		list = (Array.apply(list, arguments) || list);
+	}
 
 	for (var method in ContribsList.prototype){
 		if (ContribsList.prototype.hasOwnProperty(method)){
