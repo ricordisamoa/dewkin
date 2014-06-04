@@ -31,8 +31,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 var ContribsList = (function(){
 
-var self;
-
 /*
  * @constructor
  */
@@ -52,7 +50,6 @@ function ContribsList(){
 			list[method] = ContribsList.prototype[method];
 		}
 	}
-	self = list;
 	return list;
 }
 
@@ -73,159 +70,146 @@ ContribsList.prototype = {
 		console.log(this);
 	},
 
-	filterBy: {
-
-		day: function(){
-			var contr = {};
-			for(var j = 0; j < 7; j++){
-				contr[j] = self.grepBy.day(j).length;
+	filterByNamespace: function(alsoEmpty){
+		var contr = {},
+		self = this;
+		$.each($.map(vars.namespaces, function(e){
+			return e;
+		}), function(nsIndex, ns){
+			var f = self.grepByNamespace(ns.id);
+			if(f.length > 0 || alsoEmpty === true){
+				contr[ns.id] = f;
 			}
-			return contr;
-		},
-
-		hour: function(){
-			var contr = [];
-			for(var j = 0; j < 24; j++){
-				contr = contr.concat(self.grepBy.hour(j).length);
-			}
-			return contr;
-		},
-
-		tag: function(){
-			var contr = {};
-			$.each(self, function(i, e){
-				if(e.tags && e.tags.length === 1){
-					if(contr[e.tags[0]]){
-						contr[e.tags[0]].push(e);
-					}
-					else{
-						contr[e.tags[0]] = [e];
-					}
-				}
-				else if(!e.tags || e.tags.length === 0){
-					if(contr.none){
-						contr.none.push(e);
-					}
-					else{
-						contr.none = [e];
-					}
-				}
-			});
-			return {
-				legend: $.map(Object.keys(contr), function(tag){
-					var l = contr[tag].length;
-					return tag + i18n('colon-separator') + util.percent(l, self.length, undefined, i18n('tags-hitcount', l));
-				}),
-				data: $.map(Object.keys(contr), function(tag){
-					return contr[tag].length;
-				})
-			};
-		},
-
-		month: function(){
-			var contr = {},
-			s = {};
-			$.each(self, function(i, e){
-				var date = new Date(e.timestamp),
-				code = util.yearMonth(date);
-				if(contr[code]){
-					contr[code].push(e);
-				}
-				else{
-					contr[code] = [e];
-				}
-			});
-			$.each(util.allMonths(), function(i, e){
-				if(contr[e]){
-					s[e] = contr[e];
-				}
-				else{
-					s[e] = [];
-				}
-			});
-			return s;
-		},
-
-		namespace: function(alsoEmpty){
-			if(alsoEmpty !== true){
-				alsoEmpty = false;
-			}
-			var contr = {};
-			console.log(self);
-			$.each($.map(vars.namespaces, function(e){
-				return e;
-			}), function(nsIndex, ns){
-				var f = self.grepBy.namespace(ns.id);
-				if(f.length > 0 || alsoEmpty === true){
-					contr[ns.id] = f;
-				}
-			});
-			return contr;
-		},
-
-		monthAndNamespace: function(){
-			var contr = {};
-			$.each(self.filterBy.month(), function(k, v){
-				contr[k] = ContribsList(v).filterBy.namespace(true);
-			});
-			return contr;
-		},
-
-		namespaceAndMonth: function(){
-			var contr = {};
-			$.each(self.filterBy.namespace(true), function(k, v){
-				contr[k] = ContribsList(v).filterBy.month();
-			});
-			return contr;
-		}
-
+		});
+		return contr;
 	},
 
-	grepBy: {
+	filterByDay: function(){
+		var contr = {};
+		for(var j = 0; j < 7; j++){
+			contr[j] = this.grepByDay(j).length;
+		}
+		return contr;
+	},
 
-		/*
-		 * @param {string|bool} summary
-		 */
-		editSummary: function(summary){
-			return ContribsList($.grep(self, function(e){
-				if(e.comment){
-					if(!summary && e.comment !== ''){
-						return e;
-					}
-					else if(summary && e.comment === summary){
-						return e;
-					}
+	filterByHour: function(){
+		var contr = [];
+		for(var j = 0; j < 24; j++){
+			contr = contr.concat(this.grepByHour(j).length);
+		}
+		return contr;
+	},
+
+	filterByTag: function(){
+		var contr = {},
+		self = this;
+		$.each(self, function(i, e){
+			if(e.tags && e.tags.length === 1){
+				if(contr[e.tags[0]]){
+					contr[e.tags[0]].push(e);
 				}
-				if(!summary){
+				else{
+					contr[e.tags[0]] = [e];
+				}
+			}
+			else if(!e.tags || e.tags.length === 0){
+				if(contr.none){
+					contr.none.push(e);
+				}
+				else{
+					contr.none = [e];
+				}
+			}
+		});
+		return {
+			legend: $.map(Object.keys(contr), function(tag){
+				var l = contr[tag].length;
+				return tag + i18n('colon-separator') + util.percent(l, self.length, undefined, i18n('tags-hitcount', l));
+			}),
+			data: $.map(Object.keys(contr), function(tag){
+				return contr[tag].length;
+			})
+		};
+	},
+
+	filterByMonth: function(){
+		var contr = {},
+		s = {};
+		$.each(this, function(i, e){
+			var date = new Date(e.timestamp),
+			code = util.yearMonth(date);
+			if(contr[code]){
+				contr[code].push(e);
+			}
+			else{
+				contr[code] = [e];
+			}
+		});
+		$.each(util.allMonths(), function(i, e){
+			if(contr[e]){
+				s[e] = contr[e];
+			}
+			else{
+				s[e] = [];
+			}
+		});
+		return s;
+	},
+
+	filterByMonthAndNamespace: function(){
+		var contr = {};
+		$.each(this.filterByMonth(), function(k, v){
+			contr[k] = ContribsList(v).filterByNamespace(true);
+		});
+		return contr;
+	},
+
+	filterByNamespaceAndMonth: function(){
+		var contr = {};
+		$.each(this.filterByNamespace(true), function(k, v){
+			contr[k] = ContribsList(v).filterByMonth();
+		});
+		return contr;
+	},
+
+	grepByEditSummary: function(summary){
+		return ContribsList($.grep(this, function(e){
+			if(e.comment){
+				if(!summary && e.comment !== ''){
 					return e;
 				}
-			}));
-		},
+				else if(summary && e.comment === summary){
+					return e;
+				}
+			}
+			if(!summary){
+				return e;
+			}
+		}));
+	},
 
-		namespace: function(ns){
-			return ContribsList($.grep(self, function(e){
-				return (typeof ns === 'number') ? (e.ns === ns) : (ns.indexOf(e.ns) !== -1);
-			}));
-		},
+	grepByNamespace: function(ns){
+		return ContribsList($.grep(this, function(e){
+			return (typeof ns === 'number') ? (e.ns === ns) : (ns.indexOf(e.ns) !== -1);
+		}));
+	},
 
-		day: function(number){
-			return ContribsList($.grep(self, function(e){
-				return new Date(e.timestamp).getUTCDay() === number;
-			}));
-		},
+	grepByDay: function(number){
+		return ContribsList($.grep(this, function(e){
+			return new Date(e.timestamp).getUTCDay() === number;
+		}));
+	},
 
-		hour: function(number){
-			return ContribsList($.grep(self, function(e){
-				return new Date(e.timestamp).getUTCHours() === number;
-			}));
-		}
-
+	grepByHour: function(number){
+		return ContribsList($.grep(this, function(e){
+			return new Date(e.timestamp).getUTCHours() === number;
+		}));
 	},
 
 	topEdited: function(ns){
 		var c = this;
 		if(ns){
-			c = c.filterBy.namespace(ns);
+			c = c.grepByNamespace(ns);
 		}
 		var titles = $.map(c, function(e){
 			return [e.title];
@@ -506,7 +490,7 @@ var getData = {
 		);
 	},
 
-	votes: function(callback){
+	votes: function(){
 		return $.getJSON('//tools.wmflabs.org/octodata/sucker.php', {
 			action: 'votelookup',
 			username: vars.user,
@@ -700,6 +684,10 @@ var util = {
 	},
 	/* end of Soxred93's code */
 
+	colorFromNamespace: function(ns){
+		return '#' + (this.namespaceColors[ns] || 'CCC');
+	},
+
 	namespaceFromColor: function(color){
 		color = color.toLowerCase().replace(/^\#/, '');
 		for(var ns in this.namespaceColors){
@@ -889,7 +877,7 @@ $(document).ready(function(){
 					.concat(['ago', 'just-now', 'seconds', 'duration-seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])
 					// miscellaneous
 					.concat(['and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'diff',
-					         'nchanges', 'size-bytes', 'tags-hitcount'])
+							 'nchanges', 'size-bytes', 'tags-hitcount'])
 					.concat(util.weekdays)
 					.concat(util.weekdaysShort)
 					.concat(util.months);
@@ -941,7 +929,7 @@ $(document).ready(function(){
 								contribs.log();
 								var firstContribDate = new Date(contribs[0].timestamp),
 								latestContribDate = new Date(contribs[contribs.length -1].timestamp),
-								filtered = contribs.filterBy.namespace(true),
+								filtered = contribs.filterByNamespace(true),
 								nsNumbers = Object.keys(filtered),
 								nsNames = $.map(nsNumbers, function(e){
 									return util.namespaceName(e) + i18n('colon-separator') + util.percent(filtered[e].length, contribs.length);
@@ -951,8 +939,8 @@ $(document).ready(function(){
 								}),
 								nsColors = $.map(nsNumbers.sort(function(a, b){
 									return filtered[b].length - filtered[a].length;
-								}), function(e){
-									return ['#' + util.namespaceColors[e]];
+								}), function(ns){
+									return util.colorFromNamespace(ns);
 								});
 								vars.firstMonth = util.yearMonth(firstContribDate);
 								$('.hero-unit').removeClass('hero-unit');
@@ -991,7 +979,6 @@ $(document).ready(function(){
 										this.sector.scale(1.1, 1.1, this.cx, this.cy);
 										this.sector[0].classList.add('selected');
 										var ns = this.value.order,
-										fff = console.log(ns),
 										te = contribs.topEdited(ns);
 										$('#top-edited')
 										.empty()
@@ -1013,7 +1000,7 @@ $(document).ready(function(){
 									}
 								} ) ;
 								var dayColors = ['#4d89f9', '#c6d9fd'],
-								dayFiltered = $.map(contribs.filterBy.day(), function(e){
+								dayFiltered = $.map(contribs.filterByDay(), function(e){
 									return [e];
 								});
 								while(dayColors.length < dayFiltered.length){
@@ -1024,7 +1011,7 @@ $(document).ready(function(){
 									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, this.bar.value || '0', 'up').insertBefore(this);
 								},
 								fin2 = function () {
-									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, util.namespaceName(namespaceFromColor(this.bar.attrs.fill)) + ': ' + this.bar.value || '0', 'right').insertBefore(this);
+									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, util.namespaceName(util.namespaceFromColor(this.bar.attrs.fill)) + ': ' + this.bar.value || '0', 'right').insertBefore(this);
 								},
 								fout = function () {
 									this.flag.animate({opacity: 0}, 100, function () {
@@ -1035,14 +1022,14 @@ $(document).ready(function(){
 
 								/* Tags chart */
 								$('li>a[href="#tags"]').one('shown', function(){
-									var tagsData = contribs.filterBy.tag(),
+									var tagsData = contribs.filterByTag(),
 									tagsCanvas = Raphael('tag-chart', 750, 600),
 									tagsChart = tagsCanvas.piechart(220, 220, 180, tagsData.data, { legend: tagsData.legend, minPercent: 0 });
 								});
 
 								/* GitHub-like Punchcard */
 								var punch = $.map([1, 2, 3, 4, 5, 6, 0], function(j){
-									return contribs.grepBy.day(j).filterBy.hour();
+									return contribs.grepByDay(j).filterByHour();
 								});
 								$('li>a[href="#punch-card"]').one('shown', function(){
 									var r = Raphael('punchcard', 1200, 500),
@@ -1095,7 +1082,7 @@ $(document).ready(function(){
 								$('li>a[href="#map"]')
 								.one('shown', function(){
 									$('#map').append('Loading geodata...');
-									getData.geoData(contribs.grepBy.namespace([0, 6]), function(geodata){
+									getData.geoData(contribs.grepByNamespace([0, 6]), function(geodata){
 										if(geodata.length > 0){
 											$('#map').empty().css('height', '400px');
 											var maxedits = geodata[0].numedits,
@@ -1132,11 +1119,11 @@ $(document).ready(function(){
 									});
 								});
 								$('footer').show();
-								var byMonth = contribs.filterBy.month(),
+								var byMonth = contribs.filterByMonth(),
 								axisData = $.map(Object.keys(byMonth), function(e){
 									return byMonth[e].length.toString();
 								}).reverse(),
-								filtered = contribs.filterBy.namespaceAndMonth(),
+								filtered = contribs.filterByNamespaceAndMonth(),
 								nsNumbers = Object.keys(filtered),
 								nsNames = $.map(nsNumbers, function(e){
 									return util.namespaceName(e);
@@ -1146,8 +1133,8 @@ $(document).ready(function(){
 										return c.length;
 									})];
 								}),
-								nsColors = $.map(nsNumbers, function(e){
-									return '#' + util.namespaceColors[e];
+								nsColors = $.map(nsNumbers, function(ns){
+									return util.colorFromNamespace(ns);
 								}),
 								axisLabels = Object.keys(filtered[Object.keys(filtered)[0]]).reverse(),
 								mSize = 24.5 * Object.keys(byMonth).length,
@@ -1165,7 +1152,7 @@ $(document).ready(function(){
 									.text.attr({'text-anchor': 'start'});
 								});
 								var ls = contribs.longestStreak(),
-								summ = contribs.grepBy.editSummary().length;
+								summ = contribs.grepByEditSummary().length;
 								getData.votes().done(function(result){
 									$('#votes')
 									.append($.map(result.votelookup.ballots, function(poll){

@@ -13,6 +13,5 @@ New features and bugfixes
 
 Todo
 ------
-* Make it working!
 * Multiple-user inspection
 * Timeline
