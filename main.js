@@ -930,16 +930,16 @@ $(document).ready(function(){
 								var firstContribDate = new Date(contribs[0].timestamp),
 								latestContribDate = new Date(contribs[contribs.length -1].timestamp),
 								filtered = contribs.filterByNamespace(true),
-								nsNumbers = Object.keys(filtered),
-								nsNames = $.map(nsNumbers, function(e){
-									return util.namespaceName(e) + i18n('colon-separator') + util.percent(filtered[e].length, contribs.length);
-								}),
-								nsContribs = $.map(filtered, function(e){
-									return e.length;
-								}),
-								nsColors = $.map(nsNumbers.sort(function(a, b){
+								sortedNsNumbers = Object.keys(filtered).sort(function(a, b){
 									return filtered[b].length - filtered[a].length;
-								}), function(ns){
+								}),
+								nsNames = $.map(sortedNsNumbers, function(ns){
+									return util.namespaceName(ns) + i18n('colon-separator') + util.percent(filtered[ns].length, contribs.length);
+								}),
+								nsContribs = $.map(sortedNsNumbers, function(ns){
+									return filtered[ns].length;
+								}),
+								nsColors = $.map(sortedNsNumbers, function(ns){
 									return util.colorFromNamespace(ns);
 								});
 								vars.firstMonth = util.yearMonth(firstContribDate);
@@ -978,7 +978,7 @@ $(document).ready(function(){
 										});
 										this.sector.scale(1.1, 1.1, this.cx, this.cy);
 										this.sector[0].classList.add('selected');
-										var ns = this.value.order,
+										var ns = sortedNsNumbers[this.value.order],
 										te = contribs.topEdited(ns);
 										$('#top-edited')
 										.empty()
