@@ -392,7 +392,7 @@ var getData = {
 		);
 	},
 
-	contribs: function(callback, ucstart){
+	contribs: function(callback, cont){
 		var params = {
 			action: 'query',
 			format: 'json',
@@ -401,8 +401,8 @@ var getData = {
 			ucprop: 'title|timestamp|comment|tags|ids|sizediff',
 			uclimit: 'max'
 		};
-		if(ucstart !== undefined && ucstart !== ''){
-			params.ucstart = ucstart;
+		if(cont !== undefined){
+			$.extend(params, cont);
 		}
 		else{
 			params.list += '|users';
@@ -417,8 +417,8 @@ var getData = {
 				if(data.query.users){
 					vars.editcount = data.query.users[Object.keys(data.query.users)[0]].editcount;
 				}
-				if(data['query-continue'] && data['query-continue'].usercontribs && data['query-continue'].usercontribs.ucstart){
-					getData.contribs(callback, data['query-continue'].usercontribs.ucstart);
+				if(data['query-continue'] && data['query-continue'].usercontribs){
+					getData.contribs(callback, data['query-continue'].usercontribs);
 				}
 				else{
 					callback(vars.contribs);
