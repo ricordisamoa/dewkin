@@ -1,5 +1,0 @@
-DirectoryIndex @/home.html
-RewriteEngine On
-RewriteRule ^README\.md$ - [L]
-RewriteRule ^LICENSE$ - [L]
-RewriteRule ^[^/@]+(/[^/]+)?/?$ /dewkin/ [L,NC]
