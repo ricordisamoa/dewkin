@@ -711,7 +711,7 @@ var util = {
 	/*
 	 * Set of arbitrary HTML colors by MediaWiki user group
 	 */
-	rightsColors: {
+	groupsColors: {
 		'autopatrolled':	'dodgerblue',
 		'rollbacker':		'darkolivegreen',
 		'filemover':		'orange',
@@ -723,8 +723,9 @@ var util = {
 		'steward':			'black'
 	},
 
-	rightColor: function(right){
-		return util.rightsColors[right] ? ('<span style="background-color:' + util.rightsColors[right] + ';color:white">' + right + '</span>') : right;
+	groupColor: function(group){
+		var local = (vars.messages['group-' + group + '-member'] || group);
+		return util.groupsColors[group] ? ('<span style="background-color:' + util.groupsColors[group] + ';color:white">' + local + '</span>') : local;
 	},
 
 	namespaceName: function(number){
@@ -882,32 +883,16 @@ $(document).ready(function(){
 					.concat(util.weekdaysShort)
 					.concat(util.months);
 					getData.rightsLog(function(rights){
-						$('#rights')
-						.append(
-							rights.length === 0 ? '<h3>No log entries found.</h3>' : $('<ul>')
-							.append($.map(rights, function(logevt){
-								var oldGroups = logevt.rights.old.split(', '),
-								newGroups = logevt.rights.new.split(', '),
-								addedGroups = $.grep(newGroups, function(el){
-									return el !== '' && oldGroups.indexOf(el) === -1;
-								}),
-								removedGroups = $.grep(oldGroups, function(el){
-									return el !== '' && newGroups.indexOf(el) === -1;
-								}),
-								msg = [];
-								if(addedGroups.length > 0){
-									msg.push('became ' + util.listToText($.map(addedGroups, util.rightColor)));
+						$.each(rights, function(i, logevt){
+							var oldGroups = logevt.rights.old.split(', '),
+							newGroups = logevt.rights.new.split(', ');
+							$.each(oldGroups.concat(newGroups), function(i, group){
+								var msg = 'group-' + group + '-member';
+								if(toLoadMsgs.indexOf(msg) === -1){
+									toLoadMsgs.push(msg);
 								}
-								if(removedGroups.length > 0){
-									msg.push('removed ' + util.listToText($.map(removedGroups, util.rightColor)));
-								}
-								return $('<li>').html('<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' + new Date(logevt.timestamp).toLocaleString() + '</a>' + i18n('colon-separator') + util.listToText(msg));
-							}))
-						);
-						$('<span>')
-						.addClass('badge')
-						.text(rights.length)
-						.appendTo('li>a[href="#rights"]');
+							});
+						});
 						getData.messages(vars.userLang, toLoadMsgs, function(){
 							util.months = $.map(util.months, function(el){
 								return vars.messages[el];
@@ -922,6 +907,32 @@ $(document).ready(function(){
 							$('[data-msg]').each(function(){
 								$(this).text(vars.messages[this.dataset.msg]);
 							});
+							$('#rights')
+							.append(
+								rights.length === 0 ? '<h3>No log entries found.</h3>' : $('<ul>')
+								.append($.map(rights, function(logevt){
+									var oldGroups = logevt.rights.old.split(', '),
+									newGroups = logevt.rights.new.split(', '),
+									addedGroups = $.grep(newGroups, function(el){
+										return el !== '' && oldGroups.indexOf(el) === -1;
+									}),
+									removedGroups = $.grep(oldGroups, function(el){
+										return el !== '' && newGroups.indexOf(el) === -1;
+									}),
+									msg = [];
+									if(addedGroups.length > 0){
+										msg.push('became ' + util.listToText($.map(addedGroups, util.groupColor)));
+									}
+									if(removedGroups.length > 0){
+										msg.push('removed ' + util.listToText($.map(removedGroups, util.groupColor)));
+									}
+									return $('<li>').html('<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' + new Date(logevt.timestamp).toLocaleString() + '</a>' + i18n('colon-separator') + util.listToText(msg));
+								}))
+							);
+							$('<span>')
+							.addClass('badge')
+							.text(rights.length)
+							.appendTo('li>a[href="#rights"]');
 							getData.contribs(function(contribs){
 								vars.contribs = ContribsList(contribs);
 								vars.contribs.sort();
@@ -1031,8 +1042,8 @@ $(document).ready(function(){
 								var punch = $.map([1, 2, 3, 4, 5, 6, 0], function(j){
 									return contribs.grepByDay(j).filterByHour();
 								});
-								$('li>a[href="#punch-card"]').one('shown', function(){
-									var r = Raphael('punchcard', 1200, 500),
+								$('li>a[href="#punchcard"]').one('shown', function(){
+									var r = Raphael('punchcard-chart', 1200, 500),
 									xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
 									ys = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 									r.dotchart(10, 0, 1200, 500, xs, ys, punch, {
