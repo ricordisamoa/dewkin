@@ -46,7 +46,7 @@ Twitter Bootstrap 3.0.0
 <!-- Leaflet - JavaScript map library -->
 <link rel="stylesheet" href="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.css">
 <!--[if lte IE 8]>
-     <link rel="stylesheet" href="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.ie.css" />
+	 <link rel="stylesheet" href="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.ie.css" />
 <![endif]-->
 <script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib/leaflet/leaflet.js"></script>
 
@@ -79,6 +79,7 @@ You need JavaScript to be enabled to use DEWKIN.
 <ul class="nav nav-tabs">
 	<li class="active"><a href="#overview" data-toggle="tab" data-msg="overview"></a></li>
 	<li><a href="#advanced" data-toggle="tab" data-msg="wikieditor-toolbar-section-advanced">Advanced</a></li>
+	<li><a href="#edit-summary" data-toggle="tab" data-msg="edit summary"></a></li>
 	<li><a href="#timeline" data-toggle="tab" data-msg="timeline"></a></li>
 	<li><a href="#rights" data-toggle="tab" data-msg="listgrouprights-rights">Rights</a></li>
 	<li><a href="#tags" data-toggle="tab" data-msg="tags-title">Tags</a></li>
@@ -100,8 +101,11 @@ You need JavaScript to be enabled to use DEWKIN.
 		<div id="week-chart"></div>
 		<div id="month-chart"></div>
 	</div>
+	<div class="tab-pane" id="edit-summary">
+		<p data-msg="edit summary desc"></p>
+	</div>
 	<div class="tab-pane" id="timeline">
-		<h3>Coming soon! :)</h3>
+		<h3 data-msg="coming soon"></h3>
 	</div>
 	<div class="tab-pane container-fluid" id="tags">
 		Warning: only edits with 0 or 1 tag are shown.
@@ -110,7 +114,7 @@ You need JavaScript to be enabled to use DEWKIN.
 	<div class="tab-pane" id="rights">
 	</div>
 	<div class="tab-pane" id="uploads">
-		<h3>Coming soon! :)</h3>
+		<h3 data-msg="coming soon"></h3>
 	</div>
 	<div class="tab-pane container-fluid" id="punchcard">
 		<div id="punchcard-chart"></div>

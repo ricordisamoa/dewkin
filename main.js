@@ -241,7 +241,6 @@ ContribsList.prototype = {
 	/* Compute the longest sequence of consecutive days with contributions
 	*/
 	longestStreak: function(){
-		console.log(this);
 		var prev = [],
 		cur = [],
 		cc = ContribsList(this.slice(0)),
@@ -1199,7 +1198,6 @@ $(document).ready(function(){
 											.append(vars.editcount === undefined ? [] : ['Deleted edits: ' + (vars.editcount - contribs.length).toLocaleString(), '<br>',
 											'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>'])
 											.append('<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' + i18n('statistics-files') + '</a>' + i18n('colon-separator') + uploads.length.toLocaleString() + '<br>')
-											.append('Edits with non-empty summary: ' + util.percent(summ, contribs.length) + '<br>')
 											.append(
 												ls.length === 2 ?
 												(
@@ -1211,6 +1209,11 @@ $(document).ready(function(){
 											.append(i18n('executed in', i18n('duration-seconds', Math.floor((new Date().getTime() - dewkinInitDate.getTime()) / 10) / 100)));
 										});
 									});
+									$('#edit-summary')
+									.append(
+										$('<p>')
+										.text(i18n('edit summary percent', util.percent(summ, contribs.length)))
+									);
 								});
 							});
 						});
