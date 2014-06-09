@@ -23,7 +23,7 @@ h1:hover span{
 	display:inline;
 }
 /* 'feedback' link */
-.hero-unit h1 sub{
+h1 sub{
 	font-size:50%;
 }
 
