@@ -172,6 +172,32 @@ ContribsList.prototype = {
 		return contr;
 	},
 
+	filterByProgrammingLanguage: function(){
+		var contr = {};
+		$.each(this, function(i, c){
+			var lang;
+			if(c.ns === 828){ // Scribunto modules
+				lang = 'lua';
+			}
+			else if([2, 8].indexOf(c.ns) !== -1){
+				var m = c.title.toLowerCase().match(/\.(js|css)$/);
+				if(m !== null){
+					lang = m[1];
+				}
+				else if(c.ns === 2 && /\.py$/.test(c.title)){
+					lang = 'py';
+				}
+			}
+			if(lang){
+				if(!contr[lang]){
+					contr[lang] = ContribsList();
+				}
+				contr[lang].push(c);
+			}
+		});
+		return contr;
+	},
+
 	grepByEditSummary: function(summary){
 		return ContribsList($.grep(this, function(e){
 			if(e.comment){
@@ -696,6 +722,16 @@ var util = {
 		}
 	},
 
+	/*
+	@see https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
+	*/
+	programmingLanguages: {
+		'css': ['CSS', '563d7c'],
+		'js':  ['JavaScript', 'f1e05a'],
+		'lua': ['Lua', 'fa1fa1'],
+		'py':  ['Python', '3581ba']
+	},
+
 	markerColors: ['bisque', 'black', 'blue', 'coral', 'cyan', 'darkslategray', 'deeppink', 'green',
 				   'lightgrey', 'lime', 'magenta', 'orange', 'purple', 'red', 'teal', 'yellow'],
 
@@ -1035,6 +1071,40 @@ $(document).ready(function(){
 									var tagsData = contribs.filterByTag(),
 									tagsCanvas = Raphael('tag-chart', 750, 600),
 									tagsChart = tagsCanvas.piechart(220, 220, 180, tagsData.data, { legend: tagsData.legend, minPercent: 0 });
+								});
+
+								/* Programming languages chart */
+								var langs = contribs.filterByProgrammingLanguage(),
+								sortedLangExts = Object.keys(langs).sort(function(a, b){
+									return langs[b].length - langs[a].length;
+								}),
+								langNames = $.map(sortedLangExts, function(ext){
+									return util.programmingLanguages[ext][0];
+								}),
+								langContribs = $.map(sortedLangExts, function(ext){
+									return langs[ext].length;
+								}),
+								langColors = $.map(sortedLangExts, function(ext){
+									return '#' + util.programmingLanguages[ext][1];
+								});
+								$('li>a[href="#code"]').one('shown', function(){
+									var codeCanvas = Raphael('code-chart', 520, 400),
+									codeChart = codeCanvas.piechart(170, 200, 150, langContribs, { legend: langNames, legendpos: 'east', colors: langColors, minPercent: 0 })
+									.hover(function () {
+										this.sector.stop();
+										this.sector.scale(1.1, 1.1, this.cx, this.cy);
+										if (this.label) {
+											this.label[0].stop();
+											this.label[0].attr({ r: 7.5 });
+											this.label[1].attr({ 'font-weight': 800 });
+										}
+									}, function () {
+										this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, 'bounce');
+										if (this.label) {
+											this.label[0].animate({ r: 5 }, 500, 'bounce');
+											this.label[1].attr({ 'font-weight': 400 });
+										}
+									});
 								});
 
 								/* GitHub-like Punchcard */
