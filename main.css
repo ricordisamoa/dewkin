@@ -22,6 +22,10 @@ h1 abbr,
 h1:hover span{
 	display:inline;
 }
+/* 'feedback' link */
+.hero-unit h1 sub{
+	font-size:50%;
+}
 
 .typeahead{
 	text-align:left;
