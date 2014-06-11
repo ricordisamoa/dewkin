@@ -25,6 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (function(){
 'use strict';
 
+window.charts = {};
+
 /*
  * @class
  * @extends Array
@@ -87,7 +89,7 @@ ContribsList.prototype = {
 	filterByDay: function(){
 		var contr = {};
 		for(var j = 0; j < 7; j++){
-			contr[j] = this.grepByDay(j).length;
+			contr[j] = this.grepByDay(j);
 		}
 		return contr;
 	},
@@ -95,7 +97,7 @@ ContribsList.prototype = {
 	filterByHour: function(){
 		var contr = [];
 		for(var j = 0; j < 24; j++){
-			contr = contr.concat(this.grepByHour(j).length);
+			contr.push(this.grepByHour(j));
 		}
 		return contr;
 	},
@@ -262,6 +264,17 @@ ContribsList.prototype = {
 			sortedOccurr[e] = occurr[e];
 		});
 		return [sortedOccurr, overflow];
+	},
+
+	toPunchcard: function(){
+		var contr = this,
+		data = [];
+		for(var d = 0; d < 7; d++){
+			$.each(contr.grepByDay(d).filterByHour(), function(h, c){
+				data.push([d, h, c.length]);
+			});
+		}
+		return data;
 	},
 
 	/* Compute the longest sequence of consecutive days with contributions
@@ -938,7 +951,6 @@ $(document).ready(function(){
 							util.weekdaysShort = $.map(util.weekdaysShort, function(el){
 								return vars.messages[el];
 							});
-							util.weekdaysAlt = util.weekdays.slice(1).concat(util.weekdays[0]).reverse();
 							$('[data-msg]').each(function(){
 								$(this).text(vars.messages[this.dataset.msg]);
 							});
@@ -1047,7 +1059,7 @@ $(document).ready(function(){
 								} ) ;
 								var dayColors = ['#4d89f9', '#c6d9fd'],
 								dayFiltered = $.map(contribs.filterByDay(), function(e){
-									return [e];
+									return e.length;
 								});
 								while(dayColors.length < dayFiltered.length){
 									dayColors = dayColors.concat(dayColors.slice(0, 2)).slice(0, dayFiltered.length);
@@ -1108,49 +1120,8 @@ $(document).ready(function(){
 								});
 
 								/* GitHub-like Punchcard */
-								var punch = $.map([1, 2, 3, 4, 5, 6, 0], function(j){
-									return contribs.grepByDay(j).filterByHour();
-								});
-								$('li>a[href="#punchcard"]').one('shown', function(){
-									var r = Raphael('punchcard-chart', 1200, 500),
-									xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-									ys = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-									r.dotchart(10, 0, 1200, 500, xs, ys, punch, {
-										symbol: 'o',
-										max: 21,
-										axis: '0 0 1 1',
-										axisxstep: 23,
-										axisystep: 6,
-										axisxlabels: ['12am', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12pm', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
-										axisxtype: ' ',
-										axisytype: ' ',
-										axisylabels: util.weekdaysAlt,
-										init: true
-									}).hover(function () {
-										var self = this,
-										s = $('circle').filter(function(){
-											return parseInt(self.x) === parseInt(this.getAttribute('cx')) && parseInt(self.y) === parseInt(this.getAttribute('cy'));
-										});
-										try{
-											s.get(0).classList.add('day-hover');
-											s.get(1).style.zIndex = 0;
-											this.flag = r.popup(this.x, this.y - this.r, i18n('nchanges', this.value) || '0', 'up', 8).insertBefore(this);
-										}
-										catch(e){
-										}
-									}, function () {
-										var self = this,
-										s = $('circle').filter(function(){
-											return parseInt(self.x) === parseInt(this.getAttribute('cx')) && parseInt(self.y) === parseInt(this.getAttribute('cy'));
-										});
-										try{
-											s.get(0).classList.remove('day-hover');
-											s.get(1).style.zIndex = null;
-											this.flag.animate({opacity: 0}, 100, function () {this.remove();});
-										}
-										catch(e){
-										}
-									});
+								window.charts.punchcard(contribs.toPunchcard(), util.weekdays, function(n){
+									return i18n('nedits bold', n);
 								});
 								var hideCreditsOnShow = $('li>a[href="#map"],li>a[href="#votes"]');
 								hideCreditsOnShow.on('show', function(){

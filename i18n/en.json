@@ -15,6 +15,8 @@
     "no log entries": "No log entries found.",
     "code": "Code",
     "code desc": "This tab shows information about the programming languages in which the user has contributed.",
+    "punchcard": "Punch card",
+    "nedits bold": "<strong>$1</strong> {{PLURAL:$1|edit|edits}}",
     "map": "Map",
     "bytes with nchanges": "$1 with $2",
     "no geodata": "No geolocation data about edited pages found.",
