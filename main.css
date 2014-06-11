@@ -60,10 +60,10 @@ footer{
 }
 
 /* Punchcard styles */
-#punchcard svg circle{
-	fill:#444!important;
+#punchcard svg circle {
+	fill: #444!important;
 }
-#punchcard svg circle.day-hover{
-	fill:#4183C4!important;
-	z-index:9999!important;
+#punchcard svg circle.day-hover {
+	fill: #4183C4!important;
+	z-index: 9999!important;
 }
