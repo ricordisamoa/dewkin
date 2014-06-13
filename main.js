@@ -149,10 +149,10 @@ ContribsList.prototype = {
 		});
 		$.each(util.allMonths(), function(i, e){
 			if(contr[e]){
-				s[e] = contr[e];
+				s[e] = ContribsList(contr[e]);
 			}
 			else{
-				s[e] = [];
+				s[e] = ContribsList();
 			}
 		});
 		return s;
@@ -161,7 +161,7 @@ ContribsList.prototype = {
 	filterByMonthAndNamespace: function(){
 		var contr = {};
 		$.each(this.filterByMonth(), function(k, v){
-			contr[k] = ContribsList(v).filterByNamespace(true);
+			contr[k] = v.filterByNamespace(true);
 		});
 		return contr;
 	},
@@ -1057,26 +1057,6 @@ $(document).ready(function(){
 										).show('fast');
 									}
 								} ) ;
-								var dayColors = ['#4d89f9', '#c6d9fd'],
-								dayFiltered = $.map(contribs.filterByDay(), function(e){
-									return e.length;
-								});
-								while(dayColors.length < dayFiltered.length){
-									dayColors = dayColors.concat(dayColors.slice(0, 2)).slice(0, dayFiltered.length);
-								}
-								var weekCanvas = Raphael('week-chart'),
-								fin = function () {
-									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, this.bar.value || '0', 'up').insertBefore(this);
-								},
-								fin2 = function () {
-									this.flag = weekCanvas.popup(this.bar.x, this.bar.y, util.namespaceName(util.namespaceFromColor(this.bar.attrs.fill)) + ': ' + this.bar.value || '0', 'right').insertBefore(this);
-								},
-								fout = function () {
-									this.flag.animate({opacity: 0}, 100, function () {
-										this.remove();
-									});
-								},
-								weekChart = weekCanvas.barchart(0, 20, 400, 300, dayFiltered, { colors: dayColors }).hover(fin, fout);
 
 								/* Tags chart */
 								$('li>a[href="#tags"]').one('shown', function(){
@@ -1170,38 +1150,25 @@ $(document).ready(function(){
 									});
 								});
 								$('footer').show();
-								var byMonth = contribs.filterByMonth(),
-								axisData = $.map(Object.keys(byMonth), function(e){
-									return byMonth[e].length.toString();
-								}).reverse(),
-								filtered = contribs.filterByNamespaceAndMonth(),
-								nsNumbers = Object.keys(filtered),
-								nsNames = $.map(nsNumbers, function(e){
+								var filtered = contribs.filterByMonthAndNamespace(),
+								sortedNsNumbers = Object.keys(vars.namespaces).sort(function(a, b){
+									return a - b;
+								}),
+								nsNames = $.map(sortedNsNumbers, function(e){
 									return util.namespaceName(e);
 								}),
-								nsData = $.map(filtered, function(months){
-									return [$.map(months, function(c){
-										return c.length;
-									})];
-								}),
-								nsColors = $.map(nsNumbers, function(ns){
+								nsColors = $.map(sortedNsNumbers, function(ns){
 									return util.colorFromNamespace(ns);
 								}),
-								axisLabels = Object.keys(filtered[Object.keys(filtered)[0]]).reverse(),
-								mSize = 24.5 * Object.keys(byMonth).length,
-								monthsCanvas = Raphael('month-chart', 1200, mSize),
-								monthsChart = monthsCanvas.hbarchart(75, 0, 850, mSize, nsData, { stacked: true, colors: nsColors }).hover(fin2, fout);
-								$('li>a[href="#advanced"]').one('shown', function(){
-									Raphael.g.axis(31, 320, 331, 0, 7, 6, 2, util.weekdaysShort, ' ', null, weekCanvas);
-									var aY = monthsChart.bars[0][monthsChart.bars[0].length - 1].y,
-									aH = aY - monthsChart.bars[0][0].y;
-									console.log(aY + '\n' + aH);
-									console.log(monthsChart.bars[0]);
-									Raphael.g.axis(50, aY - 1.8, aH, 0, axisLabels.length, axisLabels.length - 1, 1, axisLabels, ' ', null, monthsCanvas)
-									.text.attr({'font-weight': 'bold'});
-									Raphael.g.axis(60, aY - 1.8, aH, 0, axisData.length, axisData.length - 1, 1, axisData, ' ', null, monthsCanvas)
-									.text.attr({'text-anchor': 'start'});
+								nsData = [];
+								$.each(filtered, function(month, byNs){
+									var p = [month, []];
+									$.each(byNs, function(ns, c){
+										p[1][sortedNsNumbers.indexOf(ns)] = c.length;
+									});
+									nsData.push(p);
 								});
+								window.charts.months(nsData, nsNames, nsColors);
 								var ls = contribs.longestStreak(),
 								summ = contribs.grepByEditSummary().length;
 								getData.votes().done(function(result){

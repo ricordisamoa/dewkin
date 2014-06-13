@@ -59,23 +59,32 @@ footer{
 	stroke-width:3px!important;
 }
 
-/* Punchcard styles */
-#punchcard-chart .axis path,
-#punchcard-chart .axis line {
+
+/* Generic chart styles */
+.axis path,
+.axis line {
 	fill: none;
 	stroke: #eee;
+}
+.axis.noticks path,
+.axis.noticks line {
+	display: none;
+}
+.axis path,
+.axis line,
+svg .bar {
 	shape-rendering: crispEdges;
 }
-
-#punchcard-chart .axis text {
+.axis text {
 	font-family: sans-serif;
 	font-size: 12px;
 	fill: #333;
 }
-#punchcard-chart .y-axis text {
+.y-axis text {
 	fill: #555;
 }
 
+/* Punchcard styles */
 #punchcard-chart circle {
 	fill: #444;
 }
@@ -96,6 +105,10 @@ footer{
 	text-align: center;
 	border-radius: 3px;
 }
+.svg-tip.svg-tip-small {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
 .svg-tip strong {
 	color: #ddd;
 }
@@ -111,4 +124,14 @@ footer{
 	content: " ";
 	border: 5px solid transparent;
 	border-top-color: rgba(0,0,0,0.8);
+}
+
+/* Style eastward tooltips differently */
+.svg-tip.e:after {
+	left: -10px;
+	top: 50%;
+	margin: -5px 0 0 5px;
+	border-left: none;
+	border-right-color: rgba(0,0,0,0.8);
+	border-top-color: transparent;
 }
