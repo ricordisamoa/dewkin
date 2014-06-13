@@ -57,7 +57,7 @@ window.charts.punchcard = function(data, weekdays, nedits){
 			.on('mouseover', tip.show)
 			.on('mouseout', tip.hide)
 			.transition()
-			.duration(400)
+			.duration(250)
 			.attr('r', function (d) { return r(d[2]); });
 	});
 };
