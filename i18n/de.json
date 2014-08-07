@@ -16,6 +16,7 @@
     "code": "Code",
     "code desc": "Dieser Bereich zeigt Informationen zu Programmiersprachen in denen der Benutzer beigetragen hat.",
     "punchcard": "Lochkarte",
+    "nedits bold": "<strong>$1</strong> {{PLURAL:$1|Änderung|Änderungen}}",
     "map": "Karte",
     "bytes with nchanges": "$1 mit $2",
     "no geodata": "Keine Geodaten zu bearbeiteten Seiten gefunden.",

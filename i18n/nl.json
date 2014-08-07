@@ -16,6 +16,7 @@
     "code": "Code",
     "code desc": "Deze tab laat informatie zien over de programmeertalen waarin de gebruiker heeft bijgedragen.",
     "punchcard": "Punch card",
+    "nedits bold": "<strong>$1</strong> {{PLURAL:$1|bewerking|bewerkingen}}",
     "map": "Kaart",
     "bytes with nchanges": "$1 met $2",
     "no geodata": "Geen geografische data over bewerkte pagina's gevonden.",
