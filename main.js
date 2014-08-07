@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 /* jshint smarttabs: true */
-/* global $, Raphael */
+/* global $, d3 */
 (function(){
 'use strict';
 
@@ -314,7 +314,7 @@ ContribsList.prototype = {
 		});
 		return prev;
 	}
- 
+
 };
 
 return ContribsList;
@@ -465,7 +465,7 @@ var getData = {
 			},
 			'jsonp'
 		);
-	}, 
+	},
 
 	messages: function(lang, msgs, callback){
 		$.get(
