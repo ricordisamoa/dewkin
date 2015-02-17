@@ -13,6 +13,7 @@
     "edit summary percent": "Edits with non-empty summary: $1",
     "timeline": "Timeline",
     "no log entries": "No log entries found.",
+    "tags desc": "The following table shows edit tags by number of affected edits. Each edit may have any integer number of tags.",
     "code": "Code",
     "code desc": "This tab shows information about the programming languages in which the user has contributed.",
     "punchcard": "Punch card",

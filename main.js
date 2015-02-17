@@ -103,35 +103,18 @@ ContribsList.prototype = {
 	},
 
 	filterByTag: function(){
-		var contr = {},
-		self = this;
-		$.each(self, function(i, e){
-			if(e.tags && e.tags.length === 1){
-				if(contr[e.tags[0]]){
-					contr[e.tags[0]].push(e);
+		var contr = {};
+		$.each(this, function(i, e){
+			$.each(e.tags || [], function(x, tag){
+				if(contr[tag]){
+					contr[tag].push(e);
 				}
 				else{
-					contr[e.tags[0]] = [e];
+					contr[tag] = [e];
 				}
-			}
-			else if(!e.tags || e.tags.length === 0){
-				if(contr.none){
-					contr.none.push(e);
-				}
-				else{
-					contr.none = [e];
-				}
-			}
+			});
 		});
-		return {
-			legend: $.map(Object.keys(contr), function(tag){
-				var l = contr[tag].length;
-				return tag + i18n('colon-separator') + util.percent(l, self.length, undefined, i18n('tags-hitcount', l));
-			}),
-			data: $.map(Object.keys(contr), function(tag){
-				return contr[tag].length;
-			})
-		};
+		return contr;
 	},
 
 	filterByMonth: function(){
@@ -1058,12 +1041,18 @@ $(document).ready(function(){
 									}
 								} ) ;
 
-								/* Tags chart */
-								$('li>a[href="#tags"]').one('shown', function(){
-									var tagsData = contribs.filterByTag(),
-									tagsCanvas = Raphael('tag-chart', 750, 600),
-									tagsChart = tagsCanvas.piechart(220, 220, 180, tagsData.data, { legend: tagsData.legend, minPercent: 0 });
-								});
+								/* Tags table */
+								var tagsData = contribs.filterByTag();
+								$('#tags-table tbody')
+								.append(
+									$.map(tagsData, function(edits, tag){
+										return $('<tr>')
+											.append(
+												$('<td>').text(tag),
+												$('<td>').text(util.percent(edits.length, contribs.length))
+											);
+									})
+								);
 
 								/* Programming languages chart */
 								var langs = contribs.filterByProgrammingLanguage(),

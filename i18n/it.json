@@ -13,6 +13,7 @@
     "edit summary percent": "Modifiche con sommario delle modifiche non vuoto: $1",
     "timeline": "Linea temporale",
     "no log entries": "Nessuna entrata di registro trovata.",
+    "tags desc": "La seguente tabella mostra le etichette di modifica per numero di modifiche interessate. Ciascuna modifica può avere qualsiasi numero intero di etichette.",
     "code": "Codice",
     "code desc": "Questa scheda mostra informazioni circa i linguaggi di programmazione in cui l'utente ha contribuito.",
     "punchcard": "Punch card",
