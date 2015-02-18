@@ -55,12 +55,19 @@ footer{
 	bottom:1em;
 	display:none;
 }
-#ns-chart svg path.selected{
-	stroke-width:3px!important;
-}
-
 
 /* Generic chart styles */
+svg .arc path {
+	stroke: #fff;
+	stroke-width: 1px;
+}
+svg .arc path.selected{
+	stroke-width: 3px;
+}
+.legend text {
+	font-family: sans-serif;
+	font-size: 12px;
+}
 .axis path,
 .axis line {
 	fill: none;

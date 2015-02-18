@@ -1,7 +1,7 @@
 /*
 
 DEep WiKi INspector (DEWKIN)
-Copyright (C) 2013-2014 Ricordisamoa
+Copyright (C) 2013-2015 Ricordisamoa
 
 meta.wikimedia.org/wiki/User:Ricordisamoa
 tools.wmflabs.org/ricordisamoa/
@@ -973,59 +973,58 @@ $(document).ready(function(){
 								filtered = contribs.filterByNamespace(true),
 								sortedNsNumbers = Object.keys(filtered).sort(function(a, b){
 									return filtered[b].length - filtered[a].length;
-								}),
-								nsNames = $.map(sortedNsNumbers, function(ns){
-									return util.namespaceName(ns) + i18n('colon-separator') + util.percent(filtered[ns].length, contribs.length);
-								}),
-								nsContribs = $.map(sortedNsNumbers, function(ns){
-									return filtered[ns].length;
-								}),
-								nsColors = $.map(sortedNsNumbers, function(ns){
-									return util.colorFromNamespace(ns);
 								});
 								vars.firstMonth = util.yearMonth(firstContribDate);
 								$('.hero-unit').removeClass('hero-unit');
 								$('#form').remove();
-								var nsCanvas = Raphael('ns-chart', 520, 400),
-								nsChart = nsCanvas.piechart(170, 200, 150, nsContribs, { legend: nsNames, legendpos: 'east', colors: nsColors, minPercent: 0 })
-								.hover(function () {
-									this.sector.stop();
-									if(!this.sector[0].classList.contains('selected')) this.sector.scale(1.1, 1.1, this.cx, this.cy);
-									if (this.label) {
-										this.label[0].stop();
-										this.label[0].attr({ r: 7.5 });
-										this.label[1].attr({ 'font-weight': 800 });
+								var nsChartData = $.map(sortedNsNumbers, function(ns){
+									if(filtered[ns].length > 0){ // only namespaces with contributions
+										var nsName = util.namespaceName(ns);
+										return {
+											id: ns,
+											name: nsName,
+											value: filtered[ns].length,
+											label: nsName + i18n('colon-separator') +
+												util.percent(filtered[ns].length, contribs.length),
+											color: util.colorFromNamespace(ns)
+										};
 									}
-								}, function () {
-									if(!this.sector[0].classList.contains('selected')) this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, 'bounce');
-									if (this.label) {
-										this.label[0].animate({ r: 5 }, 500, 'bounce');
-										this.label[1].attr({ 'font-weight': 400 });
-									}
-								})
-								.click(function () {
-									this.sector.stop();
-									this.sector.attr({transform:'s1 1 ' + this.cx + ' ' + this.cy });
-									if(this.sector[0].classList.contains('selected')){
-										this.sector[0].classList.remove('selected');
-										$('#top-edited').hide('fast');
-										nsCanvas.canvas.setAttribute('width', 520);
+								}),
+								$topEdited = $('#top-edited'),
+								nsChart = window.charts.pie('#ns-chart', 20, 20, 520, 400, 150, nsChartData);
+								nsChart.paths
+								.on('click', function(d){
+									var self = d3.select(this);
+									if(self.classed('selected')){
+										self
+											.interrupt()
+											.classed('selected', false)
+											.attr('d', nsChart.arcOver);
+										$topEdited.hide('fast');
+										nsChart.svg.attr('width', 520);
 									}
 									else{
-										nsCanvas.canvas.setAttribute('width', 340);
-										nsChart.each(function(){
-											this.sector.attr({transform:'s1 1 ' + this.cx + ' ' + this.cy });
-											this.sector[0].classList.remove('selected');
-										});
-										this.sector.scale(1.1, 1.1, this.cx, this.cy);
-										this.sector[0].classList.add('selected');
-										var ns = sortedNsNumbers[this.value.order],
-										te = contribs.topEdited(ns);
-										$('#top-edited')
+										nsChart.svg.attr('width', 340);
+										nsChart.g.selectAll('path')
+											.interrupt()
+											.filter(function(){ return this !== self; })
+											.classed('selected', false)
+											.attr('d', nsChart.arc);
+										self
+											.classed('selected', true)
+											.attr('d', nsChart.arcOver);
+										var te = contribs.topEdited(d.data.id);
+										$topEdited
 										.empty()
 										.append(
 											$('<h2>')
-											.text(i18n((te[1] ? 'top ': '') + 'edited in ns', Object.keys(te[0]).length, util.namespaceName(ns)))
+											.text(
+												i18n(
+													te[1] ? 'top edited in ns' : 'edited in ns',
+													Object.keys(te[0]).length,
+													d.data.name
+												)
+											)
 										)
 										.append(
 											$('<ul>').append(
@@ -1039,7 +1038,7 @@ $(document).ready(function(){
 											)
 										).show('fast');
 									}
-								} ) ;
+								});
 
 								/* Tags table */
 								var tagsData = contribs.filterByTag();
@@ -1059,34 +1058,18 @@ $(document).ready(function(){
 								sortedLangExts = Object.keys(langs).sort(function(a, b){
 									return langs[b].length - langs[a].length;
 								}),
-								langNames = $.map(sortedLangExts, function(ext){
-									return util.programmingLanguages[ext][0];
-								}),
-								langContribs = $.map(sortedLangExts, function(ext){
-									return langs[ext].length;
-								}),
-								langColors = $.map(sortedLangExts, function(ext){
-									return '#' + util.programmingLanguages[ext][1];
+								codeChartData = $.map(sortedLangExts, function(ext){
+									var langName = util.programmingLanguages[ext][0];
+									return {
+										id: ext,
+										name: langName,
+										value: langs[ext].length,
+										label: langName + i18n('colon-separator') +
+											util.percent(langs[ext].length, contribs.length),
+										color: '#' + util.programmingLanguages[ext][1]
+									};
 								});
-								$('li>a[href="#code"]').one('shown', function(){
-									var codeCanvas = Raphael('code-chart', 520, 400),
-									codeChart = codeCanvas.piechart(170, 200, 150, langContribs, { legend: langNames, legendpos: 'east', colors: langColors, minPercent: 0 })
-									.hover(function () {
-										this.sector.stop();
-										this.sector.scale(1.1, 1.1, this.cx, this.cy);
-										if (this.label) {
-											this.label[0].stop();
-											this.label[0].attr({ r: 7.5 });
-											this.label[1].attr({ 'font-weight': 800 });
-										}
-									}, function () {
-										this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, 'bounce');
-										if (this.label) {
-											this.label[0].animate({ r: 5 }, 500, 'bounce');
-											this.label[1].attr({ 'font-weight': 400 });
-										}
-									});
-								});
+								window.charts.pie('#code-chart', 20, 20, 520, 400, 150, codeChartData);
 
 								/* GitHub-like Punchcard */
 								window.charts.punchcard(contribs.toPunchcard(), util.weekdays, function(n){
