@@ -201,7 +201,7 @@ ContribsList.prototype = {
 
 	grepByNamespace: function(ns){
 		return ContribsList($.grep(this, function(e){
-			return (typeof ns === 'number') ? (e.ns === ns) : (ns.indexOf(e.ns) !== -1);
+			return Array.isArray(ns) ? (ns.indexOf(e.ns) !== -1) : (e.ns === ns);
 		}));
 	},
 
@@ -1013,7 +1013,7 @@ $(document).ready(function(){
 										self
 											.classed('selected', true)
 											.attr('d', nsChart.arcOver);
-										var te = contribs.topEdited(d.data.id);
+										var te = contribs.topEdited(parseInt(d.data.id));
 										$topEdited
 										.empty()
 										.append(
