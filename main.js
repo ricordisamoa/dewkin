@@ -1088,8 +1088,11 @@ $(document).ready(function(){
 									getData.geoData(contribs.grepByNamespace([0, 6]), function(geodata){
 										if(geodata.length > 0){
 											$('#map').empty().css('height', '400px');
-											var maxedits = geodata[0].numedits,
-											map = L.map('map').setView([0, 0], 2);
+											var maxEdits = geodata[0].numedits,
+												scale = d3.scale.sqrt()
+													.domain([0, maxEdits])
+													.range([5, 18]),
+												map = L.map('map').setView([0, 0], 2);
 											new L.TileLayer(
 												'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 												{
@@ -1101,7 +1104,7 @@ $(document).ready(function(){
 											.addTo(map);
 											$.each(geodata, function(index, marker){
 												var sizediff = util.sizediffIndicator(marker.sizediff),
-												iconSize = Math.max(9, marker.numedits / maxedits * 22);
+													markerRadius = scale(marker.numedits);
 												if(marker.revid){
 													var edits = '<a href="' + vars.wikipath + '?diff=' + marker.revid + '">' + i18n('nchanges', '1') + '</a>';
 												}
@@ -1111,7 +1114,7 @@ $(document).ready(function(){
 												L.marker(marker.coords, {
 													icon: L.icon({
 														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[Math.floor(Math.random() * util.markerColors.length)] + '.svg',
-														iconSize: [iconSize, iconSize]
+														iconSize: [markerRadius, markerRadius]
 													})
 												}).addTo(map).bindPopup('<strong><a href="' + vars.wikipath + marker.title + '">' + marker.title + '</a></strong><br>' + i18n('bytes with nchanges', sizediff, edits));
 											});
