@@ -991,7 +991,7 @@ $(document).ready(function(){
 									}
 								}),
 								$topEdited = $('#top-edited'),
-								nsChart = window.charts.pie('#ns-chart', 20, 20, 520, 400, 150, nsChartData);
+								nsChart = window.charts.pie('#ns-chart', 20, 20, 600, 400, 150, nsChartData);
 								nsChart.paths
 								.on('click', function(d){
 									var self = d3.select(this);
@@ -1001,7 +1001,7 @@ $(document).ready(function(){
 											.classed('selected', false)
 											.attr('d', nsChart.arcOver);
 										$topEdited.hide('fast');
-										nsChart.svg.attr('width', 520);
+										nsChart.svg.attr('width', 600);
 									}
 									else{
 										nsChart.svg.attr('width', 340);
