@@ -219,7 +219,7 @@ ContribsList.prototype = {
 
 	topEdited: function(ns){
 		var c = this;
-		if(ns){
+		if(ns !== undefined){
 			c = c.grepByNamespace(ns);
 		}
 		var titles = $.map(c, function(e){
