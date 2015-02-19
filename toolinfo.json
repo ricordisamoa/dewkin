@@ -1,0 +1,9 @@
+{
+	"name" : "dewkin",
+	"title" : "DEep WiKi INspector",
+	"description" : "Advanced edit counter featuring visual data representations.",
+	"url" : "https://tools.wmflabs.org/dewkin/",
+	"keywords" : "edit count, statistics, user analysis, user contributions, graphs, charts, tools",
+	"author" : "Ricordisamoa",
+	"repository" : "https://github.com/ricordisamoa/dewkin.git"
+}
