@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-/* global $, d3 */
 window.charts.months = function(data, namespaces, colors){
 
 	var n = namespaces.length,

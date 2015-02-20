@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-/* global $, d3 */
 window.charts.punchcard = function(data, weekdays, nedits){
 	var w = document.body.clientWidth - 60,
 		h = document.body.clientHeight - 200,

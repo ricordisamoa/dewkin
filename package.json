@@ -1,0 +1,32 @@
+{
+	"name": "dewkin",
+	"version": "0.2.0",
+	"description": "Advanced edit counter for Wikimedia projects, featuring visual data representations.",
+	"main": "main.js",
+	"scripts": {
+		"test": "grunt test"
+	},
+	"devDependencies": {
+		"grunt": "~0.4.5",
+		"grunt-cli": "~0.1.13",
+		"grunt-contrib-jshint": "~0.11.0",
+		"grunt-jscs": "~1.5.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ricordisamoa/dewkin.git"
+	},
+	"keywords": [
+		"Wikimedia",
+		"edit count",
+		"statistics",
+		"user analysis",
+		"D3.js"
+	],
+	"author": "Ricordisamoa",
+	"license": "GPL-3.0+",
+	"bugs": {
+		"url": "https://github.com/ricordisamoa/dewkin/issues"
+	},
+	"homepage": "https://tools.wmflabs.org/dewkin/"
+}
