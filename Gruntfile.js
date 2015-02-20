@@ -4,10 +4,10 @@ module.exports = function ( grunt ) {
 
 	grunt.initConfig( {
 		jshint: {
-			all: ['*.js']
+			all: [ '*.js' ]
 		},
 		jscs: {
-			all: ['*.js']
+			all: [ '*.js' ]
 		}
 	} );
 
