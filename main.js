@@ -290,207 +290,190 @@ return ContribsList;
 
 } ).call( {} );
 
-var getData = {
+var api = {
 
-	allUsers: function ( prefix, localApi, callback ) {
-		var api = vars.globalApi,
+	get: function ( data, settings ) {
+		var params = {
+			dataType: 'jsonp',
+			type: 'GET',
+			url: vars.api
+		};
+		$.extend( params, settings );
+		if ( data.format === undefined ) {
+			data.format = 'json';
+		}
+		params.data = data;
+		return $.ajax( params );
+	}
+
+},
+
+getData = {
+
+	allUsers: function ( prefix, apiUrl ) {
+		var params;
+		if ( apiUrl !== undefined ) {
 			params = {
 				action: 'query',
-				format: 'json'
-			};
-		if ( localApi ) {
-			api = localApi;
-			params = $.extend( params, {
 				list: 'allusers',
 				auwitheditsonly: 1,
 				auprefix: prefix,
 				aulimit: 8,
 				prop: ''
-			} );
+			};
 		} else {
-			params = $.extend( params, {
+			apiUrl = vars.globalApi;
+			params = {
+				action: 'query',
 				list: 'globalallusers',
 				aguprefix: prefix,
 				agulimit: 8,
 				aguprop: ''
-			} );
+			};
 		}
-		$.get(
-			api,
-			params,
-			function ( data ) {
-				callback( data.query[Object.keys( data.query )[0]] );
-			},
-			'jsonp'
-		);
+		return api.get( params, { url: apiUrl } )
+			.then( function ( data ) {
+				return data.query[Object.keys( data.query )[0]];
+			} );
 	},
 
-	siteMatrix: function ( callback ) {
-		$.get(
-			vars.globalApi,
-			{
-				action: 'sitematrix',
-				format: 'json',
-				smsiteprop: 'dbname|url',
-				smlangprop: 'site'
-			},
-			function ( data ) {
-				var dbNames = {};
-				$.each( data.sitematrix, function () {
-					$.each( this.site || ( $.isArray( this ) ? this : [] ), function () {
-						if ( this.dbname && this.url && this['private'] === undefined && this.fishbowl === undefined ) {
-							dbNames[this.dbname] = this.url.replace( /^http\:\/\//, '//' );
-						}
-					} );
+	siteMatrix: function () {
+		return api.get( {
+			action: 'sitematrix',
+			smsiteprop: 'dbname|url',
+			smlangprop: 'site'
+		}, {
+			url: vars.globalApi
+		} )
+		.then( function ( data ) {
+			var dbNames = {};
+			$.each( data.sitematrix, function () {
+				$.each( this.site || ( $.isArray( this ) ? this : [] ), function () {
+					if ( this.dbname && this.url && this['private'] === undefined && this.fishbowl === undefined ) {
+						dbNames[this.dbname] = this.url.replace( /^http\:\/\//, '//' );
+					}
 				} );
-				callback( dbNames );
-			},
-			'jsonp'
-		);
+			} );
+			return dbNames;
+		} );
 	},
 
-	namespaces: function ( callback ) {
-		$.get(
-			vars.api,
-			{
+	namespaces: function () {
+		return api.get( {
+			action: 'query',
+			meta: 'siteinfo',
+			siprop: 'namespaces'
+		} )
+		.then( function ( b ) {
+			var ns = b.query.namespaces;
+			delete ns['-1'];
+			return ns;
+		} );
+	},
+
+	uploads: function () {
+		var getUploadsRecursive = function ( continuation ) {
+			var params = {
 				action: 'query',
-				meta: 'siteinfo',
-				siprop: 'namespaces',
-				format: 'json'
-			},
-			function ( b ) {
-				var ns = b.query.namespaces;
-				delete ns['-1'];
-				callback( ns );
-			},
-			'jsonp'
-		);
-	},
-
-	uploads: function ( callback, aistart ) {
-		$.get(
-			vars.api,
-			$.extend(
-				{
-					action: 'query',
-					format: 'json',
-					list: 'allimages',
-					aiprop: '',
-					aisort: 'timestamp',
-					aiuser: vars.user,
-					ailimit: 'max'
-				},
-				( aistart !== undefined && aistart !== '' ? { aistart: aistart } : {} )
-			),
-			function ( data ) {
+				list: 'allimages',
+				aiprop: '',
+				aisort: 'timestamp',
+				aiuser: vars.user,
+				ailimit: 'max'
+			};
+			if ( continuation !== undefined ) {
+				$.extend( params, continuation );
+			}
+			return api.get( params ).then( function ( data ) {
 				vars.uploads = vars.uploads.concat( $.map( data.query.allimages, function ( e ) {
 					return [ e.name.replace( /_/g, ' ' ) ];
 				} ) );
-				if ( data['query-continue'] && data['query-continue'].allimages && data['query-continue'].allimages.aistart ) {
-					getData.uploads( vars.user, callback, data['query-continue'].allimages.aistart );
+				if ( data['query-continue'] && data['query-continue'].allimages ) {
+					return getUploadsRecursive( data['query-continue'].allimages );
 				} else {
-					callback( vars.uploads );
-					return;
+					return vars.uploads;
 				}
-			},
-			'jsonp'
-		);
+			} );
+		};
+		return getUploadsRecursive();
 	},
 
-	contribs: function ( callback, cont ) {
-		var params = {
-			action: 'query',
-			format: 'json',
-			list: 'usercontribs',
-			ucuser: vars.user,
-			ucprop: 'title|timestamp|comment|tags|ids|sizediff',
-			uclimit: 'max'
-		};
-		if ( cont !== undefined ) {
-			$.extend( params, cont );
-		} else {
-			params.list += '|users';
-			params.ususers = vars.user;
-			params.usprop = 'editcount';
-		}
-		$.get(
-			vars.api,
-			params,
-			function ( data ) {
+	contribs: function () {
+		var getContribsRecursive = function ( continuation ) {
+			var params = {
+				action: 'query',
+				list: 'usercontribs',
+				ucuser: vars.user,
+				ucprop: 'title|timestamp|comment|tags|ids|sizediff',
+				uclimit: 'max'
+			};
+			if ( continuation !== undefined ) {
+				$.extend( params, continuation );
+			} else {
+				params.list += '|users';
+				params.ususers = vars.user;
+				params.usprop = 'editcount';
+			}
+			return api.get( params ).then( function ( data ) {
 				vars.contribs = vars.contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
 					vars.editcount = data.query.users[Object.keys( data.query.users )[0]].editcount;
 				}
 				if ( data['query-continue'] && data['query-continue'].usercontribs ) {
-					getData.contribs( callback, data['query-continue'].usercontribs );
+					return getContribsRecursive( data['query-continue'].usercontribs );
 				} else {
-					callback( vars.contribs );
-					return;
+					return vars.contribs;
 				}
-			},
-			'jsonp'
-		);
+			} );
+		};
+		return getContribsRecursive();
 	},
 
-	messages: function ( lang, msgs, callback ) {
-		$.get(
-			vars.api,
-			{
-				action: 'query',
-				format: 'json',
-				meta: 'allmessages',
-				amlang: lang,
-				ammessages: msgs.join( '|' )
-			},
-			function ( data ) {
-				vars.messages = {};
-				$.each( data.query.allmessages || [], function ( i, v ) {
-					vars.messages[v.name] = v['*'];
-				} );
-				util.loadCustomMessages( lang, callback );
-			},
-			'jsonp'
-		);
+	messages: function ( lang, msgs ) {
+		var deferred = $.Deferred();
+		api.get( {
+			action: 'query',
+			meta: 'allmessages',
+			amlang: lang,
+			ammessages: msgs.join( '|' )
+		} )
+		.done( function ( data ) {
+			vars.messages = {};
+			$.each( data.query.allmessages || [], function ( i, v ) {
+				vars.messages[v.name] = v['*'];
+			} );
+			util.loadCustomMessages( lang ).done( deferred.resolve );
+		} );
+		return deferred;
 	},
 
-	rightsLog: function ( callback ) {
-		$.get(
-			vars.api,
-			{
-				action: 'query',
-				format: 'json',
-				list: 'logevents',
-				letype: 'rights',
-				letitle: 'User:' + vars.user,
-				ledir: 'newer',
-				lelimit: 'max'
-			},
-			function ( data ) {
-				callback( $.grep( data.query.logevents, function ( el ) {
-					// hack for old log entries
-					return el.rights !== undefined;
-				} ) );
-			},
-			'jsonp'
-		);
+	rightsLog: function () {
+		return api.get( {
+			action: 'query',
+			list: 'logevents',
+			letype: 'rights',
+			letitle: 'User:' + vars.user,
+			ledir: 'newer',
+			lelimit: 'max'
+		} )
+		.then( function ( data ) {
+			return $.grep( data.query.logevents, function ( el ) {
+				// hack for old log entries
+				return el.rights !== undefined;
+			} );
+		} );
 	},
 
-	blockInfo: function ( callback ) {
-		$.get(
-			vars.api,
-			{
-				action: 'query',
-				format: 'json',
-				list: 'users',
-				ususers: vars.user,
-				usprop: 'blockinfo'
-			},
-			function ( data ) {
-				var blk = data.query.users[0];
-				callback( blk || {} );
-			},
-			'jsonp'
-		);
+	blockInfo: function () {
+		return api.get( {
+			action: 'query',
+			list: 'users',
+			ususers: vars.user,
+			usprop: 'blockinfo'
+		} )
+		.then( function ( data ) {
+			return ( data.query.users[0] || {} );
+		} );
 	},
 
 	votes: function () {
@@ -501,7 +484,7 @@ var getData = {
 		} );
 	},
 
-	geoData: function ( contribs, callback ) {
+	geoData: function ( contribs ) {
 		var occurr = {};
 		$.each( contribs, function ( key, val ) {
 			if ( occurr[val.title] ) {
@@ -520,27 +503,22 @@ var getData = {
 		} );
 		var geodata = {},
 			titles = Object.keys( occurr ),
-			getGeodata = function ( cb ) {
-				$.get(
-					vars.api,
-					{
-						action: 'query',
-						prop: 'coordinates',
-						format: 'json',
-						titles: titles.splice( 0, 50 ).join( '|' )
-					},
-					function ( data ) {
-						$.extend( geodata, data.query.pages );
-						if ( titles.length > 0 ) {
-							getGeodata( cb );
-						} else {
-							cb( geodata );
-						}
-					},
-					'jsonp'
-				);
+			getGeodataRecursive = function () {
+				return api.get( {
+					action: 'query',
+					prop: 'coordinates',
+					titles: titles.splice( 0, 50 ).join( '|' )
+				} )
+				.then( function ( data ) {
+					$.extend( geodata, data.query.pages );
+					if ( titles.length > 0 ) {
+						return getGeodataRecursive();
+					} else {
+						return geodata;
+					}
+				} );
 			};
-		getGeodata( function ( coords ) {
+		return getGeodataRecursive().then( function ( coords ) {
 			var markers = [];
 			$.each( coords, function ( pageid, page ) {
 				if ( page.coordinates ) {
@@ -565,7 +543,7 @@ var getData = {
 			markers.sort( function ( a, b ) {
 				return b.numedits - a.numedits;
 			} );
-			callback( markers );
+			return markers;
 		} );
 	}
 
@@ -806,20 +784,22 @@ var util = {
 			);
 	},
 
-	loadCustomMessages: function ( lang, callback ) {
-		var self = this;
+	loadCustomMessages: function ( lang ) {
+		var self = this,
+			deferred = $.Deferred();
 		$.get( 'i18n/' + lang + '.json', {}, 'jsonp' )
 		.done( function ( data ) {
 			$.extend( vars.messages, data );
-			callback( true );
+			deferred.resolve( true );
 		} )
 		.fail( function () {
 			if ( lang === 'en' ) {
-				callback( false );
+				deferred.resolve( false );
 			} else {
-				self.loadCustomMessages( 'en', callback );
+				self.loadCustomMessages( 'en' ).done( deferred.resolve );
 			}
 		} );
+		return deferred;
 	},
 
 	parseMsg: function ( msg ) {
@@ -864,7 +844,7 @@ i18n = function ( msg ) {
 
 $( document ).ready( function () {
 
-	getData.siteMatrix( function ( sites ) {
+	getData.siteMatrix().done( function ( sites ) {
 
 		vars.sites = sites;
 
@@ -876,7 +856,7 @@ $( document ).ready( function () {
 				if ( dbName !== '' && vars.sites[dbName] ) {
 					localApi = vars.sites[dbName] + '/w/api.php';
 				}
-				getData.allUsers( query, localApi, function ( users ) {
+				getData.allUsers( query, localApi ).done( function ( users ) {
 					return process( $.map( users, function ( user ) {
 						return user.name;
 					} ) );
@@ -907,7 +887,7 @@ $( document ).ready( function () {
 			.remove();
 			( function () {
 				var dewkinInitDate = new Date();
-				getData.namespaces( function ( namespaces ) {
+				getData.namespaces().done( function ( namespaces ) {
 					vars.namespaces = namespaces;
 					var toLoadMsgs = $( '[data-msg]' ).map( function () {
 						return this.dataset.msg;
@@ -920,7 +900,7 @@ $( document ).ready( function () {
 					.concat( util.weekdays )
 					.concat( util.weekdaysShort )
 					.concat( util.months );
-					getData.rightsLog( function ( rights ) {
+					getData.rightsLog().done( function ( rights ) {
 						$.each( rights, function ( i, logevt ) {
 							var oldGroups = logevt.rights.old.split( ', ' ),
 								newGroups = logevt.rights.new.split( ', ' );
@@ -931,7 +911,7 @@ $( document ).ready( function () {
 								}
 							} );
 						} );
-						getData.messages( vars.userLang, toLoadMsgs, function () {
+						getData.messages( vars.userLang, toLoadMsgs ).done( function () {
 							util.months = $.map( util.months, function ( el ) {
 								return vars.messages[el];
 							} );
@@ -970,7 +950,7 @@ $( document ).ready( function () {
 							.addClass( 'badge' )
 							.text( rights.length )
 							.appendTo( 'li>a[href="#rights"]' );
-							getData.contribs( function ( contribs ) {
+							getData.contribs().done( function ( contribs ) {
 								vars.contribs = ContribsList( contribs );
 								vars.contribs.sort();
 								contribs = vars.contribs;
@@ -1091,7 +1071,7 @@ $( document ).ready( function () {
 								$( 'li>a[href="#map"]' )
 								.one( 'shown', function () {
 									$( '#map' ).append( 'Loading geodata...' );
-									getData.geoData( contribs.grepByNamespace( [ 0, 6 ] ), function ( geodata ) {
+									getData.geoData( contribs.grepByNamespace( [ 0, 6 ] ) ).done( function ( geodata ) {
 										if ( geodata.length > 0 ) {
 											$( '#map' ).empty().css( 'height', '400px' );
 											var maxEdits = geodata[0].numedits,
@@ -1185,8 +1165,8 @@ $( document ).ready( function () {
 											} ) ) : i18n( 'did not vote' )
 										];
 									} ) );
-									getData.uploads( function ( uploads ) {
-										getData.blockInfo( function ( blockinfo ) {
+									getData.uploads().done( function ( uploads ) {
+										getData.blockInfo().done( function ( blockinfo ) {
 											$( '#general' )
 											.append( blockinfo.blockid !== undefined ? ( '<strong>Currently blocked by ' + blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>' ) : '' )
 											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[0].revid + '">' + i18n( 'first edit' ) + '</a>' + i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) + i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>' )
