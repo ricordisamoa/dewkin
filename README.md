@@ -1,5 +1,6 @@
 DEWKIN (DEep WiKi INspector)
 ======
+[![Build Status](https://travis-ci.org/ricordisamoa/dewkin.svg?branch=master)](https://travis-ci.org/ricordisamoa/dewkin)
 
 New features and bugfixes
 ------
