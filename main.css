@@ -1,59 +1,82 @@
-body{
-	padding:1em;
+/*
+
+DEep WiKi INspector (DEWKIN)
+Copyright (C) 2013-2015 Ricordisamoa
+
+meta.wikimedia.org/wiki/User:Ricordisamoa
+tools.wmflabs.org/ricordisamoa/
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+body {
+	padding: 1em;
 }
 
 /* Acronym */
-h1{
-	transition:all .5s;
+h1 {
+	transition: all .5s;
 }
-.hero-unit h1 span{
-	display:none;
+.hero-unit h1 span {
+	display: none;
 }
-h1 span span{
-	color:gray;
+h1 span span {
+	color: gray;
 }
 h1 abbr,
-.hero-unit h1:hover abbr{
-	display:none;
+.hero-unit h1:hover abbr {
+	display: none;
 }
-.hero-unit h1 abbr{
-	display:inline;
+.hero-unit h1 abbr {
+	display: inline;
 }
-h1:hover span{
-	display:inline;
+h1:hover span {
+	display: inline;
 }
 
 /* 'feedback' link */
-.hero-unit h1 sub{
-	display:none;
+.hero-unit h1 sub {
+	display: none;
 }
-h1 sub{
-	font-size:50%;
+h1 sub {
+	font-size: 50%;
 }
 
-.typeahead{
-	text-align:left;
+.typeahead {
+	text-align: left;
 }
 
 /* Diff-links styles */
-.mw-plusminus-pos{
-	color:#006400;
+.mw-plusminus-pos {
+	color: #006400;
 }
-.mw-plusminus-neg{
-	color:#8b0000;
+.mw-plusminus-neg {
+	color: #8b0000;
 }
-.mw-plusminus-null{
-	color:#aaa;
+.mw-plusminus-null {
+	color: #aaa;
 }
 
-.hero-unit+.nav-tabs{
-	display:none;
+.hero-unit + .nav-tabs {
+	display: none;
 }
-footer{
-	float:left;
-	position:static;
-	bottom:1em;
-	display:none;
+footer {
+	float: left;
+	position: static;
+	bottom: 1em;
+	display: none;
 }
 
 /* Generic chart styles */
@@ -61,7 +84,7 @@ svg .arc path {
 	stroke: #fff;
 	stroke-width: 1px;
 }
-svg .arc path.selected{
+svg .arc path.selected {
 	stroke-width: 3px;
 }
 .legend text {
@@ -130,7 +153,7 @@ svg .bar {
 	margin: 0 0 0 -5px;
 	content: " ";
 	border: 5px solid transparent;
-	border-top-color: rgba(0,0,0,0.8);
+	border-top-color: rgba(0, 0, 0, 0.8);
 }
 
 /* Style eastward tooltips differently */
@@ -139,6 +162,6 @@ svg .bar {
 	top: 50%;
 	margin: -5px 0 0 5px;
 	border-left: none;
-	border-right-color: rgba(0,0,0,0.8);
+	border-right-color: rgba(0, 0, 0, 0.8);
 	border-top-color: transparent;
 }
