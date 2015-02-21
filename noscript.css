@@ -1,7 +1,7 @@
 /*
 
 DEep WiKi INspector (DEWKIN)
-Copyright (C) 2013-2014 Ricordisamoa
+Copyright (C) 2013-2015 Ricordisamoa
 
 meta.wikimedia.org/wiki/User:Ricordisamoa
 tools.wmflabs.org/ricordisamoa/
@@ -22,6 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #form,
-.hero-unit + * {
+.jumbotron + * {
 	display: none;
 }

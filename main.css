@@ -27,19 +27,20 @@ body {
 
 /* Acronym */
 h1 {
+	font-weight: bold;
 	transition: all .5s;
 }
-.hero-unit h1 span {
+.jumbotron h1 span {
 	display: none;
 }
 h1 span span {
 	color: gray;
 }
 h1 abbr,
-.hero-unit h1:hover abbr {
+.jumbotron h1:hover abbr {
 	display: none;
 }
-.hero-unit h1 abbr {
+.jumbotron h1 abbr {
 	display: inline;
 }
 h1:hover span {
@@ -47,15 +48,20 @@ h1:hover span {
 }
 
 /* 'feedback' link */
-.hero-unit h1 sub {
+.jumbotron h1 sub {
 	display: none;
 }
 h1 sub {
 	font-size: 50%;
 }
 
-.typeahead {
-	text-align: left;
+#form .form-control {
+	width: auto;
+	display: inline;
+}
+#form label {
+	font-weight: normal;
+	display: block;
 }
 
 /* Diff-links styles */
@@ -69,7 +75,7 @@ h1 sub {
 	color: #aaa;
 }
 
-.hero-unit + .nav-tabs {
+.container.before-tabs + .nav-tabs {
 	display: none;
 }
 footer {

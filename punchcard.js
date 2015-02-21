@@ -68,7 +68,7 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 			.domain( [ 0, maxR ] )
 			.range( [ 0, 18 ] );
 
-	$( 'li>a[href="#punchcard"]' ).on( 'shown', function () {
+	$( 'li>a[href="#punchcard"]' ).on( 'shown.bs.tab', function () {
 		svg.selectAll( 'circle' )
 			.data( data )
 			.enter()

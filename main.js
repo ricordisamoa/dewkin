@@ -962,7 +962,8 @@ $( document ).ready( function () {
 									return filtered[b].length - filtered[a].length;
 								} );
 								vars.firstMonth = util.yearMonth( firstContribDate );
-								$( '.hero-unit' ).removeClass( 'hero-unit' );
+								$( '.jumbotron' ).removeClass( 'jumbotron' );
+								$( '.container.before-tabs' ).removeClass( 'container' );
 								$( '#form' ).remove();
 								var nsChartData = $.map( sortedNsNumbers, function ( ns ) {
 									if ( filtered[ns].length > 0 ) { // only namespaces with contributions
@@ -1062,14 +1063,14 @@ $( document ).ready( function () {
 									return i18n( 'nedits bold', n );
 								} );
 								var hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
-								hideCreditsOnShow.on( 'show', function () {
+								hideCreditsOnShow.on( 'shown.bs.tab', function () {
 									$( '#credits' ).hide();
 								} );
-								$( 'a[data-toggle="tab"]' ).not( hideCreditsOnShow ).on( 'show', function () {
+								$( 'a[data-toggle="tab"]' ).not( hideCreditsOnShow ).on( 'shown.bs.tab', function () {
 									$( '#credits' ).show();
 								} );
 								$( 'li>a[href="#map"]' )
-								.one( 'shown', function () {
+								.one( 'shown.bs.tab', function () {
 									$( '#map' ).append( 'Loading geodata...' );
 									getData.geoData( contribs.grepByNamespace( [ 0, 6 ] ) ).done( function ( geodata ) {
 										if ( geodata.length > 0 ) {

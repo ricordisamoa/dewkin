@@ -25,17 +25,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <head>
 <meta charset="utf-8">
 <title>DEWKIN by Ricordisamoa</title>
-<!--
-Twitter Bootstrap 3.0.0
 
-<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
--->
-<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script type="text/javascript" src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+<!-- jQuery 2.1.0 -->
+<script type="text/javascript" src="//tools-static.wmflabs.org/static/jquery/2.1.0/jquery.min.js"></script>
 
-<!-- d3 JavaScript library -->
+<!-- Twitter Bootstrap 3.2.0 -->
+<!-- CSS must be loaded from Bootstrap CDN instead of tools-static because of CORS -->
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<script type="text/javascript" src="//tools-static.wmflabs.org/static/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+<!-- Bootstrap 3 Typeahead -->
+<script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib/Bootstrap-3-Typeahead/bootstrap3-typeahead.min.js"></script>
+
+<!-- D3.js 3.4.8 -->
 <script type="text/javascript" src="//tools-static.wmflabs.org/static/d3/3.4.8/d3.min.js"></script>
 <!-- d3 tooltips -->
 <script type="text/javascript" src="//tools.wmflabs.org/ricordisamoa/lib/d3.tip.js"></script>
@@ -60,22 +62,31 @@ Twitter Bootstrap 3.0.0
 <script type="text/javascript" src="punchcard.js"></script>
 </head>
 <body>
-<div class="hero-unit pagination-centered">
+<div class="container before-tabs">
+<div class="jumbotron text-center">
 <h1><abbr title="Deep Wiki Inspector">DEWKIN</abbr><span>DE<span>ep </span>W<span>i</span>K<span>i </span>IN<span>spector</span></span>
 <sub><a href="//meta.wikimedia.org/wiki/User_talk:Ricordisamoa" target="_blank" data-msg="feedback"></a></sub></h1><br>
 <noscript>
-<div class="alert alert-error">
+<div class="alert alert-danger">
 You need JavaScript to be enabled to use DEWKIN.
 </div>
 </noscript>
 <form id="form">
-	<label for="u" data-msg="yourname">User name:</label>
-	<input type="text" required id="u" name="u" autocomplete="off" placeholder="Jimbo Wales">
-	<label for="p">Project:</label>
-	<input type="text" required id="p" name="p" autocomplete="off" placeholder="enwiki">
+	<div class="form-group">
+		<label for="u" data-msg="yourname">User name:</label>
+		<input type="text" class="form-control" required id="u" name="u" size="25" autocomplete="off" placeholder="Jimbo Wales">
+	</div>
+	<div class="form-group">
+		<label for="p">Project:</label>
+		<input type="text" class="form-control" required id="p" name="p" size="25" autocomplete="off" placeholder="enwiki">
+	</div>
 	<p>You are going to run an extremely heavy operation. Do you <b>really</b> want to continue?</p>
-	<button type="submit" role="button" class="btn btn-large btn-primary" id="init"><i class="icon-white icon-arrow-right"></i> Yes</button>
+	<button type="submit" role="button" class="btn btn-lg btn-primary" id="init">
+		<span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+		Yes
+	</button>
 </form>
+</div>
 </div>
 <ul class="nav nav-tabs">
 	<li class="active"><a href="#overview" data-toggle="tab" data-msg="overview"></a></li>
@@ -92,11 +103,11 @@ You need JavaScript to be enabled to use DEWKIN.
 </ul>
 <div class="tab-content">
 	<div class="tab-pane active container-fluid" id="overview">
-		<div id="general" class="span3" style="float:left"></div>
-		<div class="span4">
+		<div id="general" class="col-md-3" style="float:left"></div>
+		<div class="col-md-4">
 			<div id="ns-chart"></div>
 		</div>
-		<div id="top-edited" class="span4"></div>
+		<div id="top-edited" class="col-md-4"></div>
 	</div>
 	<div class="tab-pane container-fluid" id="advanced">
 		<div id="month-chart"></div>
