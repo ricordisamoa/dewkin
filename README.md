@@ -4,12 +4,13 @@ DEWKIN (DEep WiKi INspector)
 
 New features and bugfixes
 ------
+* D3.js-based charts
 * Clean internal classes and methods
 * Suggestions while typing user name and project
 * Really submittable form
 * Warning for users with JavaScript disabled
 * Better i18n
-* Up-to-date jQuery library
+* Up-to-date jQuery and Bootstrap
 * Permalinks!
 
 Todo
