@@ -177,16 +177,7 @@ ContribsList.prototype = {
 
 	grepByEditSummary: function ( summary ) {
 		return ContribsList( $.grep( this, function ( e ) {
-			if ( e.comment ) {
-				if ( !summary && e.comment !== '' ) {
-					return e;
-				} else if ( summary && e.comment === summary ) {
-					return e;
-				}
-			}
-			if ( !summary ) {
-				return e;
-			}
+			return ( summary === undefined ? e.comment !== '' : e.comment === summary );
 		} ) );
 	},
 
