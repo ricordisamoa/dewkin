@@ -396,7 +396,7 @@ var getData = {
 		);
 	},
 
-	uploads: function(callback, aistart){
+	uploads: function(callback, continuation){
 		$.get(
 			vars.api,
 			$.extend(
@@ -409,14 +409,14 @@ var getData = {
 					aiuser: vars.user,
 					ailimit: 'max'
 				},
-				(aistart !== undefined && aistart !== '' ? {aistart: aistart} : {})
+				(continuation || {'continue': ''})
 			),
 			function(data){
 				vars.uploads = vars.uploads.concat($.map(data.query.allimages, function(e){
 					return [e.name.replace(/_/g, ' ')];
 				}));
-				if(data['query-continue'] && data['query-continue'].allimages && data['query-continue'].allimages.aistart){
-					getData.uploads(vars.user, callback, data['query-continue'].allimages.aistart);
+				if(data.continue){
+					getData.uploads(callback, data.continue);
 				}
 				else{
 					callback(vars.uploads);
@@ -443,6 +443,7 @@ var getData = {
 			params.list += '|users';
 			params.ususers = vars.user;
 			params.usprop = 'editcount';
+			params.continue = '';
 		}
 		$.get(
 			vars.api,
@@ -452,8 +453,8 @@ var getData = {
 				if(data.query.users){
 					vars.editcount = data.query.users[Object.keys(data.query.users)[0]].editcount;
 				}
-				if(data['query-continue'] && data['query-continue'].usercontribs){
-					getData.contribs(callback, data['query-continue'].usercontribs);
+				if(data.continue){
+					getData.contribs(callback, data.continue);
 				}
 				else{
 					callback(vars.contribs);
