@@ -374,13 +374,15 @@ getData = {
 			};
 			if ( continuation !== undefined ) {
 				$.extend( params, continuation );
+			} else {
+				params.continue = '';
 			}
 			return api.get( params ).then( function ( data ) {
 				vars.uploads = vars.uploads.concat( $.map( data.query.allimages, function ( e ) {
 					return [ e.name.replace( /_/g, ' ' ) ];
 				} ) );
-				if ( data['query-continue'] && data['query-continue'].allimages ) {
-					return getUploadsRecursive( data['query-continue'].allimages );
+				if ( data.continue ) {
+					return getUploadsRecursive( data.continue );
 				} else {
 					return vars.uploads;
 				}
@@ -404,14 +406,15 @@ getData = {
 				params.list += '|users';
 				params.ususers = vars.user;
 				params.usprop = 'editcount';
+				params.continue = '';
 			}
 			return api.get( params ).then( function ( data ) {
 				vars.contribs = vars.contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
 					vars.editcount = data.query.users[Object.keys( data.query.users )[0]].editcount;
 				}
-				if ( data['query-continue'] && data['query-continue'].usercontribs ) {
-					return getContribsRecursive( data['query-continue'].usercontribs );
+				if ( data.continue ) {
+					return getContribsRecursive( data.continue );
 				} else {
 					return vars.contribs;
 				}
