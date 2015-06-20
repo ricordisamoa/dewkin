@@ -1022,14 +1022,17 @@ $( document ).ready( function () {
 								} );
 
 								/* Tags table */
-								var tagsData = contribs.filterByTag();
+								var tagsData = contribs.filterByTag(),
+								sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
+									return tagsData[b].length - tagsData[a].length;
+								} );
 								$( '#tags-table tbody' )
 								.append(
-									$.map( tagsData, function ( edits, tag ) {
+									$.map( sortedTagNames, function ( tag ) {
 										return $( '<tr>' )
 											.append(
 												$( '<td>' ).text( tag ),
-												$( '<td>' ).text( util.percent( edits.length, contribs.length ) )
+												$( '<td>' ).text( util.percent( tagsData[tag].length, contribs.length ) )
 											);
 									} )
 								);
