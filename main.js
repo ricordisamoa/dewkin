@@ -453,7 +453,11 @@ getData = {
 		.then( function ( data ) {
 			return $.grep( data.query.logevents, function ( el ) {
 				// hack for old log entries
-				return el.rights !== undefined;
+				return (
+					el.params !== undefined &&
+					el.params.oldgroups !== undefined &&
+					el.params.newgroups !== undefined
+				);
 			} );
 		} );
 	},
@@ -896,8 +900,8 @@ $( document ).ready( function () {
 					.concat( util.months );
 					getData.rightsLog().done( function ( rights ) {
 						$.each( rights, function ( i, logevt ) {
-							var oldGroups = logevt.rights.old.split( ', ' ),
-								newGroups = logevt.rights.new.split( ', ' );
+							var oldGroups = logevt.params.oldgroups,
+								newGroups = logevt.params.newgroups;
 							$.each( oldGroups.concat( newGroups ), function ( i, group ) {
 								var msg = 'group-' + group + '-member';
 								if ( toLoadMsgs.indexOf( msg ) === -1 ) {
@@ -922,8 +926,8 @@ $( document ).ready( function () {
 							.append(
 								rights.length === 0 ? '<h3>No log entries found.</h3>' : $( '<ul>' )
 								.append( $.map( rights, function ( logevt ) {
-									var oldGroups = logevt.rights.old.split( ', ' ),
-										newGroups = logevt.rights.new.split( ', ' ),
+									var oldGroups = logevt.params.oldgroups,
+										newGroups = logevt.params.newgroups,
 										addedGroups = $.grep( newGroups, function ( el ) {
 											return el !== '' && oldGroups.indexOf( el ) === -1;
 										} ),
