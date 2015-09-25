@@ -59,7 +59,7 @@ ContribsList.prototype = {
 	 * sort the items by timestamp, in ascending order
 	 */
 	sort: function () {
-		return ContribsList( Array.prototype.sort.call( this, function ( a, b ) {
+		return new ContribsList( Array.prototype.sort.call( this, function ( a, b ) {
 			var ts1 = new Date( a.timestamp ),
 				ts2 = new Date( b.timestamp );
 			return ( ( ts1 < ts2 ) ? -1 : ( ( ts1 > ts2 ) ? 1 : 0 ) );
@@ -128,9 +128,9 @@ ContribsList.prototype = {
 		} );
 		$.each( util.allMonths(), function ( i, e ) {
 			if ( contr[e] ) {
-				s[e] = ContribsList( contr[e] );
+				s[e] = new ContribsList( contr[e] );
 			} else {
-				s[e] = ContribsList();
+				s[e] = new ContribsList();
 			}
 		} );
 		return s;
@@ -147,7 +147,7 @@ ContribsList.prototype = {
 	filterByNamespaceAndMonth: function () {
 		var contr = {};
 		$.each( this.filterByNamespace( true ), function ( k, v ) {
-			contr[k] = ContribsList( v ).filterByMonth();
+			contr[k] = new ContribsList( v ).filterByMonth();
 		} );
 		return contr;
 	},
@@ -168,7 +168,7 @@ ContribsList.prototype = {
 			}
 			if ( lang ) {
 				if ( !contr[lang] ) {
-					contr[lang] = ContribsList();
+					contr[lang] = new ContribsList();
 				}
 				contr[lang].push( c );
 			}
@@ -177,25 +177,25 @@ ContribsList.prototype = {
 	},
 
 	grepByEditSummary: function ( summary ) {
-		return ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( $.grep( this, function ( e ) {
 			return ( summary === undefined ? e.comment !== '' : e.comment === summary );
 		} ) );
 	},
 
 	grepByNamespace: function ( ns ) {
-		return ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( $.grep( this, function ( e ) {
 			return Array.isArray( ns ) ? ( ns.indexOf( e.ns ) !== -1 ) : ( e.ns === ns );
 		} ) );
 	},
 
 	grepByDay: function ( number ) {
-		return ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( $.grep( this, function ( e ) {
 			return new Date( e.timestamp ).getUTCDay() === number;
 		} ) );
 	},
 
 	grepByHour: function ( number ) {
-		return ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( $.grep( this, function ( e ) {
 			return new Date( e.timestamp ).getUTCHours() === number;
 		} ) );
 	},
@@ -247,7 +247,7 @@ ContribsList.prototype = {
 	longestStreak: function () {
 		var prev = [],
 			cur = [],
-			cc = ContribsList( this.slice( 0 ) ),
+			cc = new ContribsList( this.slice( 0 ) ),
 			sameOrNext = function ( d1, d2 ) {
 				return d1 === d2 || ( d2 - d1 === 86400000 );
 			};
@@ -950,7 +950,7 @@ $( document ).ready( function () {
 							.text( rights.length )
 							.appendTo( 'li>a[href="#rights"]' );
 							getData.contribs().done( function ( contribs ) {
-								vars.contribs = ContribsList( contribs );
+								vars.contribs = new ContribsList( contribs );
 								vars.contribs.sort();
 								contribs = vars.contribs;
 								contribs.log();
