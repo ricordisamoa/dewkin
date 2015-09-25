@@ -35,12 +35,13 @@ var ContribsList = ( function () {
  * @constructor
  */
 function ContribsList() {
-	var args = Array.prototype.slice.call( arguments );
+	var list,
+		args = Array.prototype.slice.call( arguments );
 
 	if ( args.length === 1 && $.isArray( args[0] ) ) {
-		var list = args[0];
+		list = args[0];
 	} else {
-		var list = Object.create( Array.prototype );
+		list = Object.create( Array.prototype );
 		list = ( Array.apply( list, arguments ) || list );
 	}
 
