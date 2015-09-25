@@ -956,23 +956,23 @@ $( document ).ready( function () {
 								contribs.log();
 								var firstContribDate = new Date( contribs[0].timestamp ),
 								latestContribDate = new Date( contribs[contribs.length - 1].timestamp ),
-								filtered = contribs.filterByNamespace( true ),
-								sortedNsNumbers = Object.keys( filtered ).sort( function ( a, b ) {
-									return filtered[b].length - filtered[a].length;
+								contribsByNamespace = contribs.filterByNamespace( true ),
+								nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
+									return contribsByNamespace[b].length - contribsByNamespace[a].length;
 								} );
 								vars.firstMonth = util.yearMonth( firstContribDate );
 								$( '.jumbotron' ).removeClass( 'jumbotron' );
 								$( '.container.before-tabs' ).removeClass( 'container' );
 								$( '#form' ).remove();
-								var nsChartData = $.map( sortedNsNumbers, function ( ns ) {
-									if ( filtered[ns].length > 0 ) { // only namespaces with contributions
+								var nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
+									if ( contribsByNamespace[ns].length > 0 ) { // only namespaces with contributions
 										var nsName = util.namespaceName( ns );
 										return {
 											id: ns,
 											name: nsName,
-											value: filtered[ns].length,
+											value: contribsByNamespace[ns].length,
 											label: nsName + i18n( 'colon-separator' ) +
-												util.percent( filtered[ns].length, contribs.length ),
+												util.percent( contribsByNamespace[ns].length, contribs.length ),
 											color: util.colorFromNamespace( ns )
 										};
 									}
@@ -1115,21 +1115,21 @@ $( document ).ready( function () {
 									} );
 								} );
 								$( 'footer' ).show();
-								var filtered = contribs.filterByMonthAndNamespace(),
-								sortedNsNumbers = Object.keys( vars.namespaces ).sort( function ( a, b ) {
+								var contribsByMonthAndNamespace = contribs.filterByMonthAndNamespace(),
+								nsIdsSortedByNumericValue = Object.keys( vars.namespaces ).sort( function ( a, b ) {
 									return a - b;
 								} ),
-								nsNames = $.map( sortedNsNumbers, function ( e ) {
+								nsNames = $.map( nsIdsSortedByNumericValue, function ( e ) {
 									return util.namespaceName( e );
 								} ),
-								nsColors = $.map( sortedNsNumbers, function ( ns ) {
+								nsColors = $.map( nsIdsSortedByNumericValue, function ( ns ) {
 									return util.colorFromNamespace( ns );
 								} ),
 								nsData = [];
-								$.each( filtered, function ( month, byNs ) {
+								$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
 									var p = [ month, [] ];
 									$.each( byNs, function ( ns, c ) {
-										p[1][sortedNsNumbers.indexOf( ns )] = c.length;
+										p[1][nsIdsSortedByNumericValue.indexOf( ns )] = c.length;
 									} );
 									nsData.push( p );
 								} );
