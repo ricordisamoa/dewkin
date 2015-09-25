@@ -235,6 +235,7 @@ ContribsList.prototype = {
 		var contr = this,
 			data = [];
 		for ( var d = 0; d < 7; d++ ) {
+			/* jshint loopfunc:true */
 			$.each( contr.grepByDay( d ).filterByHour(), function ( h, c ) {
 				data.push( [ d, h, c.length ] );
 			} );
