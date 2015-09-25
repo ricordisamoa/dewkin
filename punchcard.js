@@ -21,35 +21,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 window.charts.punchcard = function ( data, weekdays, nedits ) {
-	var w = document.body.clientWidth - 60,
-		h = document.body.clientHeight - 200,
-		pad = 30,
-		leftPad = 100,
-		svg = d3.select( '#punchcard-chart' )
-			.append( 'svg' )
-			.attr( 'width', w )
-			.attr( 'height', h );
+	var w, h, pad, leftPad, svg, x, y, xAxis, yAxis, tip, maxR, r;
 
-	var x = d3.scale.linear().domain( [ 0, 23 ] ).range( [ leftPad, w - pad ] ),
-		y = d3.scale.linear().domain( [ 0, 6 ] ).range( [ pad, h - pad * 2 ] ),
+	w = document.body.clientWidth - 60;
+	h = document.body.clientHeight - 200;
+	pad = 30;
+	leftPad = 100;
 
-		xAxis = d3.svg.axis().scale( x ).orient( 'bottom' )
-			.ticks( 24 )
-			.tickFormat( function ( d, i ) {
-				var m = ( d > 11 ) ? 'p' : 'a';
-				return ( d % 12 === 0 ? 12 : d % 12 ) + m;
-			} ),
-		yAxis = d3.svg.axis().scale( y ).orient( 'left' )
-			.ticks( 7 )
-			.tickFormat( function ( d, i ) {
-				return weekdays[d];
-			} ),
-		tip = d3.tip()
-			.attr( 'class', 'svg-tip' )
-			.offset( [ -10, 0 ] )
-			.html( function ( d ) {
-				return nedits( d[2] );
-			} );
+	svg = d3.select( '#punchcard-chart' )
+		.append( 'svg' )
+		.attr( 'width', w )
+		.attr( 'height', h );
+
+	x = d3.scale.linear().domain( [ 0, 23 ] ).range( [ leftPad, w - pad ] );
+	y = d3.scale.linear().domain( [ 0, 6 ] ).range( [ pad, h - pad * 2 ] );
+
+	xAxis = d3.svg.axis().scale( x ).orient( 'bottom' )
+		.ticks( 24 )
+		.tickFormat( function ( d, i ) {
+			var m = ( d > 11 ) ? 'p' : 'a';
+			return ( d % 12 === 0 ? 12 : d % 12 ) + m;
+		} );
+
+	yAxis = d3.svg.axis().scale( y ).orient( 'left' )
+		.ticks( 7 )
+		.tickFormat( function ( d, i ) {
+			return weekdays[d];
+		} );
+
+	tip = d3.tip()
+		.attr( 'class', 'svg-tip' )
+		.offset( [ -10, 0 ] )
+		.html( function ( d ) {
+			return nedits( d[2] );
+		} );
 
 	svg.append( 'g' )
 		.attr( 'class', 'axis x-axis' )
@@ -63,10 +68,11 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 
 	svg.call( tip );
 
-	var maxR = d3.max( data, function ( d ) { return d[2]; } ),
-		r = d3.scale.sqrt()
-			.domain( [ 0, maxR ] )
-			.range( [ 0, 18 ] );
+	maxR = d3.max( data, function ( d ) { return d[2]; } );
+
+	r = d3.scale.sqrt()
+		.domain( [ 0, maxR ] )
+		.range( [ 0, 18 ] );
 
 	$( 'li>a[href="#punchcard"]' ).on( 'shown.bs.tab', function () {
 		svg.selectAll( 'circle' )
