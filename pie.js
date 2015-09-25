@@ -22,33 +22,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 
-	var arc = d3.svg.arc()
+	var arc, arcOver, pie, svg, chart, legend, u, g, paths;
+
+	arc = d3.svg.arc()
 		.outerRadius( radius )
 		.innerRadius( 0 );
 
-	var arcOver = d3.svg.arc()
+	arcOver = d3.svg.arc()
 		.outerRadius( radius * 1.1 )
 		.innerRadius( 0 );
 
-	var pie = d3.layout.pie()
+	pie = d3.layout.pie()
 		.sort( null )
 		.value( function ( d ) { return d.value; } );
 
-	var svg = d3.select( selector )
+	svg = d3.select( selector )
 		.append( 'svg' )
 			.attr( 'width', width )
 			.attr( 'height', height );
 
-	var chart = svg
+	chart = svg
 		.append( 'g' )
 			.attr( 'transform', 'translate(' + ( x + radius ) + ',' + ( y + radius ) + ')' );
 
-	var legend = svg
+	legend = svg
 		.append( 'g' )
 			.attr( 'class', 'legend' )
 			.attr( 'transform', 'translate(' + ( x + radius * 2 + 20 ) + ',' + y + ')' );
 
-	var u = legend.selectAll( '.leg' )
+	u = legend.selectAll( '.leg' )
 			.data( pie( data ) )
 		.enter().append( 'g' )
 			.attr( 'class', 'leg' )
@@ -66,13 +68,12 @@ window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 		.attr( 'dy', '.35em' )
 		.text( function ( d ) { return d.data.label; } );
 
-
-	var g = chart.selectAll( '.arc' )
+	g = chart.selectAll( '.arc' )
 			.data( pie( data ) )
 		.enter().append( 'g' )
 			.attr( 'class', 'arc' );
 
-	var paths = g.append( 'path' )
+	paths = g.append( 'path' )
 		.attr( 'd', arc )
 		.attr( 'fill', function ( d ) { return d.data.color; } )
 		.on( 'mouseover', function ( d ) {
@@ -91,7 +92,9 @@ window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 				.attr( 'r', 7.5 );
 		} )
 		.on( 'mouseout', function ( d ) {
-			var self = d3.select( this )
+			var self, leg;
+
+			self = d3.select( this )
 				.interrupt();
 
 			if ( !self.classed( 'selected' ) ) {
@@ -101,7 +104,7 @@ window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 					.attr( 'd', arc );
 			}
 
-			var leg = u
+			leg = u
 				.filter( function ( dd, i ) { return dd.data.id === d.data.id; } );
 
 			leg.selectAll( 'text' )
