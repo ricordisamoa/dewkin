@@ -1140,6 +1140,7 @@ $( document ).ready( function () {
 								getData.votes().done( function ( result ) {
 									$( '#votes' )
 									.append( $.map( result.votelookup.ballots, function ( poll ) {
+										// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
 										return [
 											$( '<h3>' ).append(
 												$( '<a>' )
@@ -1168,6 +1169,7 @@ $( document ).ready( function () {
 													);
 											} ) ) : i18n( 'did not vote' )
 										];
+										// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
 									} ) );
 									getData.uploads().done( function ( uploads ) {
 										getData.blockInfo().done( function ( blockinfo ) {
