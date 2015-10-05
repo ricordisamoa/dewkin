@@ -37,8 +37,8 @@ ContribsList = function () {
 		method,
 		args = Array.prototype.slice.call( arguments );
 
-	if ( args.length === 1 && $.isArray( args[0] ) ) {
-		list = args[0];
+	if ( args.length === 1 && $.isArray( args[ 0 ] ) ) {
+		list = args[ 0 ];
 	} else {
 		list = Object.create( Array.prototype );
 		list = ( Array.apply( list, arguments ) || list );
@@ -46,7 +46,7 @@ ContribsList = function () {
 
 	for ( method in ContribsList.prototype ) {
 		if ( ContribsList.prototype.hasOwnProperty( method ) ) {
-			list[method] = ContribsList.prototype[method];
+			list[ method ] = ContribsList.prototype[ method ];
 		}
 	}
 	return list;
@@ -77,7 +77,7 @@ ContribsList.prototype = {
 		} ), function ( nsIndex, ns ) {
 			var f = self.grepByNamespace( ns.id );
 			if ( f.length > 0 || alsoEmpty === true ) {
-				contr[ns.id] = f;
+				contr[ ns.id ] = f;
 			}
 		} );
 		return contr;
@@ -87,7 +87,7 @@ ContribsList.prototype = {
 		var j,
 			contr = {};
 		for ( j = 0; j < 7; j++ ) {
-			contr[j] = this.grepByDay( j );
+			contr[ j ] = this.grepByDay( j );
 		}
 		return contr;
 	},
@@ -105,10 +105,10 @@ ContribsList.prototype = {
 		var contr = {};
 		$.each( this, function ( i, e ) {
 			$.each( e.tags || [], function ( x, tag ) {
-				if ( contr[tag] ) {
-					contr[tag].push( e );
+				if ( contr[ tag ] ) {
+					contr[ tag ].push( e );
 				} else {
-					contr[tag] = [ e ];
+					contr[ tag ] = [ e ];
 				}
 			} );
 		} );
@@ -121,17 +121,17 @@ ContribsList.prototype = {
 		$.each( this, function ( i, e ) {
 			var date = new Date( e.timestamp ),
 				code = util.yearMonth( date );
-			if ( contr[code] ) {
-				contr[code].push( e );
+			if ( contr[ code ] ) {
+				contr[ code ].push( e );
 			} else {
-				contr[code] = [ e ];
+				contr[ code ] = [ e ];
 			}
 		} );
 		$.each( util.allMonths(), function ( i, e ) {
-			if ( contr[e] ) {
-				s[e] = new ContribsList( contr[e] );
+			if ( contr[ e ] ) {
+				s[ e ] = new ContribsList( contr[ e ] );
 			} else {
-				s[e] = new ContribsList();
+				s[ e ] = new ContribsList();
 			}
 		} );
 		return s;
@@ -140,7 +140,7 @@ ContribsList.prototype = {
 	filterByMonthAndNamespace: function () {
 		var contr = {};
 		$.each( this.filterByMonth(), function ( k, v ) {
-			contr[k] = v.filterByNamespace( true );
+			contr[ k ] = v.filterByNamespace( true );
 		} );
 		return contr;
 	},
@@ -148,7 +148,7 @@ ContribsList.prototype = {
 	filterByNamespaceAndMonth: function () {
 		var contr = {};
 		$.each( this.filterByNamespace( true ), function ( k, v ) {
-			contr[k] = new ContribsList( v ).filterByMonth();
+			contr[ k ] = new ContribsList( v ).filterByMonth();
 		} );
 		return contr;
 	},
@@ -162,16 +162,16 @@ ContribsList.prototype = {
 			} else if ( [ 2, 8 ].indexOf( c.ns ) !== -1 ) {
 				m = c.title.toLowerCase().match( /\.(js|css)$/ );
 				if ( m !== null ) {
-					lang = m[1];
+					lang = m[ 1 ];
 				} else if ( c.ns === 2 && /\.py$/.test( c.title ) ) {
 					lang = 'py';
 				}
 			}
 			if ( lang ) {
-				if ( !contr[lang] ) {
-					contr[lang] = new ContribsList();
+				if ( !contr[ lang ] ) {
+					contr[ lang ] = new ContribsList();
 				}
-				contr[lang].push( c );
+				contr[ lang ].push( c );
 			}
 		} );
 		return contr;
@@ -212,14 +212,14 @@ ContribsList.prototype = {
 		} );
 		occurr = {};
 		$.each( titles, function ( i, e ) {
-			if ( occurr[e] ) {
-				occurr[e] = occurr[e] + 1;
+			if ( occurr[ e ] ) {
+				occurr[ e ] = occurr[ e ] + 1;
 			} else {
-				occurr[e] = 1;
+				occurr[ e ] = 1;
 			}
 		} );
 		sortedKeys = Object.keys( occurr ).sort( function ( a, b ) {
-			return ( ( occurr[a] > occurr[b] ) ? -1 : ( ( occurr[a] < occurr[b] ) ? 1 : 0 ) );
+			return ( ( occurr[ a ] > occurr[ b ] ) ? -1 : ( ( occurr[ a ] < occurr[ b ] ) ? 1 : 0 ) );
 		} );
 		overflow = false;
 		if ( sortedKeys.length > 30 ) {
@@ -228,7 +228,7 @@ ContribsList.prototype = {
 		}
 		sortedOccurr = {};
 		$.each( sortedKeys, function ( i, e ) {
-			sortedOccurr[e] = occurr[e];
+			sortedOccurr[ e ] = occurr[ e ];
 		} );
 		return [ sortedOccurr, overflow ];
 	},
@@ -259,18 +259,18 @@ ContribsList.prototype = {
 		$.each( cc, function ( i, ct ) {
 			var d = new Date( ct.timestamp ).setHours( 0, 0, 0, 0 );
 			if ( cur.length === 0 ) {
-				cur[0] = d;// start streak
+				cur[ 0 ] = d;// start streak
 			} else if ( cur.length === 1 ) {
-				if ( sameOrNext( cur[0], d ) ) {
-					cur[1] = d;// continue streak
+				if ( sameOrNext( cur[ 0 ], d ) ) {
+					cur[ 1 ] = d;// continue streak
 				} else {
 					cur = [];
 				}
 			} else if ( cur.length === 2 ) {
-				if ( i < cc.length && sameOrNext( cur[1], d ) ) {
-					cur[1] = d;// continue streak
+				if ( i < cc.length && sameOrNext( cur[ 1 ], d ) ) {
+					cur[ 1 ] = d;// continue streak
 				} else {// streak broken
-					if ( prev.length === 0 || cur[1] - cur[0] > prev[1] - prev[0] ) {
+					if ( prev.length === 0 || cur[ 1 ] - cur[ 0 ] > prev[ 1 ] - prev[ 0 ] ) {
 						prev = cur;// (over)write longest streak
 					}
 					cur = [];// reset current streak anyway
@@ -325,7 +325,7 @@ getData = {
 		}
 		return api.get( params, { url: apiUrl } )
 			.then( function ( data ) {
-				return data.query[Object.keys( data.query )[0]];
+				return data.query[ Object.keys( data.query )[ 0 ] ];
 			} );
 	},
 
@@ -342,7 +342,7 @@ getData = {
 			$.each( data.sitematrix, function () {
 				$.each( this.site || ( $.isArray( this ) ? this : [] ), function () {
 					if ( this.dbname && this.url && this.private === undefined && this.fishbowl === undefined ) {
-						dbNames[this.dbname] = this.url.replace( /^http\:\/\//, '//' );
+						dbNames[ this.dbname ] = this.url.replace( /^http\:\/\//, '//' );
 					}
 				} );
 			} );
@@ -358,7 +358,7 @@ getData = {
 		} )
 		.then( function ( b ) {
 			var ns = b.query.namespaces;
-			delete ns['-1'];
+			delete ns[ '-1' ];
 			return ns;
 		} );
 	},
@@ -412,7 +412,7 @@ getData = {
 			return api.get( params ).then( function ( data ) {
 				vars.contribs = vars.contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
-					vars.editcount = data.query.users[Object.keys( data.query.users )[0]].editcount;
+					vars.editcount = data.query.users[ Object.keys( data.query.users )[ 0 ] ].editcount;
 				}
 				if ( data.continue ) {
 					return getContribsRecursive( data.continue );
@@ -435,7 +435,7 @@ getData = {
 		.done( function ( data ) {
 			vars.messages = {};
 			$.each( data.query.allmessages || [], function ( i, v ) {
-				vars.messages[v.name] = v['*'];
+				vars.messages[ v.name ] = v[ '*' ];
 			} );
 			util.loadCustomMessages( lang ).done( deferred.resolve );
 		} );
@@ -471,7 +471,7 @@ getData = {
 			usprop: 'blockinfo'
 		} )
 		.then( function ( data ) {
-			return ( data.query.users[0] || {} );
+			return ( data.query.users[ 0 ] || {} );
 		} );
 	},
 
@@ -487,18 +487,18 @@ getData = {
 		var geodata, titles, getGeodataRecursive,
 			occurr = {};
 		$.each( contribs, function ( key, val ) {
-			if ( occurr[val.title] ) {
-				if ( occurr[val.title].revid ) {
-					occurr[val.title] = {
+			if ( occurr[ val.title ] ) {
+				if ( occurr[ val.title ].revid ) {
+					occurr[ val.title ] = {
 						count: 2,
-						sizediff: occurr[val.title].sizediff + val.sizediff
+						sizediff: occurr[ val.title ].sizediff + val.sizediff
 					};
 				} else {
-					occurr[val.title].count += 1;
-					occurr[val.title].sizediff += val.sizediff;
+					occurr[ val.title ].count += 1;
+					occurr[ val.title ].sizediff += val.sizediff;
 				}
 			} else {
-				occurr[val.title] = val;
+				occurr[ val.title ] = val;
 			}
 		} );
 		geodata = {};
@@ -525,8 +525,8 @@ getData = {
 				if ( page.coordinates ) {
 					coordinates = page.coordinates;
 					if ( coordinates.length === 1 ) {
-						coordinates = coordinates[0];
-						edits = occurr[page.title];
+						coordinates = coordinates[ 0 ];
+						edits = occurr[ page.title ];
 						numedits = ( edits.count || 1 );
 						marker = {
 							coords: coordinates,
@@ -573,7 +573,7 @@ util = {
 				} ) );
 				fl = Math.floor( diff / f );
 				if ( fl > 0 ) {
-					message.push( i18n( labels[i], fl ) );
+					message.push( i18n( labels[ i ], fl ) );
 					diff -= fl * f;
 				}
 			}
@@ -672,14 +672,14 @@ util = {
 	/* end of Soxred93's code */
 
 	colorFromNamespace: function ( ns ) {
-		return '#' + ( this.namespaceColors[ns] || 'CCC' );
+		return '#' + ( this.namespaceColors[ ns ] || 'CCC' );
 	},
 
 	namespaceFromColor: function ( color ) {
 		var ns;
 		color = color.toLowerCase().replace( /^\#/, '' );
 		for ( ns in this.namespaceColors ) {
-			if ( this.namespaceColors[ns].toLowerCase() === color ) {
+			if ( this.namespaceColors[ ns ].toLowerCase() === color ) {
 				return ns;
 			}
 		}
@@ -732,15 +732,15 @@ util = {
 	},
 
 	groupColor: function ( group ) {
-		var local = ( vars.messages['group-' + group + '-member'] || group );
-		return util.groupsColors[group] ?
-			( '<span style="background-color:' + util.groupsColors[group] + ';color:white">' + local + '</span>' ) :
+		var local = ( vars.messages[ 'group-' + group + '-member' ] || group );
+		return util.groupsColors[ group ] ?
+			( '<span style="background-color:' + util.groupsColors[ group ] + ';color:white">' + local + '</span>' ) :
 			local;
 	},
 
 	namespaceName: function ( number ) {
-		return vars.namespaces[number] ?
-			vars.namespaces[number]['*'].replace( /^(Talk)?$/, 'Article $1' ).trim() :
+		return vars.namespaces[ number ] ?
+			vars.namespaces[ number ][ '*' ].replace( /^(Talk)?$/, 'Article $1' ).trim() :
 			( 'ns-' + number );
 	},
 
@@ -750,8 +750,8 @@ util = {
 			from = vars.firstMonth;
 		}
 		from = from.split( '/' );
-		fromYear = parseInt( from[0] );
-		fromMonth = parseInt( from[1] ) - 1;
+		fromYear = parseInt( from[ 0 ] );
+		fromMonth = parseInt( from[ 1 ] ) - 1;
 		months = [];
 		toYear = new Date().getUTCFullYear();
 		toMonth = new Date().getUTCMonth();
@@ -770,9 +770,9 @@ util = {
 			and = i18n( 'and' );
 		switch ( array.length ) {
 			case 0: return '';
-			case 1: return array[0];
+			case 1: return array[ 0 ];
 			case 2: return array.join( sep + and + sep );
-			default: return array.slice( 0, -1 ).join( comma ) + comma + and + sep + array[array.length - 1];
+			default: return array.slice( 0, -1 ).join( comma ) + comma + and + sep + array[ array.length - 1 ];
 		}
 	},
 
@@ -812,8 +812,8 @@ util = {
 		args = Array.prototype.slice.call( arguments );
 		msg = msg.replace( regex, function ( el ) {
 			var m = el.match( regex2 );
-			if ( m && args[parseInt( m[2] )] !== undefined ) {
-				return m[1] + args[parseInt( m[2] )];
+			if ( m && args[ parseInt( m[ 2 ] ) ] !== undefined ) {
+				return m[ 1 ] + args[ parseInt( m[ 2 ] ) ];
 			} else {
 				return el;
 			}
@@ -823,7 +823,7 @@ util = {
 		msg = msg.replace( regex, function ( el ) {
 			var m = el.match( regex2 );
 			if ( m ) {
-				return parseFloat( m[1] ) === 1 ? m[3] : ( m[5] || m[3] );
+				return parseFloat( m[ 1 ] ) === 1 ? m[ 3 ] : ( m[ 5 ] || m[ 3 ] );
 			} else {
 				return el;
 			}
@@ -842,7 +842,7 @@ vars = {
 
 i18n = function ( msg ) {
 	var params = Array.prototype.slice.call( arguments );
-	params[0] = vars.messages[msg];
+	params[ 0 ] = vars.messages[ msg ];
 	return util.parseMsg.apply( this, params );
 };
 
@@ -858,8 +858,8 @@ $( document ).ready( function () {
 			source: function ( query, process ) {
 				var localApi,
 					dbName = $( '#p' ).val().trim();
-				if ( dbName !== '' && vars.sites[dbName] ) {
-					localApi = vars.sites[dbName] + '/w/api.php';
+				if ( dbName !== '' && vars.sites[ dbName ] ) {
+					localApi = vars.sites[ dbName ] + '/w/api.php';
 				}
 				getData.allUsers( query, localApi ).done( function ( users ) {
 					return process( $.map( users, function ( user ) {
@@ -878,8 +878,8 @@ $( document ).ready( function () {
 
 		$( '#form' ).on( 'submit', function ( event ) {
 			event.preventDefault();
-			vars.wikipath = vars.sites[$( '#p' ).val()] + '/wiki/';
-			vars.api = vars.sites[$( '#p' ).val()] + '/w/api.php';
+			vars.wikipath = vars.sites[ $( '#p' ).val() ] + '/wiki/';
+			vars.api = vars.sites[ $( '#p' ).val() ] + '/w/api.php';
 			vars.user = $( '#u' ).val().replace( /_/g, ' ' );
 			if ( window.history.pushState && window.location.pathname.split( /[^\/]\/[^\/]/ ).length === 1 ) {
 				window.history.pushState( {}, '', window.location.pathname.replace( /\/$/, '' ) + '/' + vars.user.replace( / /g, '_' ) + '@' + $( '#p' ).val() );
@@ -919,16 +919,16 @@ $( document ).ready( function () {
 						} );
 						getData.messages( vars.userLang, toLoadMsgs ).done( function () {
 							util.months = $.map( util.months, function ( el ) {
-								return vars.messages[el];
+								return vars.messages[ el ];
 							} );
 							util.weekdays = $.map( util.weekdays, function ( el ) {
-								return vars.messages[el];
+								return vars.messages[ el ];
 							} );
 							util.weekdaysShort = $.map( util.weekdaysShort, function ( el ) {
-								return vars.messages[el];
+								return vars.messages[ el ];
 							} );
 							$( '[data-msg]' ).each( function () {
-								$( this ).text( vars.messages[this.dataset.msg] );
+								$( this ).text( vars.messages[ this.dataset.msg ] );
 							} );
 							$( '#rights' )
 							.append(
@@ -967,11 +967,11 @@ $( document ).ready( function () {
 								vars.contribs.sort();
 								contribs = vars.contribs;
 								contribs.log();
-								firstContribDate = new Date( contribs[0].timestamp );
-								latestContribDate = new Date( contribs[contribs.length - 1].timestamp );
+								firstContribDate = new Date( contribs[ 0 ].timestamp );
+								latestContribDate = new Date( contribs[ contribs.length - 1 ].timestamp );
 								contribsByNamespace = contribs.filterByNamespace( true );
 								nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
-									return contribsByNamespace[b].length - contribsByNamespace[a].length;
+									return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
 								} );
 								vars.firstMonth = util.yearMonth( firstContribDate );
 								$( '.jumbotron' ).removeClass( 'jumbotron' );
@@ -979,14 +979,14 @@ $( document ).ready( function () {
 								$( '#form' ).remove();
 								nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
 									var nsName;
-									if ( contribsByNamespace[ns].length > 0 ) { // only namespaces with contributions
+									if ( contribsByNamespace[ ns ].length > 0 ) { // only namespaces with contributions
 										nsName = util.namespaceName( ns );
 										return {
 											id: ns,
 											name: nsName,
-											value: contribsByNamespace[ns].length,
+											value: contribsByNamespace[ ns ].length,
 											label: nsName + i18n( 'colon-separator' ) +
-												util.percent( contribsByNamespace[ns].length, contribs.length ),
+												util.percent( contribsByNamespace[ ns ].length, contribs.length ),
 											color: util.colorFromNamespace( ns )
 										};
 									}
@@ -1021,15 +1021,15 @@ $( document ).ready( function () {
 											$( '<h2>' )
 											.text(
 												i18n(
-													te[1] ? 'top edited in ns' : 'edited in ns',
-													Object.keys( te[0] ).length,
+													te[ 1 ] ? 'top edited in ns' : 'edited in ns',
+													Object.keys( te[ 0 ] ).length,
 													d.data.name
 												)
 											)
 										)
 										.append(
 											$( '<ul>' ).append(
-												$.map( te[0], function ( v, k ) {
+												$.map( te[ 0 ], function ( v, k ) {
 													return $( '<a>' )
 														.text( k )
 														.attr( 'href', vars.wikipath + k )
@@ -1044,7 +1044,7 @@ $( document ).ready( function () {
 								/* Tags table */
 								tagsData = contribs.filterByTag();
 								sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
-									return tagsData[b].length - tagsData[a].length;
+									return tagsData[ b ].length - tagsData[ a ].length;
 								} );
 								$( '#tags-table tbody' )
 								.append(
@@ -1052,7 +1052,7 @@ $( document ).ready( function () {
 										return $( '<tr>' )
 											.append(
 												$( '<td>' ).text( tag ),
-												$( '<td>' ).text( util.percent( tagsData[tag].length, contribs.length ) )
+												$( '<td>' ).text( util.percent( tagsData[ tag ].length, contribs.length ) )
 											);
 									} )
 								);
@@ -1060,17 +1060,17 @@ $( document ).ready( function () {
 								/* Programming languages chart */
 								langs = contribs.filterByProgrammingLanguage();
 								sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
-									return langs[b].length - langs[a].length;
+									return langs[ b ].length - langs[ a ].length;
 								} );
 								codeChartData = $.map( sortedLangExts, function ( ext ) {
-									var langName = util.programmingLanguages[ext][0];
+									var langName = util.programmingLanguages[ ext ][ 0 ];
 									return {
 										id: ext,
 										name: langName,
-										value: langs[ext].length,
+										value: langs[ ext ].length,
 										label: langName + i18n( 'colon-separator' ) +
-											util.percent( langs[ext].length, contribs.length ),
-										color: '#' + util.programmingLanguages[ext][1]
+											util.percent( langs[ ext ].length, contribs.length ),
+										color: '#' + util.programmingLanguages[ ext ][ 1 ]
 									};
 								} );
 								window.charts.pie( '#code-chart', 20, 20, 520, 400, 150, codeChartData );
@@ -1093,7 +1093,7 @@ $( document ).ready( function () {
 										var maxEdits, scale, map;
 										if ( geodata.length > 0 ) {
 											$( '#map' ).empty().css( 'height', '400px' );
-											maxEdits = geodata[0].numedits;
+											maxEdits = geodata[ 0 ].numedits;
 											scale = d3.scale.sqrt()
 												.domain( [ 0, maxEdits ] )
 												.range( [ 5, 18 ] );
@@ -1120,7 +1120,7 @@ $( document ).ready( function () {
 												}
 												L.marker( marker.coords, {
 													icon: L.icon( {
-														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[Math.floor( Math.random() * util.markerColors.length )] + '.svg',
+														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[ Math.floor( Math.random() * util.markerColors.length ) ] + '.svg',
 														iconSize: [ markerRadius, markerRadius ]
 													} )
 												} ).addTo( map ).bindPopup( '<strong><a href="' + vars.wikipath + marker.title + '">' + marker.title + '</a></strong><br>' + i18n( 'bytes with nchanges', sizediff, edits ) );
@@ -1145,7 +1145,7 @@ $( document ).ready( function () {
 								$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
 									var p = [ month, [] ];
 									$.each( byNs, function ( ns, c ) {
-										p[1][nsIdsSortedByNumericValue.indexOf( ns )] = c.length;
+										p[ 1 ][ nsIdsSortedByNumericValue.indexOf( ns ) ] = c.length;
 									} );
 									nsData.push( p );
 								} );
@@ -1190,8 +1190,8 @@ $( document ).ready( function () {
 										getData.blockInfo().done( function ( blockinfo ) {
 											$( '#general' )
 											.append( blockinfo.blockid !== undefined ? ( '<strong>Currently blocked by ' + blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>' ) : '' )
-											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[0].revid + '">' + i18n( 'first edit' ) + '</a>' + i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) + i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>' )
-											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[contribs.length - 1].revid + '">' +
+											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[ 0 ].revid + '">' + i18n( 'first edit' ) + '</a>' + i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) + i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>' )
+											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[ contribs.length - 1 ].revid + '">' +
 												i18n( 'most recent edit' ) +
 												'</a>' +
 												i18n( 'colon-separator' ) + latestContribDate.toUTCString() + i18n( 'word-separator' ) +
@@ -1206,7 +1206,7 @@ $( document ).ready( function () {
 												(
 													i18n( 'longest streak' ) + i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
 														return new Date( d ).toUTCString();
-													} ).join( ' - ' ) + i18n( 'word-separator' ) + i18n( 'parentheses', i18n( 'days', ( new Date( ls[1] ) - new Date( ls[0] ) ) / 86400000 + 1 ) ) + '<br>'
+													} ).join( ' - ' ) + i18n( 'word-separator' ) + i18n( 'parentheses', i18n( 'days', ( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1 ) ) + '<br>'
 												) : ''
 											)
 											.append( i18n( 'executed in', i18n( 'duration-seconds', Math.floor( ( new Date().getTime() - dewkinInitDate.getTime() ) / 10 ) / 100 ) ) );
@@ -1227,10 +1227,10 @@ $( document ).ready( function () {
 
 		path = window.location.pathname.split( '/' );
 		if ( path.length === 3 ) {
-			inspData = path[2].split( '@' );
+			inspData = path[ 2 ].split( '@' );
 			if ( inspData.length === 2 ) {
-				$( '#u' ).val( inspData[0] );
-				$( '#p' ).val( inspData[1] );
+				$( '#u' ).val( inspData[ 0 ] );
+				$( '#p' ).val( inspData[ 1 ] );
 				$( '#form' ).submit();
 			}
 		}

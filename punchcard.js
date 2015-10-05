@@ -46,14 +46,14 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 	yAxis = d3.svg.axis().scale( y ).orient( 'left' )
 		.ticks( 7 )
 		.tickFormat( function ( d, i ) {
-			return weekdays[d];
+			return weekdays[ d ];
 		} );
 
 	tip = d3.tip()
 		.attr( 'class', 'svg-tip' )
 		.offset( [ -10, 0 ] )
 		.html( function ( d ) {
-			return nedits( d[2] );
+			return nedits( d[ 2 ] );
 		} );
 
 	svg.append( 'g' )
@@ -68,7 +68,7 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 
 	svg.call( tip );
 
-	maxR = d3.max( data, function ( d ) { return d[2]; } );
+	maxR = d3.max( data, function ( d ) { return d[ 2 ]; } );
 
 	r = d3.scale.sqrt()
 		.domain( [ 0, maxR ] )
@@ -79,13 +79,13 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 			.data( data )
 			.enter()
 			.append( 'circle' )
-			.attr( 'cx', function ( d ) { return x( d[1] ); } )
-			.attr( 'cy', function ( d ) { return y( d[0] ); } )
+			.attr( 'cx', function ( d ) { return x( d[ 1 ] ); } )
+			.attr( 'cy', function ( d ) { return y( d[ 0 ] ); } )
 			.attr( 'r', 0 )
 			.on( 'mouseover', tip.show )
 			.on( 'mouseout', tip.hide )
 			.transition()
 			.duration( 250 )
-			.attr( 'r', function ( d ) { return r( d[2] ); } );
+			.attr( 'r', function ( d ) { return r( d[ 2 ] ); } );
 	} );
 };

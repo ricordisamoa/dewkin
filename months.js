@@ -42,10 +42,10 @@ window.charts.months = function ( data, namespaces, colors ) {
 		var i,
 			a = [];
 		for ( i = 0; i < m; ++i ) {
-			a[i] = {
-				ns: namespaces[d],
+			a[ i ] = {
+				ns: namespaces[ d ],
 				x: i,
-				y: data[i][1][d]
+				y: data[ i ][ 1 ][ d ]
 			};
 		}
 		return a;
@@ -78,13 +78,13 @@ window.charts.months = function ( data, namespaces, colors ) {
 	yAxis = d3.svg.axis()
 		.scale( y )
 		.orient( 'left' )
-		.tickFormat( function ( d, i ) { return data[i][0]; } );
+		.tickFormat( function ( d, i ) { return data[ i ][ 0 ]; } );
 
 	// total month count
 	yAxis2 = d3.svg.axis()
 		.scale( y )
 		.orient( 'left' )
-		.tickFormat( function ( d, i ) { return d3.sum( data[i][1] ); } );
+		.tickFormat( function ( d, i ) { return d3.sum( data[ i ][ 1 ] ); } );
 
 	tip = d3.tip()
 		.attr( 'class', 'svg-tip svg-tip-small' )
@@ -122,7 +122,7 @@ window.charts.months = function ( data, namespaces, colors ) {
 		.data( layers )
 	.enter().append( 'g' )
 		.attr( 'class', 'layer' )
-		.attr( 'fill', function ( d, i ) { return colors[i]; } );
+		.attr( 'fill', function ( d, i ) { return colors[ i ]; } );
 
 	layer.selectAll( '.bar' )
 			.data( function ( d ) { return d; } )
