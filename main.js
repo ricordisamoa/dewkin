@@ -23,13 +23,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ( function () {
 'use strict';
 
+var ContribsList, api, getData, util, vars, i18n;
+
 window.charts = {};
 
 /*
  * @class
  * @extends Array
  */
-var ContribsList = ( function () {
+ContribsList = ( function () {
 
 /*
  * @constructor
@@ -158,11 +160,11 @@ ContribsList.prototype = {
 	filterByProgrammingLanguage: function () {
 		var contr = {};
 		$.each( this, function ( i, c ) {
-			var lang;
+			var lang, m;
 			if ( c.ns === 828 ) { // Scribunto modules
 				lang = 'lua';
 			} else if ( [ 2, 8 ].indexOf( c.ns ) !== -1 ) {
-				var m = c.title.toLowerCase().match( /\.(js|css)$/ );
+				m = c.title.toLowerCase().match( /\.(js|css)$/ );
 				if ( m !== null ) {
 					lang = m[1];
 				} else if ( c.ns === 2 && /\.py$/.test( c.title ) ) {
@@ -288,7 +290,7 @@ return ContribsList;
 
 } ).call( {} );
 
-var api = {
+api = {
 
 	get: function ( data, settings ) {
 		var params = {
@@ -304,7 +306,7 @@ var api = {
 		return $.ajax( params );
 	}
 
-},
+};
 
 getData = {
 
@@ -556,7 +558,7 @@ getData = {
 
 };
 
-var util = {
+util = {
 
 	dateDiff: function ( olddate, newdate, precision, ago ) {
 		var labels = [
@@ -835,14 +837,14 @@ var util = {
 		return msg;
 	}
 
-},
+};
 
 vars = {
 	globalApi: '//meta.wikimedia.org/w/api.php',
 	contribs: [],
 	uploads: [],
 	userLang: navigator.language
-},
+};
 
 i18n = function ( msg ) {
 	var params = Array.prototype.slice.call( arguments );
@@ -853,6 +855,7 @@ i18n = function ( msg ) {
 $( document ).ready( function () {
 
 	getData.siteMatrix().done( function ( sites ) {
+		var path, inspData;
 
 		vars.sites = sites;
 
@@ -959,13 +962,19 @@ $( document ).ready( function () {
 							.text( rights.length )
 							.appendTo( 'li>a[href="#rights"]' );
 							getData.contribs().done( function ( contribs ) {
+								var firstContribDate, latestContribDate, contribsByNamespace,
+									nsIdsSortedByNumberOfEdits, nsChartData, $topEdited, nsChart,
+									tagsData, sortedTagNames, langs, sortedLangExts, codeChartData,
+									hideCreditsOnShow, contribsByMonthAndNamespace,
+									nsIdsSortedByNumericValue, nsNames, nsColors, nsData, ls, summ;
+
 								vars.contribs = new ContribsList( contribs );
 								vars.contribs.sort();
 								contribs = vars.contribs;
 								contribs.log();
-								var firstContribDate = new Date( contribs[0].timestamp ),
-								latestContribDate = new Date( contribs[contribs.length - 1].timestamp ),
-								contribsByNamespace = contribs.filterByNamespace( true ),
+								firstContribDate = new Date( contribs[0].timestamp );
+								latestContribDate = new Date( contribs[contribs.length - 1].timestamp );
+								contribsByNamespace = contribs.filterByNamespace( true );
 								nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
 									return contribsByNamespace[b].length - contribsByNamespace[a].length;
 								} );
@@ -973,7 +982,7 @@ $( document ).ready( function () {
 								$( '.jumbotron' ).removeClass( 'jumbotron' );
 								$( '.container.before-tabs' ).removeClass( 'container' );
 								$( '#form' ).remove();
-								var nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
+								nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
 									if ( contribsByNamespace[ns].length > 0 ) { // only namespaces with contributions
 										var nsName = util.namespaceName( ns );
 										return {
@@ -985,12 +994,13 @@ $( document ).ready( function () {
 											color: util.colorFromNamespace( ns )
 										};
 									}
-								} ),
-								$topEdited = $( '#top-edited' ),
+								} );
+								$topEdited = $( '#top-edited' );
 								nsChart = window.charts.pie( '#ns-chart', 20, 20, 600, 400, 150, nsChartData );
 								nsChart.paths
 								.on( 'click', function ( d ) {
-									var self = d3.select( this );
+									var te,
+										self = d3.select( this );
 									if ( self.classed( 'selected' ) ) {
 										self
 											.interrupt()
@@ -1008,7 +1018,7 @@ $( document ).ready( function () {
 										self
 											.classed( 'selected', true )
 											.attr( 'd', nsChart.arcOver );
-										var te = contribs.topEdited( parseInt( d.data.id ) );
+										te = contribs.topEdited( parseInt( d.data.id ) );
 										$topEdited
 										.empty()
 										.append(
@@ -1036,7 +1046,7 @@ $( document ).ready( function () {
 								} );
 
 								/* Tags table */
-								var tagsData = contribs.filterByTag(),
+								tagsData = contribs.filterByTag();
 								sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
 									return tagsData[b].length - tagsData[a].length;
 								} );
@@ -1052,10 +1062,10 @@ $( document ).ready( function () {
 								);
 
 								/* Programming languages chart */
-								var langs = contribs.filterByProgrammingLanguage(),
+								langs = contribs.filterByProgrammingLanguage();
 								sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
 									return langs[b].length - langs[a].length;
-								} ),
+								} );
 								codeChartData = $.map( sortedLangExts, function ( ext ) {
 									var langName = util.programmingLanguages[ext][0];
 									return {
@@ -1073,7 +1083,7 @@ $( document ).ready( function () {
 								window.charts.punchcard( contribs.toPunchcard(), util.weekdays, function ( n ) {
 									return i18n( 'nedits bold', n );
 								} );
-								var hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
+								hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
 								hideCreditsOnShow.on( 'shown.bs.tab', function () {
 									$( '#credits' ).hide();
 								} );
@@ -1124,16 +1134,16 @@ $( document ).ready( function () {
 									} );
 								} );
 								$( 'footer' ).show();
-								var contribsByMonthAndNamespace = contribs.filterByMonthAndNamespace(),
+								contribsByMonthAndNamespace = contribs.filterByMonthAndNamespace();
 								nsIdsSortedByNumericValue = Object.keys( vars.namespaces ).sort( function ( a, b ) {
 									return a - b;
-								} ),
+								} );
 								nsNames = $.map( nsIdsSortedByNumericValue, function ( e ) {
 									return util.namespaceName( e );
-								} ),
+								} );
 								nsColors = $.map( nsIdsSortedByNumericValue, function ( ns ) {
 									return util.colorFromNamespace( ns );
-								} ),
+								} );
 								nsData = [];
 								$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
 									var p = [ month, [] ];
@@ -1143,7 +1153,7 @@ $( document ).ready( function () {
 									nsData.push( p );
 								} );
 								window.charts.months( nsData, nsNames, nsColors );
-								var ls = contribs.longestStreak(),
+								ls = contribs.longestStreak();
 								summ = contribs.grepByEditSummary().length;
 								getData.votes().done( function ( result ) {
 									$( '#votes' )
@@ -1217,9 +1227,10 @@ $( document ).ready( function () {
 				} );
 			} )();
 		} );
-		var path = window.location.pathname.split( '/' );
+
+		path = window.location.pathname.split( '/' );
 		if ( path.length === 3 ) {
-			var inspData = path[2].split( '@' );
+			inspData = path[2].split( '@' );
 			if ( inspData.length === 2 ) {
 				$( '#u' ).val( inspData[0] );
 				$( '#p' ).val( inspData[1] );
