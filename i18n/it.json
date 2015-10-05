@@ -1,4 +1,9 @@
 {
+	"@metadata": {
+		"authors": [
+			"Ricordisamoa"
+		]
+	},
 	"loading": "Caricamento...",
 	"coming soon": "Prossimamente! :)",
 	"overview": "Panoramica",

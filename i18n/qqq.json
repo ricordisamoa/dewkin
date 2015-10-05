@@ -1,4 +1,9 @@
 {
+	"@metadata": {
+		"authors": [
+			"Ricordisamoa"
+		]
+	},
 	"loading": "Label of the 'Yes' button after being clicked on",
 	"coming soon": "Placeholder for tabs that have not been implemented yet",
 	"overview": "Title of the 'Overview' tab",

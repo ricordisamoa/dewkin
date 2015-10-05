@@ -1,4 +1,9 @@
 {
+	"@metadata": {
+		"authors": [
+			"FDMS4"
+		]
+	},
 	"loading": "Lädt …",
 	"coming soon": "Coming soon!",
 	"overview": "Übersicht",

@@ -1,4 +1,9 @@
 {
+	"@metadata": {
+		"authors": [
+			"JurgenNL"
+		]
+	},
 	"loading": "Laden...",
 	"coming soon": "Coming soon! :)",
 	"overview": "Overzicht",

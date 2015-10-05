@@ -12,8 +12,7 @@ module.exports = function ( grunt ) {
 		},
 		banana: {
 			options: {
-				disallowDuplicateTranslations: false,
-				requireMetadata: false
+				disallowDuplicateTranslations: false
 			},
 			all: 'i18n/'
 		}
