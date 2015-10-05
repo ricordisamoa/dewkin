@@ -36,6 +36,7 @@ var ContribsList = ( function () {
  */
 function ContribsList() {
 	var list,
+		method,
 		args = Array.prototype.slice.call( arguments );
 
 	if ( args.length === 1 && $.isArray( args[0] ) ) {
@@ -45,7 +46,7 @@ function ContribsList() {
 		list = ( Array.apply( list, arguments ) || list );
 	}
 
-	for ( var method in ContribsList.prototype ) {
+	for ( method in ContribsList.prototype ) {
 		if ( ContribsList.prototype.hasOwnProperty( method ) ) {
 			list[method] = ContribsList.prototype[method];
 		}
@@ -85,16 +86,18 @@ ContribsList.prototype = {
 	},
 
 	filterByDay: function () {
-		var contr = {};
-		for ( var j = 0; j < 7; j++ ) {
+		var j,
+			contr = {};
+		for ( j = 0; j < 7; j++ ) {
 			contr[j] = this.grepByDay( j );
 		}
 		return contr;
 	},
 
 	filterByHour: function () {
-		var contr = [];
-		for ( var j = 0; j < 24; j++ ) {
+		var j,
+			contr = [];
+		for ( j = 0; j < 24; j++ ) {
 			contr.push( this.grepByHour( j ) );
 		}
 		return contr;
@@ -201,13 +204,14 @@ ContribsList.prototype = {
 	},
 
 	topEdited: function ( ns ) {
-		var c = this;
+		var titles, occurr, sortedKeys, overflow, sortedOccurr,
+			c = this;
 		if ( ns !== undefined ) {
 			c = c.grepByNamespace( ns );
 		}
-		var titles = $.map( c, function ( e ) {
+		titles = $.map( c, function ( e ) {
 			return [ e.title ];
-		} ),
+		} );
 		occurr = {};
 		$.each( titles, function ( i, e ) {
 			if ( occurr[e] ) {
@@ -216,15 +220,15 @@ ContribsList.prototype = {
 				occurr[e] = 1;
 			}
 		} );
-		var sortedKeys = Object.keys( occurr ).sort( function ( a, b ) {
+		sortedKeys = Object.keys( occurr ).sort( function ( a, b ) {
 			return ( ( occurr[a] > occurr[b] ) ? -1 : ( ( occurr[a] < occurr[b] ) ? 1 : 0 ) );
-		} ),
+		} );
 		overflow = false;
 		if ( sortedKeys.length > 30 ) {
 			overflow = true;
 			sortedKeys = sortedKeys.slice( 0, 30 );
 		}
-		var sortedOccurr = {};
+		sortedOccurr = {};
 		$.each( sortedKeys, function ( i, e ) {
 			sortedOccurr[e] = occurr[e];
 		} );
@@ -232,9 +236,10 @@ ContribsList.prototype = {
 	},
 
 	toPunchcard: function () {
-		var contr = this,
+		var d,
+			contr = this,
 			data = [];
-		for ( var d = 0; d < 7; d++ ) {
+		for ( d = 0; d < 7; d++ ) {
 			/* jshint loopfunc:true */
 			$.each( contr.grepByDay( d ).filterByHour(), function ( h, c ) {
 				data.push( [ d, h, c.length ] );
@@ -485,7 +490,8 @@ getData = {
 	},
 
 	geoData: function ( contribs ) {
-		var occurr = {};
+		var geodata, titles, getGeodataRecursive,
+			occurr = {};
 		$.each( contribs, function ( key, val ) {
 			if ( occurr[val.title] ) {
 				if ( occurr[val.title].revid ) {
@@ -501,38 +507,39 @@ getData = {
 				occurr[val.title] = val;
 			}
 		} );
-		var geodata = {},
-			titles = Object.keys( occurr ),
-			getGeodataRecursive = function () {
-				return api.get( {
-					action: 'query',
-					prop: 'coordinates',
-					titles: titles.splice( 0, 50 ).join( '|' )
-				} )
-				.then( function ( data ) {
-					$.extend( geodata, data.query.pages );
-					if ( titles.length > 0 ) {
-						return getGeodataRecursive();
-					} else {
-						return geodata;
-					}
-				} );
-			};
+		geodata = {};
+		titles = Object.keys( occurr );
+		getGeodataRecursive = function () {
+			return api.get( {
+				action: 'query',
+				prop: 'coordinates',
+				titles: titles.splice( 0, 50 ).join( '|' )
+			} )
+			.then( function ( data ) {
+				$.extend( geodata, data.query.pages );
+				if ( titles.length > 0 ) {
+					return getGeodataRecursive();
+				} else {
+					return geodata;
+				}
+			} );
+		};
 		return getGeodataRecursive().then( function ( coords ) {
-			var markers = [];
+			var coordinates, edits, numedits, marker,
+				markers = [];
 			$.each( coords, function ( pageid, page ) {
 				if ( page.coordinates ) {
-					var coordinates = page.coordinates;
+					coordinates = page.coordinates;
 					if ( coordinates.length === 1 ) {
 						coordinates = coordinates[0];
-						var edits = occurr[page.title],
-							numedits = ( edits.count || 1 ),
-							marker = {
-								coords: coordinates,
-								title: page.title,
-								sizediff: edits.sizediff,
-								numedits: numedits
-							};
+						edits = occurr[page.title];
+						numedits = ( edits.count || 1 );
+						marker = {
+							coords: coordinates,
+							title: page.title,
+							sizediff: edits.sizediff,
+							numedits: numedits
+						};
 						if ( edits.revid ) {
 							$.extend( marker, { revid: edits.revid } );
 						}
@@ -746,14 +753,15 @@ var util = {
 			from = vars.firstMonth;
 		}
 		from = from.split( '/' );
-		var fromYear = parseInt( from[0] ),
+		var year, month, m,
+			fromYear = parseInt( from[0] ),
 			fromMonth = parseInt( from[1] ) - 1,
 			months = [],
 			toYear = new Date().getUTCFullYear(),
 			toMonth = new Date().getUTCMonth();
-		for ( var year = fromYear; year <= toYear; year++ ) {
-			for ( var month = ( year === fromYear ? fromMonth : 0 ); month <= ( year === toYear ? toMonth : 11 ); month++ ) {
-				var m = ( month + 1 ).toString();
+		for ( year = fromYear; year <= toYear; year++ ) {
+			for ( month = ( year === fromYear ? fromMonth : 0 ); month <= ( year === toYear ? toMonth : 11 ); month++ ) {
+				m = ( month + 1 ).toString();
 				months.push( year + '/' + ( m.length === 1 ? '0' : '' ) + m );
 			}
 		}
