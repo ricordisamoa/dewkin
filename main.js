@@ -341,7 +341,7 @@ getData = {
 			var dbNames = {};
 			$.each( data.sitematrix, function () {
 				$.each( this.site || ( $.isArray( this ) ? this : [] ), function () {
-					if ( this.dbname && this.url && this['private'] === undefined && this.fishbowl === undefined ) {
+					if ( this.dbname && this.url && this.private === undefined && this.fishbowl === undefined ) {
 						dbNames[this.dbname] = this.url.replace( /^http\:\/\//, '//' );
 					}
 				} );
