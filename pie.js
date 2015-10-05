@@ -77,11 +77,13 @@ window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 		.attr( 'd', arc )
 		.attr( 'fill', function ( d ) { return d.data.color; } )
 		.on( 'mouseover', function ( d ) {
+			var leg;
+
 			d3.select( this )
 				.interrupt()
 				.attr( 'd', arcOver );
 
-			var leg = u
+			leg = u
 				.filter( function ( dd, i ) { return dd.data.id === d.data.id; } );
 
 			leg.selectAll( 'text' )

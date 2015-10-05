@@ -566,10 +566,11 @@ util = {
 		diff = ( newdate || new Date() ) - olddate,
 		message = [];
 		$.each( mult, function ( i, e ) {
+			var f, fl;
 			if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
-				var f = parseInt( mult.slice( i ).reduce( function ( a, b ) {
+				f = parseInt( mult.slice( i ).reduce( function ( a, b ) {
 					return a * b;
-				} ) ),
+				} ) );
 				fl = Math.floor( diff / f );
 				if ( fl > 0 ) {
 					message.push( i18n( labels[i], fl ) );
@@ -675,8 +676,9 @@ util = {
 	},
 
 	namespaceFromColor: function ( color ) {
+		var ns;
 		color = color.toLowerCase().replace( /^\#/, '' );
-		for ( var ns in this.namespaceColors ) {
+		for ( ns in this.namespaceColors ) {
 			if ( this.namespaceColors[ns].toLowerCase() === color ) {
 				return ns;
 			}
@@ -743,16 +745,16 @@ util = {
 	},
 
 	allMonths: function ( from ) {
+		var fromYear, fromMonth, months, toYear, toMonth, year, month, m;
 		if ( from === undefined ) {
 			from = vars.firstMonth;
 		}
 		from = from.split( '/' );
-		var year, month, m,
-			fromYear = parseInt( from[0] ),
-			fromMonth = parseInt( from[1] ) - 1,
-			months = [],
-			toYear = new Date().getUTCFullYear(),
-			toMonth = new Date().getUTCMonth();
+		fromYear = parseInt( from[0] );
+		fromMonth = parseInt( from[1] ) - 1;
+		months = [];
+		toYear = new Date().getUTCFullYear();
+		toMonth = new Date().getUTCMonth();
 		for ( year = fromYear; year <= toYear; year++ ) {
 			for ( month = ( year === fromYear ? fromMonth : 0 ); month <= ( year === toYear ? toMonth : 11 ); month++ ) {
 				m = ( month + 1 ).toString();
@@ -891,8 +893,9 @@ $( document ).ready( function () {
 			( function () {
 				var dewkinInitDate = new Date();
 				getData.namespaces().done( function ( namespaces ) {
+					var toLoadMsgs;
 					vars.namespaces = namespaces;
-					var toLoadMsgs = $( '[data-msg]' ).map( function () {
+					toLoadMsgs = $( '[data-msg]' ).map( function () {
 						return this.dataset.msg;
 					} ).get()
 					// time-related messages
@@ -975,8 +978,9 @@ $( document ).ready( function () {
 								$( '.container.before-tabs' ).removeClass( 'container' );
 								$( '#form' ).remove();
 								nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
+									var nsName;
 									if ( contribsByNamespace[ns].length > 0 ) { // only namespaces with contributions
-										var nsName = util.namespaceName( ns );
+										nsName = util.namespaceName( ns );
 										return {
 											id: ns,
 											name: nsName,
@@ -1086,13 +1090,14 @@ $( document ).ready( function () {
 								.one( 'shown.bs.tab', function () {
 									$( '#map' ).append( 'Loading geodata...' );
 									getData.geoData( contribs.grepByNamespace( [ 0, 6 ] ) ).done( function ( geodata ) {
+										var maxEdits, scale, map;
 										if ( geodata.length > 0 ) {
 											$( '#map' ).empty().css( 'height', '400px' );
-											var maxEdits = geodata[0].numedits,
-												scale = d3.scale.sqrt()
-													.domain( [ 0, maxEdits ] )
-													.range( [ 5, 18 ] ),
-												map = L.map( 'map' ).setView( [ 0, 0 ], 2 );
+											maxEdits = geodata[0].numedits;
+											scale = d3.scale.sqrt()
+												.domain( [ 0, maxEdits ] )
+												.range( [ 5, 18 ] );
+											map = L.map( 'map' ).setView( [ 0, 0 ], 2 );
 											new L.TileLayer(
 												'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 												{

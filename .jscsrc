@@ -1,5 +1,4 @@
 {
 	"preset": "wikimedia",
-	"requireSpacesInsideBrackets": null,
-	"requireVarDeclFirst": null
+	"requireSpacesInsideBrackets": null
 }
