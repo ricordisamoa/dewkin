@@ -30,13 +30,9 @@ window.charts = {};
 /*
  * @class
  * @extends Array
- */
-ContribsList = ( function () {
-
-/*
  * @constructor
  */
-function ContribsList() {
+ContribsList = function () {
 	var list,
 		method,
 		args = Array.prototype.slice.call( arguments );
@@ -54,7 +50,7 @@ function ContribsList() {
 		}
 	}
 	return list;
-}
+};
 
 ContribsList.prototype = {
 
@@ -285,10 +281,6 @@ ContribsList.prototype = {
 	}
 
 };
-
-return ContribsList;
-
-} ).call( {} );
 
 api = {
 
