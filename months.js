@@ -1,25 +1,23 @@
-/*
-
-DEep WiKi INspector (DEWKIN)
-Copyright (C) 2013-2014 Ricordisamoa
-
-meta.wikimedia.org/wiki/User:Ricordisamoa
-tools.wmflabs.org/ricordisamoa/
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-*/
+/**
+ * DEep WiKi INspector (DEWKIN)
+ * Copyright (C) 2013-2015 Ricordisamoa
+ *
+ * https://meta.wikimedia.org/wiki/User:Ricordisamoa
+ * https://tools.wmflabs.org/ricordisamoa/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 window.charts.months = function ( data, namespaces, colors ) {
 	var n, m, margin, width, height, stack, layers,
 		yGroupMax, yStackMax, x, y, xAxis, yAxis, yAxis2,
