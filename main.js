@@ -673,16 +673,6 @@ util = {
 		return '#' + ( this.namespaceColors[ ns ] || 'CCC' );
 	},
 
-	namespaceFromColor: function ( color ) {
-		var ns;
-		color = color.toLowerCase().replace( /^\#/, '' );
-		for ( ns in this.namespaceColors ) {
-			if ( this.namespaceColors[ ns ].toLowerCase() === color ) {
-				return ns;
-			}
-		}
-	},
-
 	/*
 	@see https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
 	*/
