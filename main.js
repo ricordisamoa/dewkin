@@ -679,8 +679,8 @@ util = {
 	programmingLanguages: {
 		css: [ 'CSS', '563d7c' ],
 		js:  [ 'JavaScript', 'f1e05a' ],
-		lua: [ 'Lua', 'fa1fa1' ],
-		py:  [ 'Python', '3581ba' ]
+		lua: [ 'Lua', '000080' ],
+		py:  [ 'Python', '3572A5' ]
 	},
 
 	markerColors: [ 'bisque', 'black', 'blue', 'coral', 'cyan', 'darkslategray', 'deeppink', 'green',
