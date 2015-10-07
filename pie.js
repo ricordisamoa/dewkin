@@ -18,6 +18,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * Generate a pie chart.
+ *
+ * @param {string} selector CSS selector for the element to put the chart into
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {number} radius
+ * @param {Object[]} data Objects storing id, name, value, label and color
+ * @return {Object} For custom interactions
+ */
 window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 
 	var arc, arcOver, pie, svg, chart, legend, u, g, paths;

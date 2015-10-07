@@ -18,6 +18,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * Generate a GitHub-like punchcard.
+ *
+ * @param {number[][]} data Arrays in the form [day 0-6, hour 0-23, number of edits]
+ * @param {string[]} weekdays From Sunday to Saturday
+ * @param {Function} nedits Called with the number of edits represented by a circle,
+ *  returns HTML for its tip
+ */
 window.charts.punchcard = function ( data, weekdays, nedits ) {
 	var w, h, pad, leftPad, svg, x, y, xAxis, yAxis, tip, maxR, r;
 

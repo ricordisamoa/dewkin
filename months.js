@@ -18,6 +18,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * Generate a stacked bar chart for months.
+ *
+ * @param {Array[]} data Arrays in which the first item is a month code
+ *  (yyyy/mm) and the second one is an array containing the number of edits
+ *  in each namespace sorted by namespace id
+ * @param {string[]} namespaces Namespace names sorted by namespace id
+ * @param {string[]} colors Namespace colors sorted by namespace id
+ */
 window.charts.months = function ( data, namespaces, colors ) {
 	var n, m, margin, width, height, stack, layers,
 		yGroupMax, yStackMax, x, y, xAxis, yAxis, yAxis2,
