@@ -933,7 +933,12 @@ $( document ).ready( function () {
 			vars.api = vars.sites[ $( '#p' ).val() ] + '/w/api.php';
 			vars.user = $( '#u' ).val().replace( /_/g, ' ' );
 			if ( window.history.pushState && window.location.pathname.split( /[^\/]\/[^\/]/ ).length === 1 ) {
-				window.history.pushState( {}, '', window.location.pathname.replace( /\/$/, '' ) + '/' + vars.user.replace( / /g, '_' ) + '@' + $( '#p' ).val() );
+				window.history.pushState(
+					{},
+					'',
+					window.location.pathname.replace( /\/$/, '' ) + '/' +
+						vars.user.replace( / /g, '_' ) + '@' + $( '#p' ).val()
+				);
 			}
 			$( this )
 			.children( 'button' )
@@ -950,7 +955,8 @@ $( document ).ready( function () {
 						return this.dataset.msg;
 					} ).get()
 					// time-related messages
-					.concat( [ 'ago', 'just-now', 'seconds', 'duration-seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years' ] )
+					.concat( [ 'ago', 'just-now', 'seconds', 'duration-seconds',
+						'minutes', 'hours', 'days', 'weeks', 'months', 'years' ] )
 					// miscellaneous
 					.concat( [ 'and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'diff',
 						'nchanges', 'size-bytes', 'tags-hitcount' ] )
@@ -1273,8 +1279,14 @@ $( document ).ready( function () {
 												i18n( 'parentheses', util.dateDiff( latestContribDate, new Date(), 5, true ) ) + '<br>'
 											)
 											.append( 'Live edits: ' + contribs.length.toLocaleString() + '<br>' )
-											.append( vars.editcount === undefined ? [] : [ 'Deleted edits: ' + ( vars.editcount - contribs.length ).toLocaleString(), '<br>',
-												'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>' ] )
+											.append(
+												vars.editcount === undefined ? [] : [
+													'Deleted edits: ' + ( vars.editcount - contribs.length ).toLocaleString(),
+													'<br>',
+													'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>',
+													'<br>'
+												]
+											)
 											.append(
 												'<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' +
 												i18n( 'statistics-files' ) +
@@ -1288,10 +1300,21 @@ $( document ).ready( function () {
 														return new Date( d ).toUTCString();
 													} ).join( ' - ' ) +
 													i18n( 'word-separator' ) +
-													i18n( 'parentheses', i18n( 'days', ( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1 ) ) + '<br>'
+													i18n( 'parentheses',
+														i18n( 'days',
+															( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1
+														)
+													) +
+													'<br>'
 												) : ''
 											)
-											.append( i18n( 'executed in', i18n( 'duration-seconds', Math.floor( ( new Date().getTime() - dewkinInitDate.getTime() ) / 10 ) / 100 ) ) );
+											.append(
+												i18n( 'executed in',
+													i18n( 'duration-seconds',
+														Math.floor( ( new Date().getTime() - dewkinInitDate.getTime() ) / 10 ) / 100
+													)
+												)
+											);
 										} );
 									} );
 									$( '#edit-summary' )
