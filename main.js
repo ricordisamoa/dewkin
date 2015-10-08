@@ -25,7 +25,7 @@ var ContribsList, api, getData, util, vars, i18n;
 
 window.charts = {};
 
-/*
+/**
  * @class
  * @extends Array
  * @constructor
@@ -52,8 +52,8 @@ ContribsList = function () {
 
 ContribsList.prototype = {
 
-	/*
-	 * sort the items by timestamp, in ascending order
+	/**
+	 * Sort the ContribsList by timestamp, in place, in ascending order.
 	 */
 	sort: function () {
 		return new ContribsList( Array.prototype.sort.call( this, function ( a, b ) {
@@ -231,6 +231,11 @@ ContribsList.prototype = {
 		return [ sortedOccurr, overflow ];
 	},
 
+	/**
+	 * Get data suitable for a punchcard chart.
+	 *
+	 * @return {number[][]} Arrays in the form [day 0-6, hour 0-23, number of edits]
+	 */
 	toPunchcard: function () {
 		var d,
 			contr = this,
@@ -244,8 +249,12 @@ ContribsList.prototype = {
 		return data;
 	},
 
-	/* Compute the longest sequence of consecutive days with contributions
-	*/
+	/**
+	 * Compute the longest sequence of consecutive days with contributions.
+	 *
+	 * @return {Date[]} The start and end date of one of the longest streaks,
+	 *  or empty if none can be found
+	 */
 	longestStreak: function () {
 		var prev = [],
 			cur = [],
@@ -550,6 +559,15 @@ getData = {
 
 util = {
 
+	/**
+	 * Get a human-readable difference between two dates.
+	 *
+	 * @param {Date} olddate
+	 * @param {Date} [newdate]
+	 * @param {number|null} [precision]
+	 * @param {boolean} [ago]
+	 * @return {string}
+	 */
 	dateDiff: function ( olddate, newdate, precision, ago ) {
 		var labels = [
 			'years',
@@ -590,6 +608,12 @@ util = {
 	weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
 	months: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ],
 
+	/**
+	 * Get the month code from a date.
+	 *
+	 * @param {Date} date
+	 * @return {string} The month code in the form yyyy/mm
+	 */
 	yearMonth: function ( date ) {
 		var month = ( date.getUTCMonth() + 1 ).toString();
 		if ( month.length === 1 ) {
@@ -598,7 +622,7 @@ util = {
 		return date.getUTCFullYear() + '/' + month;
 	},
 
-	/*
+	/**
 	 * Set of HEX colors by MediaWiki namespace number
 	 * from Soxred93's Edit Counter - Copyright (C) 2010 Soxred93 - under the terms of the GNU General Public License
 	 * source code: <https://tools.wmflabs.org/xtools/pcount/source.php?path=index>
@@ -669,13 +693,20 @@ util = {
 	},
 	/* end of Soxred93's code */
 
+	/**
+	 * Get the color code of a namespace, falling back to #CCC.
+	 *
+	 * @param {number} ns The namespace id
+	 * @return {string} The color code
+	 */
 	colorFromNamespace: function ( ns ) {
 		return '#' + ( this.namespaceColors[ ns ] || 'CCC' );
 	},
 
-	/*
-	@see https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
-	*/
+	/**
+	 * Map of programming language codes to names and colors,
+	 * inspired by https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
+	 */
 	programmingLanguages: {
 		css: [ 'CSS', '563d7c' ],
 		js:  [ 'JavaScript', 'f1e05a' ],
@@ -683,11 +714,18 @@ util = {
 		py:  [ 'Python', '3572A5' ]
 	},
 
+	/**
+	 * Array of colors for map markers,
+	 * subset of https://commons.wikimedia.org/wiki/Special:PrefixIndex/File:Location_dot
+	 */
 	markerColors: [ 'bisque', 'black', 'blue', 'coral', 'cyan', 'darkslategray', 'deeppink', 'green',
 		'lightgrey', 'lime', 'magenta', 'orange', 'purple', 'red', 'teal', 'yellow' ],
 
-	/*
-	 * A 'span' or 'strong' HTML element for a given sizediff
+	/**
+	 * Get a 'span' or 'strong' HTML element for a given sizediff.
+	 *
+	 * @param {number} sizediff
+	 * @return {string} HTML
 	 */
 	sizediffIndicator: function ( sizediff ) {
 		var className,
@@ -704,7 +742,7 @@ util = {
 			'</' + sizedifftag + '>';
 	},
 
-	/*
+	/**
 	 * Set of arbitrary HTML colors by MediaWiki user group
 	 */
 	groupsColors: {
@@ -719,6 +757,12 @@ util = {
 		steward:          'black'
 	},
 
+	/**
+	 * Get the name of a user group on the current project.
+	 *
+	 * @param {string} group
+	 * @return {string} Can be localized and/or HTML
+	 */
 	groupColor: function ( group ) {
 		var local = ( vars.messages[ 'group-' + group + '-member' ] || group );
 		return util.groupsColors[ group ] ?
@@ -726,12 +770,24 @@ util = {
 			local;
 	},
 
+	/**
+	 * Get the localized name of a namespace, falling back to 'ns-' and its number.
+	 *
+	 * @param {number} number The namespace id
+	 * @return {string} The namespace name
+	 */
 	namespaceName: function ( number ) {
 		return vars.namespaces[ number ] ?
 			vars.namespaces[ number ][ '*' ].replace( /^(Talk)?$/, 'Article $1' ).trim() :
 			( 'ns-' + number );
 	},
 
+	/**
+	 * Get an array of month codes between two months (included).
+	 *
+	 * @param {string} [from] Month code in the form yyyy/mm
+	 * @return {string[]} Array of month codes in the form yyyy/mm
+	 */
 	allMonths: function ( from ) {
 		var fromYear, fromMonth, months, toYear, toMonth, year, month, m;
 		if ( from === undefined ) {
@@ -752,6 +808,12 @@ util = {
 		return months;
 	},
 
+	/**
+	 * Get an array joined with natural separators.
+	 *
+	 * @param {Array} array
+	 * @return {string}
+	 */
 	listToText: function ( array ) {
 		var comma = i18n( 'comma-separator' ),
 			sep = i18n( 'word-separator' ),
