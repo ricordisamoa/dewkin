@@ -114,18 +114,22 @@ ContribsList.prototype = {
 	},
 
 	filterByMonth: function () {
-		var contr = {},
+		var firstMonth,
+			contr = {},
 			s = {};
 		$.each( this, function ( i, e ) {
 			var date = new Date( e.timestamp ),
 				code = util.yearMonth( date );
+			if ( firstMonth === undefined || code < firstMonth ) {
+				firstMonth = code;
+			}
 			if ( contr[ code ] ) {
 				contr[ code ].push( e );
 			} else {
 				contr[ code ] = [ e ];
 			}
 		} );
-		$.each( util.allMonths(), function ( i, e ) {
+		$.each( util.allMonths( firstMonth ), function ( i, e ) {
 			if ( contr[ e ] ) {
 				s[ e ] = new ContribsList( contr[ e ] );
 			} else {
@@ -785,14 +789,11 @@ util = {
 	/**
 	 * Get an array of month codes between two months (included).
 	 *
-	 * @param {string} [from] Month code in the form yyyy/mm
+	 * @param {string} from Month code in the form yyyy/mm
 	 * @return {string[]} Array of month codes in the form yyyy/mm
 	 */
 	allMonths: function ( from ) {
 		var fromYear, fromMonth, months, toYear, toMonth, year, month, m;
-		if ( from === undefined ) {
-			from = vars.firstMonth;
-		}
 		from = from.split( '/' );
 		fromYear = parseInt( from[ 0 ] );
 		fromMonth = parseInt( from[ 1 ] ) - 1;
@@ -1027,7 +1028,6 @@ $( document ).ready( function () {
 								nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
 									return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
 								} );
-								vars.firstMonth = util.yearMonth( firstContribDate );
 								$( '.jumbotron' ).removeClass( 'jumbotron' );
 								$( '.container.before-tabs' ).removeClass( 'container' );
 								$( '#form' ).remove();
