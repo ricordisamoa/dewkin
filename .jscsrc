@@ -1,4 +1,4 @@
 {
 	"preset": "wikimedia",
-	"maximumLineLength": 300
+	"maximumLineLength": 150
 }

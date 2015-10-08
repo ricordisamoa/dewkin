@@ -937,7 +937,11 @@ $( document ).ready( function () {
 									if ( removedGroups.length > 0 ) {
 										msg.push( 'removed ' + util.listToText( $.map( removedGroups, util.groupColor ) ) );
 									}
-									return $( '<li>' ).html( '<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' + new Date( logevt.timestamp ).toLocaleString() + '</a>' + i18n( 'colon-separator' ) + util.listToText( msg ) );
+									return $( '<li>' ).html(
+										'<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' +
+										new Date( logevt.timestamp ).toLocaleString() +
+										'</a>' + i18n( 'colon-separator' ) + util.listToText( msg )
+									);
 								} ) )
 							);
 							$( '<span>' )
@@ -1108,10 +1112,19 @@ $( document ).ready( function () {
 												}
 												L.marker( marker.coords, {
 													icon: L.icon( {
-														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' + util.markerColors[ Math.floor( Math.random() * util.markerColors.length ) ] + '.svg',
+														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' +
+															util.markerColors[ Math.floor( Math.random() * util.markerColors.length ) ] +
+															'.svg',
 														iconSize: [ markerRadius, markerRadius ]
 													} )
-												} ).addTo( map ).bindPopup( '<strong><a href="' + vars.wikipath + marker.title + '">' + marker.title + '</a></strong><br>' + i18n( 'bytes with nchanges', sizediff, edits ) );
+												} )
+												.addTo( map )
+												.bindPopup(
+													'<strong><a href="' + vars.wikipath + marker.title + '">' +
+													marker.title +
+													'</a></strong><br>' +
+													i18n( 'bytes with nchanges', sizediff, edits )
+												);
 											} );
 										} else {
 											$( '#map' ).empty().append( i18n( 'no geodata' ) );
@@ -1177,9 +1190,21 @@ $( document ).ready( function () {
 									getData.uploads().done( function ( uploads ) {
 										getData.blockInfo().done( function ( blockinfo ) {
 											$( '#general' )
-											.append( blockinfo.blockid !== undefined ? ( '<strong>Currently blocked by ' + blockinfo.blockedby + ' with an expiry time of ' + blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>' ) : '' )
-											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[ 0 ].revid + '">' + i18n( 'first edit' ) + '</a>' + i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) + i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>' )
-											.append( '<a href="' + vars.wikipath + '?diff=' + contribs[ contribs.length - 1 ].revid + '">' +
+											.append(
+												blockinfo.blockid !== undefined ? (
+													'<strong>Currently blocked by ' + blockinfo.blockedby + ' with an expiry time of ' +
+													blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>'
+												) : ''
+											)
+											.append(
+												'<a href="' + vars.wikipath + '?diff=' + contribs[ 0 ].revid + '">' +
+												i18n( 'first edit' ) +
+												'</a>' +
+												i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) +
+												i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>'
+											)
+											.append(
+												'<a href="' + vars.wikipath + '?diff=' + contribs[ contribs.length - 1 ].revid + '">' +
 												i18n( 'most recent edit' ) +
 												'</a>' +
 												i18n( 'colon-separator' ) + latestContribDate.toUTCString() + i18n( 'word-separator' ) +
@@ -1188,13 +1213,20 @@ $( document ).ready( function () {
 											.append( 'Live edits: ' + contribs.length.toLocaleString() + '<br>' )
 											.append( vars.editcount === undefined ? [] : [ 'Deleted edits: ' + ( vars.editcount - contribs.length ).toLocaleString(), '<br>',
 												'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>', '<br>' ] )
-											.append( '<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' + i18n( 'statistics-files' ) + '</a>' + i18n( 'colon-separator' ) + uploads.length.toLocaleString() + '<br>' )
+											.append(
+												'<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' +
+												i18n( 'statistics-files' ) +
+												'</a>' +
+												i18n( 'colon-separator' ) + uploads.length.toLocaleString() + '<br>'
+											)
 											.append(
 												ls.length === 2 ?
 												(
 													i18n( 'longest streak' ) + i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
 														return new Date( d ).toUTCString();
-													} ).join( ' - ' ) + i18n( 'word-separator' ) + i18n( 'parentheses', i18n( 'days', ( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1 ) ) + '<br>'
+													} ).join( ' - ' ) +
+													i18n( 'word-separator' ) +
+													i18n( 'parentheses', i18n( 'days', ( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1 ) ) + '<br>'
 												) : ''
 											)
 											.append( i18n( 'executed in', i18n( 'duration-seconds', Math.floor( ( new Date().getTime() - dewkinInitDate.getTime() ) / 10 ) / 100 ) ) );
