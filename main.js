@@ -989,7 +989,7 @@ $( document ).ready( function () {
 							} );
 							$( '#rights' )
 							.append(
-								rights.length === 0 ? '<h3>No log entries found.</h3>' : $( '<ul>' )
+								rights.length === 0 ? $( '<h3>' ).text( i18n( 'no log entries' ) ) : $( '<ul>' )
 								.append( $.map( rights, function ( logevt ) {
 									var oldGroups = logevt.params.oldgroups,
 										newGroups = logevt.params.newgroups,
