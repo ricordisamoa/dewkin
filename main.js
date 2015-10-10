@@ -21,7 +21,7 @@
 ( function () {
 'use strict';
 
-var ContribsList, api, getData, util, vars, i18n;
+var ContribsList, localApi, globalApi, getData, util, vars, i18n;
 
 window.charts = {};
 
@@ -293,60 +293,70 @@ ContribsList.prototype = {
 
 };
 
-api = {
+/**
+ * Interface to MediaWiki's action API.
+ *
+ * @class
+ *
+ * @constructor
+ * @param {string} url
+ */
+function MediaWikiApi( url ) {
+	this.url = url;
+	this.defaults = {
+		format: 'json'
+	};
+}
 
-	get: function ( data, settings ) {
-		var params = {
-			dataType: 'jsonp',
-			type: 'GET',
-			url: vars.api
-		};
-		$.extend( params, settings );
-		if ( data.format === undefined ) {
-			data.format = 'json';
-		}
-		params.data = data;
-		return $.ajax( params );
-	}
-
+/**
+ * Send a GET request to the MediaWiki API.
+ *
+ * @param {Object} data Parameters for the request
+ * @return {jQuery.Promise}
+ */
+MediaWikiApi.prototype.get = function ( data ) {
+	return $.ajax( {
+		dataType: 'jsonp',
+		type: 'GET',
+		url: this.url,
+		data: $.extend( {}, data, this.defaults )
+	} );
 };
 
 getData = {
 
-	allUsers: function ( prefix, apiUrl ) {
-		var params;
-		if ( apiUrl !== undefined ) {
-			params = {
-				action: 'query',
-				list: 'allusers',
-				auwitheditsonly: 1,
-				auprefix: prefix,
-				aulimit: 8,
-				prop: ''
-			};
-		} else {
-			apiUrl = vars.globalApi;
-			params = {
-				action: 'query',
-				list: 'globalallusers',
-				aguprefix: prefix,
-				agulimit: 8,
-				aguprop: ''
-			};
-		}
-		return api.get( params, { url: apiUrl } )
-			.then( function ( data ) {
-				return data.query[ Object.keys( data.query )[ 0 ] ];
-			} );
+	allUsers: function ( prefix ) {
+		return localApi.get( {
+			action: 'query',
+			list: 'allusers',
+			auwitheditsonly: 1,
+			auprefix: prefix,
+			aulimit: 8,
+			prop: ''
+		} )
+		.then( function ( data ) {
+			return data.query.allusers;
+		} );
+	},
+
+	globalAllUsers: function ( prefix ) {
+		return globalApi.get( {
+			action: 'query',
+			list: 'globalallusers',
+			aguprefix: prefix,
+			agulimit: 8,
+			aguprop: ''
+		} )
+		.then( function ( data ) {
+			return data.query.globalallusers;
+		} );
 	},
 
 	siteMatrix: function () {
-		return api.get( {
+		return globalApi.get( {
 			action: 'sitematrix',
 			smsiteprop: 'dbname|url',
 			smlangprop: 'site'
-		}, {
-			url: vars.globalApi
 		} )
 		.then( function ( data ) {
 			var dbNames = {};
@@ -362,7 +372,7 @@ getData = {
 	},
 
 	namespaces: function () {
-		return api.get( {
+		return localApi.get( {
 			action: 'query',
 			meta: 'siteinfo',
 			siprop: 'namespaces'
@@ -389,7 +399,7 @@ getData = {
 			} else {
 				params.continue = '';
 			}
-			return api.get( params ).then( function ( data ) {
+			return localApi.get( params ).then( function ( data ) {
 				vars.uploads = vars.uploads.concat( $.map( data.query.allimages, function ( e ) {
 					return [ e.name.replace( /_/g, ' ' ) ];
 				} ) );
@@ -420,7 +430,7 @@ getData = {
 				params.usprop = 'editcount';
 				params.continue = '';
 			}
-			return api.get( params ).then( function ( data ) {
+			return localApi.get( params ).then( function ( data ) {
 				vars.contribs = vars.contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
 					vars.editcount = data.query.users[ Object.keys( data.query.users )[ 0 ] ].editcount;
@@ -437,7 +447,7 @@ getData = {
 
 	messages: function ( lang, msgs ) {
 		var deferred = $.Deferred();
-		api.get( {
+		localApi.get( {
 			action: 'query',
 			meta: 'allmessages',
 			amlang: lang,
@@ -454,7 +464,7 @@ getData = {
 	},
 
 	rightsLog: function () {
-		return api.get( {
+		return localApi.get( {
 			action: 'query',
 			list: 'logevents',
 			letype: 'rights',
@@ -475,7 +485,7 @@ getData = {
 	},
 
 	blockInfo: function () {
-		return api.get( {
+		return localApi.get( {
 			action: 'query',
 			list: 'users',
 			ususers: vars.user,
@@ -515,7 +525,7 @@ getData = {
 		geodata = {};
 		titles = Object.keys( occurr );
 		getGeodataRecursive = function () {
-			return api.get( {
+			return localApi.get( {
 				action: 'query',
 				prop: 'coordinates',
 				titles: titles.splice( 0, 50 ).join( '|' )
@@ -885,11 +895,12 @@ util = {
 };
 
 vars = {
-	globalApi: '//meta.wikimedia.org/w/api.php',
 	contribs: [],
 	uploads: [],
 	userLang: navigator.language
 };
+
+globalApi = new MediaWikiApi( '//meta.wikimedia.org/w/api.php' );
 
 i18n = function ( msg ) {
 	var params = Array.prototype.slice.call( arguments );
@@ -907,12 +918,15 @@ $( document ).ready( function () {
 		// suggestions while typing "User name"
 		$( '#u' ).typeahead( {
 			source: function ( query, process ) {
-				var localApi,
+				var func,
 					dbName = $( '#p' ).val().trim();
 				if ( dbName !== '' && vars.sites[ dbName ] ) {
-					localApi = vars.sites[ dbName ] + '/w/api.php';
+					localApi = new MediaWikiApi( vars.sites[ dbName ] + '/w/api.php' );
+					func = 'allUsers';
+				} else {
+					func = 'globalAllUsers';
 				}
-				getData.allUsers( query, localApi ).done( function ( users ) {
+				getData[ func ]( query ).done( function ( users ) {
 					return process( $.map( users, function ( user ) {
 						return user.name;
 					} ) );
@@ -930,7 +944,7 @@ $( document ).ready( function () {
 		$( '#form' ).on( 'submit', function ( event ) {
 			event.preventDefault();
 			vars.wikipath = vars.sites[ $( '#p' ).val() ] + '/wiki/';
-			vars.api = vars.sites[ $( '#p' ).val() ] + '/w/api.php';
+			localApi = new MediaWikiApi( vars.sites[ $( '#p' ).val() ] + '/w/api.php' );
 			vars.user = $( '#u' ).val().replace( /_/g, ' ' );
 			if ( window.history.pushState && window.location.pathname.split( /[^\/]\/[^\/]/ ).length === 1 ) {
 				window.history.pushState(
