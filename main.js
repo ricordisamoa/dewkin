@@ -21,7 +21,7 @@
 ( function () {
 'use strict';
 
-var ContribsList, localApi, globalApi, getData, util, vars, i18n;
+var ContribsList, util, i18n, messages, allNamespaces; // FIXME: kill messages and allNamespaces
 
 window.charts = {};
 
@@ -70,7 +70,7 @@ ContribsList.prototype = {
 	filterByNamespace: function ( alsoEmpty ) {
 		var contr = {},
 			self = this;
-		$.each( $.map( vars.namespaces, function ( e ) {
+		$.each( $.map( allNamespaces, function ( e ) {
 			return e;
 		} ), function ( nsIndex, ns ) {
 			var f = self.grepByNamespace( ns.id );
@@ -323,10 +323,25 @@ MediaWikiApi.prototype.get = function ( data ) {
 	} );
 };
 
-getData = {
+/**
+ * Helper class for getting data from the MediaWiki API.
+ *
+ * @class
+ *
+ * @constructor
+ * @param {Object} config Configuration options
+ * @cfg {MediaWikiApi} localApi Interface to the API of the site the inspector should run on
+ * @cfg {MediaWikiApi} globalApi Interface to the API of the site exposing the site matrix
+ */
+function DataGetter( config ) {
+	this.localApi = config.localApi;
+	this.globalApi = config.globalApi;
+}
+
+DataGetter.prototype = {
 
 	allUsers: function ( prefix ) {
-		return localApi.get( {
+		return this.localApi.get( {
 			action: 'query',
 			list: 'allusers',
 			auwitheditsonly: 1,
@@ -340,7 +355,7 @@ getData = {
 	},
 
 	globalAllUsers: function ( prefix ) {
-		return globalApi.get( {
+		return this.globalApi.get( {
 			action: 'query',
 			list: 'globalallusers',
 			aguprefix: prefix,
@@ -353,7 +368,7 @@ getData = {
 	},
 
 	siteMatrix: function () {
-		return globalApi.get( {
+		return this.globalApi.get( {
 			action: 'sitematrix',
 			smsiteprop: 'dbname|url',
 			smlangprop: 'site'
@@ -372,7 +387,7 @@ getData = {
 	},
 
 	namespaces: function () {
-		return localApi.get( {
+		return this.localApi.get( {
 			action: 'query',
 			meta: 'siteinfo',
 			siprop: 'namespaces'
@@ -385,13 +400,15 @@ getData = {
 	},
 
 	uploads: function () {
-		var getUploadsRecursive = function ( continuation ) {
+		var self = this,
+		uploads = [],
+		getUploadsRecursive = function ( continuation ) {
 			var params = {
 				action: 'query',
 				list: 'allimages',
 				aiprop: '',
 				aisort: 'timestamp',
-				aiuser: vars.user,
+				aiuser: self.user,
 				ailimit: 'max'
 			};
 			if ( continuation !== undefined ) {
@@ -399,14 +416,14 @@ getData = {
 			} else {
 				params.continue = '';
 			}
-			return localApi.get( params ).then( function ( data ) {
-				vars.uploads = vars.uploads.concat( $.map( data.query.allimages, function ( e ) {
+			return self.localApi.get( params ).then( function ( data ) {
+				uploads = uploads.concat( $.map( data.query.allimages, function ( e ) {
 					return [ e.name.replace( /_/g, ' ' ) ];
 				} ) );
 				if ( data.continue ) {
 					return getUploadsRecursive( data.continue );
 				} else {
-					return vars.uploads;
+					return uploads;
 				}
 			} );
 		};
@@ -414,11 +431,13 @@ getData = {
 	},
 
 	contribs: function () {
-		var getContribsRecursive = function ( continuation ) {
+		var self = this,
+		contribs = [],
+		getContribsRecursive = function ( continuation ) {
 			var params = {
 				action: 'query',
 				list: 'usercontribs',
-				ucuser: vars.user,
+				ucuser: self.user,
 				ucprop: 'title|timestamp|comment|tags|ids|sizediff',
 				uclimit: 'max'
 			};
@@ -426,19 +445,19 @@ getData = {
 				$.extend( params, continuation );
 			} else {
 				params.list += '|users';
-				params.ususers = vars.user;
+				params.ususers = self.user;
 				params.usprop = 'editcount';
 				params.continue = '';
 			}
-			return localApi.get( params ).then( function ( data ) {
-				vars.contribs = vars.contribs.concat( data.query.usercontribs );
+			return self.localApi.get( params ).then( function ( data ) {
+				contribs = contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
-					vars.editcount = data.query.users[ Object.keys( data.query.users )[ 0 ] ].editcount;
+					self.editCount = data.query.users[ Object.keys( data.query.users )[ 0 ] ].editcount;
 				}
 				if ( data.continue ) {
 					return getContribsRecursive( data.continue );
 				} else {
-					return vars.contribs;
+					return contribs;
 				}
 			} );
 		};
@@ -447,16 +466,16 @@ getData = {
 
 	messages: function ( lang, msgs ) {
 		var deferred = $.Deferred();
-		localApi.get( {
+		this.localApi.get( {
 			action: 'query',
 			meta: 'allmessages',
 			amlang: lang,
 			ammessages: msgs.join( '|' )
 		} )
 		.done( function ( data ) {
-			vars.messages = {};
+			messages = {};
 			$.each( data.query.allmessages || [], function ( i, v ) {
-				vars.messages[ v.name ] = v[ '*' ];
+				messages[ v.name ] = v[ '*' ];
 			} );
 			util.loadCustomMessages( lang ).done( deferred.resolve );
 		} );
@@ -464,11 +483,11 @@ getData = {
 	},
 
 	rightsLog: function () {
-		return localApi.get( {
+		return this.localApi.get( {
 			action: 'query',
 			list: 'logevents',
 			letype: 'rights',
-			letitle: 'User:' + vars.user,
+			letitle: 'User:' + this.user,
 			ledir: 'newer',
 			lelimit: 'max'
 		} )
@@ -485,10 +504,10 @@ getData = {
 	},
 
 	blockInfo: function () {
-		return localApi.get( {
+		return this.localApi.get( {
 			action: 'query',
 			list: 'users',
-			ususers: vars.user,
+			ususers: this.user,
 			usprop: 'blockinfo'
 		} )
 		.then( function ( data ) {
@@ -499,14 +518,15 @@ getData = {
 	votes: function () {
 		return $.getJSON( '//tools.wmflabs.org/octodata/sucker.php', {
 			action: 'votelookup',
-			username: vars.user,
+			username: this.user,
 			groupby: 'ballot'
 		} );
 	},
 
 	geoData: function ( contribs ) {
 		var geodata, titles, getGeodataRecursive,
-			occurr = {};
+			occurr = {},
+			self = this;
 		$.each( contribs, function ( key, val ) {
 			if ( occurr[ val.title ] ) {
 				if ( occurr[ val.title ].revid ) {
@@ -525,7 +545,7 @@ getData = {
 		geodata = {};
 		titles = Object.keys( occurr );
 		getGeodataRecursive = function () {
-			return localApi.get( {
+			return self.localApi.get( {
 				action: 'query',
 				prop: 'coordinates',
 				titles: titles.splice( 0, 50 ).join( '|' )
@@ -778,22 +798,10 @@ util = {
 	 * @return {string} Can be localized and/or HTML
 	 */
 	groupColor: function ( group ) {
-		var local = ( vars.messages[ 'group-' + group + '-member' ] || group );
+		var local = ( messages[ 'group-' + group + '-member' ] || group );
 		return util.groupsColors[ group ] ?
 			( '<span style="background-color:' + util.groupsColors[ group ] + ';color:white">' + local + '</span>' ) :
 			local;
-	},
-
-	/**
-	 * Get the localized name of a namespace, falling back to 'ns-' and its number.
-	 *
-	 * @param {number} number The namespace id
-	 * @return {string} The namespace name
-	 */
-	namespaceName: function ( number ) {
-		return vars.namespaces[ number ] ?
-			vars.namespaces[ number ][ '*' ].replace( /^(Talk)?$/, 'Article $1' ).trim() :
-			( 'ns-' + number );
 	},
 
 	/**
@@ -854,7 +862,7 @@ util = {
 			deferred = $.Deferred();
 		$.get( 'i18n/' + lang + '.json', {}, 'jsonp' )
 		.done( function ( data ) {
-			$.extend( vars.messages, data );
+			$.extend( messages, data );
 			deferred.resolve( true );
 		} )
 		.fail( function () {
@@ -894,466 +902,745 @@ util = {
 
 };
 
-vars = {
-	contribs: [],
-	uploads: [],
-	userLang: navigator.language
-};
-
-globalApi = new MediaWikiApi( '//meta.wikimedia.org/w/api.php' );
-
 i18n = function ( msg ) {
 	var params = Array.prototype.slice.call( arguments );
-	params[ 0 ] = vars.messages[ msg ];
+	params[ 0 ] = messages[ msg ];
 	return util.parseMsg.apply( this, params );
 };
 
-$( document ).ready( function () {
+/**
+ * Main class for the inspector.
+ *
+ * @class
+ *
+ * @constructor
+ * @param {Object} config Configuration options
+ * @cfg {string} globalApiUrl Address of the api.php endpoint exposing the sitematrix
+ * @cfg {string} userLanguage Language code to get interface messages for
+ * @cfg {jQuery} $form Form element to start the inspector
+ * @cfg {jQuery} $user Input field for the inspected user's name
+ * @cfg {jQuery} $project Input field for the wiki ID
+ * @cfg {jQuery} $init Submit button triggering the inspector
+ * @cfg {jQuery} $general Container for general information
+ * @cfg {jQuery} $topEdited Container for the '(top) edited in namespace' list
+ * @cfg {jQuery} $editSummary Element of the 'edit summary' tab
+ * @cfg {jQuery} $tagsTable Table element for edit tags
+ * @cfg {jQuery} $votes Element of the 'votes' tab
+ */
+function Inspector( config ) {
+	this.dataGetter = new DataGetter( {
+		globalApi: new MediaWikiApi( config.globalApiUrl )
+	} );
+	this.userLanguage = config.userLanguage;
+	this.$form = config.$form;
+	this.$user = config.$user;
+	this.$project = config.$project;
+	this.$init = config.$init;
+	this.$general = config.$general;
+	this.$topEdited = config.$topEdited;
+	this.$editSummary = config.$editSummary;
+	this.$tagsTable = config.$tagsTable;
+	this.$votes = config.$votes;
+}
 
-	getData.siteMatrix().done( function ( sites ) {
-		var path, inspData;
+/**
+ * Try to get a user name and a project ID from the current location.
+ *
+ * @private
+ */
+Inspector.prototype.tryPermalink = function () {
+	var path, inspData;
+	path = window.location.pathname.split( '/' );
+	if ( path.length === 3 ) {
+		inspData = path[ 2 ].split( '@' );
+		if ( inspData.length === 2 ) {
+			this.$user.val( inspData[ 0 ] );
+			this.$project.val( inspData[ 1 ] );
+			this.$form.submit();
+		}
+	}
+};
 
-		vars.sites = sites;
+/**
+ * Enhance the user and project input fields with autocompletion.
+ *
+ * @private
+ */
+Inspector.prototype.registerTypeahead = function () {
+	var self = this;
 
-		// suggestions while typing "User name"
-		$( '#u' ).typeahead( {
-			source: function ( query, process ) {
-				var func,
-					dbName = $( '#p' ).val().trim();
-				if ( dbName !== '' && vars.sites[ dbName ] ) {
-					localApi = new MediaWikiApi( vars.sites[ dbName ] + '/w/api.php' );
-					func = 'allUsers';
-				} else {
-					func = 'globalAllUsers';
-				}
-				getData[ func ]( query ).done( function ( users ) {
-					return process( $.map( users, function ( user ) {
-						return user.name;
-					} ) );
-				} );
+	// suggestions while typing "User name"
+	self.$user.typeahead( {
+		source: function ( query, process ) {
+			var func,
+				dbName = self.$project.val().trim();
+			if ( dbName !== '' && self.sites[ dbName ] ) {
+				self.dataGetter.localApi = new MediaWikiApi( self.sites[ dbName ] + '/w/api.php' );
+				func = 'allUsers';
+			} else {
+				func = 'globalAllUsers';
 			}
-		} );
-
-		// suggestions while typing "Project"
-		$( '#p' ).typeahead( {
-			source: function ( query, process ) {
-				process( Object.keys( vars.sites ) );
-			}
-		} );
-
-		$( '#form' ).on( 'submit', function ( event ) {
-			event.preventDefault();
-			vars.wikipath = vars.sites[ $( '#p' ).val() ] + '/wiki/';
-			localApi = new MediaWikiApi( vars.sites[ $( '#p' ).val() ] + '/w/api.php' );
-			vars.user = $( '#u' ).val().replace( /_/g, ' ' );
-			if ( window.history.pushState && window.location.pathname.split( /[^\/]\/[^\/]/ ).length === 1 ) {
-				window.history.pushState(
-					{},
-					'',
-					window.location.pathname.replace( /\/$/, '' ) + '/' +
-						vars.user.replace( / /g, '_' ) + '@' + $( '#p' ).val()
-				);
-			}
-			$( this )
-			.children( 'button' )
-			.attr( 'data-loading-text', 'Loading...' )
-			.button( 'loading' )
-			.siblings()
-			.remove();
-			( function () {
-				var dewkinInitDate = new Date();
-				getData.namespaces().done( function ( namespaces ) {
-					var toLoadMsgs;
-					vars.namespaces = namespaces;
-					toLoadMsgs = $( '[data-msg]' ).map( function () {
-						return this.dataset.msg;
-					} ).get()
-					// time-related messages
-					.concat( [ 'ago', 'just-now', 'seconds', 'duration-seconds',
-						'minutes', 'hours', 'days', 'weeks', 'months', 'years' ] )
-					// miscellaneous
-					.concat( [ 'and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses', 'percent', 'diff',
-						'nchanges', 'size-bytes', 'tags-hitcount' ] )
-					.concat( util.weekdays )
-					.concat( util.weekdaysShort )
-					.concat( util.months );
-					getData.rightsLog().done( function ( rights ) {
-						$.each( rights, function ( i, logevt ) {
-							var oldGroups = logevt.params.oldgroups,
-								newGroups = logevt.params.newgroups;
-							$.each( oldGroups.concat( newGroups ), function ( i, group ) {
-								var msg = 'group-' + group + '-member';
-								if ( toLoadMsgs.indexOf( msg ) === -1 ) {
-									toLoadMsgs.push( msg );
-								}
-							} );
-						} );
-						getData.messages( vars.userLang, toLoadMsgs ).done( function () {
-							util.months = $.map( util.months, function ( el ) {
-								return vars.messages[ el ];
-							} );
-							util.weekdays = $.map( util.weekdays, function ( el ) {
-								return vars.messages[ el ];
-							} );
-							util.weekdaysShort = $.map( util.weekdaysShort, function ( el ) {
-								return vars.messages[ el ];
-							} );
-							$( '[data-msg]' ).each( function () {
-								$( this ).text( vars.messages[ this.dataset.msg ] );
-							} );
-							$( '#rights' )
-							.append(
-								rights.length === 0 ? $( '<h3>' ).text( i18n( 'no log entries' ) ) : $( '<ul>' )
-								.append( $.map( rights, function ( logevt ) {
-									var oldGroups = logevt.params.oldgroups,
-										newGroups = logevt.params.newgroups,
-										addedGroups = $.grep( newGroups, function ( el ) {
-											return el !== '' && oldGroups.indexOf( el ) === -1;
-										} ),
-										removedGroups = $.grep( oldGroups, function ( el ) {
-											return el !== '' && newGroups.indexOf( el ) === -1;
-										} ),
-										msg = [];
-									if ( addedGroups.length > 0 ) {
-										msg.push( 'became ' + util.listToText( $.map( addedGroups, util.groupColor ) ) );
-									}
-									if ( removedGroups.length > 0 ) {
-										msg.push( 'removed ' + util.listToText( $.map( removedGroups, util.groupColor ) ) );
-									}
-									return $( '<li>' ).html(
-										'<a href="' + vars.wikipath + 'Special:Log/' + logevt.logid + '">' +
-										new Date( logevt.timestamp ).toLocaleString() +
-										'</a>' + i18n( 'colon-separator' ) + util.listToText( msg )
-									);
-								} ) )
-							);
-							$( '<span>' )
-							.addClass( 'badge' )
-							.text( rights.length )
-							.appendTo( 'li>a[href="#rights"]' );
-							getData.contribs().done( function ( contribs ) {
-								var firstContribDate, latestContribDate, contribsByNamespace,
-									nsIdsSortedByNumberOfEdits, nsChartData, $topEdited, nsChart,
-									tagsData, sortedTagNames, langs, sortedLangExts, codeChartData,
-									hideCreditsOnShow, contribsByMonthAndNamespace,
-									nsIdsSortedByNumericValue, nsNames, nsColors, nsData, ls, summ;
-
-								vars.contribs = new ContribsList( contribs );
-								vars.contribs.sort();
-								contribs = vars.contribs;
-								contribs.log();
-								firstContribDate = new Date( contribs[ 0 ].timestamp );
-								latestContribDate = new Date( contribs[ contribs.length - 1 ].timestamp );
-								contribsByNamespace = contribs.filterByNamespace( true );
-								nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
-									return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
-								} );
-								$( '.jumbotron' ).removeClass( 'jumbotron' );
-								$( '.container.before-tabs' ).removeClass( 'container' );
-								$( '#form' ).remove();
-								nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
-									var nsName;
-									if ( contribsByNamespace[ ns ].length > 0 ) { // only namespaces with contributions
-										nsName = util.namespaceName( ns );
-										return {
-											id: ns,
-											name: nsName,
-											value: contribsByNamespace[ ns ].length,
-											label: nsName + i18n( 'colon-separator' ) +
-												util.percent( contribsByNamespace[ ns ].length, contribs.length ),
-											color: util.colorFromNamespace( ns )
-										};
-									}
-								} );
-								$topEdited = $( '#top-edited' );
-								nsChart = window.charts.pie( '#ns-chart', 20, 20, 600, 400, 150, nsChartData );
-								nsChart.paths
-								.on( 'click', function ( d ) {
-									var te,
-										self = d3.select( this );
-									if ( self.classed( 'selected' ) ) {
-										self
-											.interrupt()
-											.classed( 'selected', false )
-											.attr( 'd', nsChart.arcOver );
-										$topEdited.hide( 'fast' );
-										nsChart.svg.attr( 'width', 600 );
-									} else {
-										nsChart.svg.attr( 'width', 340 );
-										nsChart.g.selectAll( 'path' )
-											.interrupt()
-											.filter( function () { return this !== self; } )
-											.classed( 'selected', false )
-											.attr( 'd', nsChart.arc );
-										self
-											.classed( 'selected', true )
-											.attr( 'd', nsChart.arcOver );
-										te = contribs.topEdited( parseInt( d.data.id ) );
-										$topEdited
-										.empty()
-										.append(
-											$( '<h2>' )
-											.text(
-												i18n(
-													te[ 1 ] ? 'top edited in ns' : 'edited in ns',
-													Object.keys( te[ 0 ] ).length,
-													d.data.name
-												)
-											)
-										)
-										.append(
-											$( '<ul>' ).append(
-												$.map( te[ 0 ], function ( v, k ) {
-													return $( '<a>' )
-														.text( k )
-														.attr( 'href', vars.wikipath + k )
-														.appendTo( '<li>' + v + ' - </li>' )
-														.parent();
-												} )
-											)
-										).show( 'fast' );
-									}
-								} );
-
-								/* Tags table */
-								tagsData = contribs.filterByTag();
-								sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
-									return tagsData[ b ].length - tagsData[ a ].length;
-								} );
-								$( '#tags-table tbody' )
-								.append(
-									$.map( sortedTagNames, function ( tag ) {
-										return $( '<tr>' )
-											.append(
-												$( '<td>' ).text( tag ),
-												$( '<td>' ).text( util.percent( tagsData[ tag ].length, contribs.length ) )
-											);
-									} )
-								);
-
-								/* Programming languages chart */
-								langs = contribs.filterByProgrammingLanguage();
-								sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
-									return langs[ b ].length - langs[ a ].length;
-								} );
-								codeChartData = $.map( sortedLangExts, function ( ext ) {
-									var langName = util.programmingLanguages[ ext ][ 0 ];
-									return {
-										id: ext,
-										name: langName,
-										value: langs[ ext ].length,
-										label: langName + i18n( 'colon-separator' ) +
-											util.percent( langs[ ext ].length, contribs.length ),
-										color: '#' + util.programmingLanguages[ ext ][ 1 ]
-									};
-								} );
-								window.charts.pie( '#code-chart', 20, 20, 520, 400, 150, codeChartData );
-
-								/* GitHub-like Punchcard */
-								window.charts.punchcard( contribs.toPunchcard(), util.weekdays, function ( n ) {
-									return i18n( 'nedits bold', n );
-								} );
-								hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
-								hideCreditsOnShow.on( 'shown.bs.tab', function () {
-									$( '#credits' ).hide();
-								} );
-								$( 'a[data-toggle="tab"]' ).not( hideCreditsOnShow ).on( 'shown.bs.tab', function () {
-									$( '#credits' ).show();
-								} );
-								$( 'li>a[href="#map"]' )
-								.one( 'shown.bs.tab', function () {
-									$( '#map' ).append( 'Loading geodata...' );
-									getData.geoData( contribs.grepByNamespace( [ 0, 6 ] ) ).done( function ( geodata ) {
-										var maxEdits, scale, map;
-										if ( geodata.length > 0 ) {
-											$( '#map' ).empty().css( 'height', '400px' );
-											maxEdits = geodata[ 0 ].numedits;
-											scale = d3.scale.sqrt()
-												.domain( [ 0, maxEdits ] )
-												.range( [ 5, 18 ] );
-											map = L.map( 'map' ).setView( [ 0, 0 ], 2 );
-											new L.TileLayer(
-												'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-												{
-													minZoom: 2,
-													maxZoom: 18,
-													attribution: 'Map data © <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-												}
-											)
-											.addTo( map );
-											$.each( geodata, function ( index, marker ) {
-												var edits,
-													sizediff = util.sizediffIndicator( marker.sizediff ),
-													markerRadius = scale( marker.numedits );
-												if ( marker.revid ) {
-													edits = '<a href="' + vars.wikipath + '?diff=' + marker.revid + '">' +
-														i18n( 'nchanges', '1' ) +
-														'</a>';
-												} else {
-													edits = i18n( 'nchanges', marker.numedits );
-												}
-												L.marker( marker.coords, {
-													icon: L.icon( {
-														iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' +
-															util.markerColors[ Math.floor( Math.random() * util.markerColors.length ) ] +
-															'.svg',
-														iconSize: [ markerRadius, markerRadius ]
-													} )
-												} )
-												.addTo( map )
-												.bindPopup(
-													'<strong><a href="' + vars.wikipath + marker.title + '">' +
-													marker.title +
-													'</a></strong><br>' +
-													i18n( 'bytes with nchanges', sizediff, edits )
-												);
-											} );
-										} else {
-											$( '#map' ).empty().append( i18n( 'no geodata' ) );
-										}
-									} );
-								} );
-								$( 'footer' ).show();
-								contribsByMonthAndNamespace = contribs.filterByMonthAndNamespace();
-								nsIdsSortedByNumericValue = Object.keys( vars.namespaces ).sort( function ( a, b ) {
-									return a - b;
-								} );
-								nsNames = $.map( nsIdsSortedByNumericValue, function ( e ) {
-									return util.namespaceName( e );
-								} );
-								nsColors = $.map( nsIdsSortedByNumericValue, function ( ns ) {
-									return util.colorFromNamespace( ns );
-								} );
-								nsData = [];
-								$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
-									var p = [ month, [] ];
-									$.each( byNs, function ( ns, c ) {
-										p[ 1 ][ nsIdsSortedByNumericValue.indexOf( ns ) ] = c.length;
-									} );
-									nsData.push( p );
-								} );
-								window.charts.months( nsData, nsNames, nsColors );
-								ls = contribs.longestStreak();
-								summ = contribs.grepByEditSummary().length;
-								getData.votes().done( function ( result ) {
-									$( '#votes' )
-									.append( $.map( result.votelookup.ballots, function ( poll ) {
-										// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
-										return [
-											$( '<h3>' ).append(
-												$( '<a>' )
-												.attr( {
-													href: poll.b_url,
-													title: poll.b_title
-												} )
-												.text( poll.b_title )
-											),
-											poll.votes.length > 0 ? $( '<ul>' )
-											.append( $.map( poll.votes, function ( vote ) {
-												return $( '<li>' )
-													.html(
-														i18n(
-															'voted for',
-															new Date( vote.vt_timestamp ).toUTCString(),
-															vote.s_name,
-															$( '<a>' )
-															.attr( {
-																href: poll.b_project + '?diff=' + vote.vt_diff,
-																title: i18n( 'diff on project', vote.vt_diff, poll.b_project )
-															} )
-															.text( i18n( 'diff' ) )
-															.get( 0 ).outerHTML
-														)
-													);
-											} ) ) : i18n( 'did not vote' )
-										];
-										// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
-									} ) );
-									getData.uploads().done( function ( uploads ) {
-										getData.blockInfo().done( function ( blockinfo ) {
-											$( '#general' )
-											.append(
-												blockinfo.blockid !== undefined ? (
-													'<strong>Currently blocked by ' + blockinfo.blockedby + ' with an expiry time of ' +
-													blockinfo.blockexpiry + ' because "<i>' + blockinfo.blockreason + '</i>"<br>'
-												) : ''
-											)
-											.append(
-												'<a href="' + vars.wikipath + '?diff=' + contribs[ 0 ].revid + '">' +
-												i18n( 'first edit' ) +
-												'</a>' +
-												i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) +
-												i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>'
-											)
-											.append(
-												'<a href="' + vars.wikipath + '?diff=' + contribs[ contribs.length - 1 ].revid + '">' +
-												i18n( 'most recent edit' ) +
-												'</a>' +
-												i18n( 'colon-separator' ) + latestContribDate.toUTCString() + i18n( 'word-separator' ) +
-												i18n( 'parentheses', util.dateDiff( latestContribDate, new Date(), 5, true ) ) + '<br>'
-											)
-											.append( 'Live edits: ' + contribs.length.toLocaleString() + '<br>' )
-											.append(
-												vars.editcount === undefined ? [] : [
-													'Deleted edits: ' + ( vars.editcount - contribs.length ).toLocaleString(),
-													'<br>',
-													'<b>Total edits (including deleted): ' + vars.editcount.toLocaleString() + '</b>',
-													'<br>'
-												]
-											)
-											.append(
-												'<a href="' + vars.wikipath + 'Special:Log/upload?user=' + vars.user + '">' +
-												i18n( 'statistics-files' ) +
-												'</a>' +
-												i18n( 'colon-separator' ) + uploads.length.toLocaleString() + '<br>'
-											)
-											.append(
-												ls.length === 2 ?
-												(
-													i18n( 'longest streak' ) + i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
-														return new Date( d ).toUTCString();
-													} ).join( ' - ' ) +
-													i18n( 'word-separator' ) +
-													i18n( 'parentheses',
-														i18n( 'days',
-															( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1
-														)
-													) +
-													'<br>'
-												) : ''
-											)
-											.append(
-												i18n( 'executed in',
-													i18n( 'duration-seconds',
-														Math.floor( ( new Date().getTime() - dewkinInitDate.getTime() ) / 10 ) / 100
-													)
-												)
-											);
-										} );
-									} );
-									$( '#edit-summary' )
-									.append(
-										$( '<p>' )
-										.text( i18n( 'edit summary percent', util.percent( summ, contribs.length ) ) )
-									);
-								} );
-							} );
-						} );
-					} );
-				} );
-			} )();
-		} );
-
-		path = window.location.pathname.split( '/' );
-		if ( path.length === 3 ) {
-			inspData = path[ 2 ].split( '@' );
-			if ( inspData.length === 2 ) {
-				$( '#u' ).val( inspData[ 0 ] );
-				$( '#p' ).val( inspData[ 1 ] );
-				$( '#form' ).submit();
-			}
+			self.dataGetter[ func ]( query ).done( function ( users ) {
+				return process( $.map( users, function ( user ) {
+					return user.name;
+				} ) );
+			} );
 		}
 	} );
+
+	// suggestions while typing "Project"
+	self.$project.typeahead( {
+		source: function ( query, process ) {
+			process( Object.keys( self.sites ) );
+		}
+	} );
+};
+
+/**
+ * Handle the 'submit' event on the form.
+ *
+ * @private
+ * @param {jQuery.Event} event Submit event
+ */
+Inspector.prototype.onSubmit = function ( event ) {
+	var project;
+	event.preventDefault();
+	project = this.$project.val();
+	this.wikipath = this.sites[ project ] + '/wiki/';
+	this.dataGetter.localApi = new MediaWikiApi( this.sites[ project ] + '/w/api.php' );
+	this.dataGetter.user = this.user = this.$user.val().replace( /_/g, ' ' );
+
+	// 'Permalink'
+	if ( window.history.pushState && window.location.pathname.split( /[^\/]\/[^\/]/ ).length === 1 ) {
+		window.history.pushState(
+			{},
+			'',
+			window.location.pathname.replace( /\/$/, '' ) + '/' +
+				this.user.replace( / /g, '_' ) + '@' + project
+		);
+	}
+
+	this.$init
+	.attr( 'data-loading-text', 'Loading...' )
+	.button( 'loading' )
+	.siblings()
+	.remove();
+
+	this.realStart();
+};
+
+/**
+ * Get the localized name of a namespace, falling back to 'ns-' and its number.
+ *
+ * @private
+ * @param {number} number The namespace id
+ * @return {string} The namespace name
+ */
+Inspector.prototype.namespaceName = function ( number ) {
+	return this.namespaces[ number ] ?
+		this.namespaces[ number ][ '*' ].replace( /^(Talk)?$/, 'Article $1' ).trim() :
+		( 'ns-' + number );
+};
+
+/**
+ * Generate the pie chart of edits by namespace.
+ *
+ * @private
+ */
+Inspector.prototype.generateNamespacesChart = function () {
+	var inspector, contribsByNamespace, nsIdsSortedByNumberOfEdits,
+		nsChartData, nsChart;
+
+	inspector = this;
+	contribsByNamespace = inspector.contribs.filterByNamespace( true );
+	nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
+		return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
+	} );
+	nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
+		var nsName;
+		if ( contribsByNamespace[ ns ].length > 0 ) { // only namespaces with contributions
+			nsName = inspector.namespaceName( ns );
+			return {
+				id: ns,
+				name: nsName,
+				value: contribsByNamespace[ ns ].length,
+				label: nsName + i18n( 'colon-separator' ) +
+					util.percent( contribsByNamespace[ ns ].length, inspector.contribs.length ),
+				color: util.colorFromNamespace( ns )
+			};
+		}
+	} );
+	nsChart = window.charts.pie( '#ns-chart', 20, 20, 600, 400, 150, nsChartData );
+	nsChart.paths
+	.on( 'click', function ( d ) {
+		var te,
+			self = d3.select( this );
+		if ( self.classed( 'selected' ) ) {
+			self
+				.interrupt()
+				.classed( 'selected', false )
+				.attr( 'd', nsChart.arcOver );
+			inspector.$topEdited.hide( 'fast' );
+			nsChart.svg.attr( 'width', 600 );
+		} else {
+			nsChart.svg.attr( 'width', 340 );
+			nsChart.g.selectAll( 'path' )
+				.interrupt()
+				.filter( function () { return this !== self; } )
+				.classed( 'selected', false )
+				.attr( 'd', nsChart.arc );
+			self
+				.classed( 'selected', true )
+				.attr( 'd', nsChart.arcOver );
+			te = inspector.contribs.topEdited( parseInt( d.data.id ) );
+			inspector.$topEdited
+			.empty()
+			.append(
+				$( '<h2>' )
+				.text(
+					i18n(
+						te[ 1 ] ? 'top edited in ns' : 'edited in ns',
+						Object.keys( te[ 0 ] ).length,
+						d.data.name
+					)
+				)
+			)
+			.append(
+				$( '<ul>' ).append(
+					$.map( te[ 0 ], function ( v, k ) {
+						return $( '<a>' )
+							.text( k )
+							.attr( 'href', inspector.wikipath + k )
+							.appendTo( '<li>' + v + ' - </li>' )
+							.parent();
+					} )
+				)
+			).show( 'fast' );
+		}
+	} );
+};
+
+/**
+ * Get a <li> element representing a vote.
+ *
+ * @private
+ * @param {Object} poll Object with b_project, b_title, b_url, votes
+ * @param {Object} vote Object with s_name, vt_diff, vt_timestamp
+ * @return {jQuery} The list item
+ */
+Inspector.prototype.getVoteItem = function ( poll, vote ) {
+	return $( '<li>' )
+		.html(
+			i18n(
+				// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
+				'voted for',
+				new Date( vote.vt_timestamp ).toUTCString(),
+				vote.s_name,
+				$( '<a>' )
+				.attr( {
+					href: poll.b_project + '?diff=' + vote.vt_diff,
+					title: i18n( 'diff on project', vote.vt_diff, poll.b_project )
+				} )
+				.text( i18n( 'diff' ) )
+				.get( 0 ).outerHTML
+				// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
+			)
+		);
+};
+
+/**
+ * Get an element or a string representing a list of votes.
+ *
+ * @private
+ * @param {Object} poll Object with b_project, b_title, b_url, votes
+ * @return {jQuery|string} A vote list or a placeholder
+ */
+Inspector.prototype.mapVotes = function ( poll ) {
+	if ( poll.votes.length === 0 ) {
+		return i18n( 'did not vote' );
+	}
+
+	return $( '<ul>' )
+		.append( $.map( poll.votes, this.getVoteItem.bind( this, poll ) ) );
+};
+
+/**
+ * Get an array of jQuery objects or strings representing a poll.
+ *
+ * @private
+ * @param {Object} poll Object with b_project, b_title, b_url, votes
+ * @return {Array} jQuery objects or strings to append
+ */
+Inspector.prototype.mapPoll = function ( poll ) {
+	return [
+		$( '<h3>' ).append(
+			// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
+			$( '<a>' )
+			.attr( {
+				href: poll.b_url,
+				title: poll.b_title
+			} )
+			.text( poll.b_title )
+			// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
+		),
+		this.mapVotes( poll )
+	];
+};
+
+/**
+ * Generate information for the votes tab.
+ *
+ * @private
+ * @param {Object} result Object with votelookup
+ */
+Inspector.prototype.showVotes = function ( result ) {
+	this.$votes
+	.append( $.map( result.votelookup.ballots, this.mapPoll.bind( this ) ) );
+};
+
+/**
+ * Generate the pie chart of edits by programming language.
+ *
+ * @private
+ */
+Inspector.prototype.generateProgrammingLanguagesChart = function () {
+	var langs, sortedLangExts, codeChartData,
+		self = this;
+
+	langs = self.contribs.filterByProgrammingLanguage();
+	sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
+		return langs[ b ].length - langs[ a ].length;
+	} );
+	codeChartData = $.map( sortedLangExts, function ( ext ) {
+		var langName = util.programmingLanguages[ ext ][ 0 ];
+		return {
+			id: ext,
+			name: langName,
+			value: langs[ ext ].length,
+			label: langName + i18n( 'colon-separator' ) +
+				util.percent( langs[ ext ].length, self.contribs.length ),
+			color: '#' + util.programmingLanguages[ ext ][ 1 ]
+		};
+	} );
+	window.charts.pie( '#code-chart', 20, 20, 520, 400, 150, codeChartData );
+};
+
+/**
+ * For performance and technical reasons, the map is generated on demand.
+ *
+ * @private
+ */
+Inspector.prototype.registerMapTab = function () {
+	var self = this;
+
+	$( 'li>a[href="#map"]' )
+	.one( 'shown.bs.tab', function () {
+		$( '#map' ).append( 'Loading geodata...' );
+		self.dataGetter.geoData( self.contribs.grepByNamespace( [ 0, 6 ] ) )
+		.done( function ( geodata ) {
+			var maxEdits, scale, map;
+			if ( geodata.length > 0 ) {
+				$( '#map' ).empty().css( 'height', '400px' );
+				maxEdits = geodata[ 0 ].numedits;
+				scale = d3.scale.sqrt()
+					.domain( [ 0, maxEdits ] )
+					.range( [ 5, 18 ] );
+				map = L.map( 'map' ).setView( [ 0, 0 ], 2 );
+				new L.TileLayer(
+					'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+					{
+						minZoom: 2,
+						maxZoom: 18,
+						attribution: 'Map data © <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+					}
+				)
+				.addTo( map );
+				$.each( geodata, function ( index, marker ) {
+					var edits,
+						sizediff = util.sizediffIndicator( marker.sizediff ),
+						markerRadius = scale( marker.numedits );
+					if ( marker.revid ) {
+						edits = '<a href="' + self.wikipath + '?diff=' + marker.revid + '">' +
+							i18n( 'nchanges', '1' ) +
+							'</a>';
+					} else {
+						edits = i18n( 'nchanges', marker.numedits );
+					}
+					L.marker( marker.coords, {
+						icon: L.icon( {
+							iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' +
+								util.markerColors[ Math.floor( Math.random() * util.markerColors.length ) ] +
+								'.svg',
+							iconSize: [ markerRadius, markerRadius ]
+						} )
+					} )
+					.addTo( map )
+					.bindPopup(
+						'<strong><a href="' + self.wikipath + marker.title + '">' +
+						marker.title +
+						'</a></strong><br>' +
+						i18n( 'bytes with nchanges', sizediff, edits )
+					);
+				} );
+			} else {
+				$( '#map' ).empty().append( i18n( 'no geodata' ) );
+			}
+		} );
+	} );
+};
+
+/**
+ * Generate the months chart.
+ *
+ * @private
+ */
+Inspector.prototype.generateMonthsChart = function () {
+	var contribsByMonthAndNamespace, nsIdsSortedByNumericValue,
+		nsNames, nsColors, nsData,
+		self = this;
+
+	contribsByMonthAndNamespace = this.contribs.filterByMonthAndNamespace();
+	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
+		return a - b;
+	} );
+	nsNames = $.map( nsIdsSortedByNumericValue, self.namespaceName.bind( self ) );
+	nsColors = $.map( nsIdsSortedByNumericValue, util.colorFromNamespace.bind( util ) );
+	nsData = [];
+	$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
+		var p = [ month, [] ];
+		$.each( byNs, function ( ns, c ) {
+			p[ 1 ][ nsIdsSortedByNumericValue.indexOf( ns ) ] = c.length;
+		} );
+		nsData.push( p );
+	} );
+	window.charts.months( nsData, nsNames, nsColors );
+};
+
+/**
+ * Show general information such as first edit, longest streak, etc.
+ *
+ * @private
+ */
+Inspector.prototype.showGeneral = function () {
+	var firstContribDate, latestContribDate, ls;
+
+	if ( this.blockInfo.blockid !== undefined ) {
+		this.$general.append(
+			'<strong>Currently blocked by ' + this.blockInfo.blockedby + ' with an expiry time of ' +
+			this.blockInfo.blockexpiry + ' because "<i>' + this.blockInfo.blockreason + '</i>"<br>'
+		);
+	}
+
+	firstContribDate = new Date( this.contribs[ 0 ].timestamp );
+	latestContribDate = new Date( this.contribs[ this.contribs.length - 1 ].timestamp );
+
+	this.$general
+	.append(
+		'<a href="' + this.wikipath + '?diff=' + this.contribs[ 0 ].revid + '">' +
+		i18n( 'first edit' ) +
+		'</a>' +
+		i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) +
+		i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>'
+	)
+	.append(
+		'<a href="' + this.wikipath + '?diff=' + this.contribs[ this.contribs.length - 1 ].revid + '">' +
+		i18n( 'most recent edit' ) +
+		'</a>' +
+		i18n( 'colon-separator' ) + latestContribDate.toUTCString() + i18n( 'word-separator' ) +
+		i18n( 'parentheses', util.dateDiff( latestContribDate, new Date(), 5, true ) ) + '<br>'
+	)
+	.append( 'Live edits: ' + this.contribs.length.toLocaleString() + '<br>' );
+
+	if ( this.editCount !== undefined ) {
+		this.$general.append(
+			'Deleted edits: ' + ( this.editCount - this.contribs.length ).toLocaleString(),
+			'<br>',
+			'<b>Total edits (including deleted): ' + this.editCount.toLocaleString() + '</b>',
+			'<br>'
+		);
+	}
+
+	this.$general
+	.append(
+		'<a href="' + this.wikipath + 'Special:Log/upload?user=' + this.user + '">' +
+		i18n( 'statistics-files' ) +
+		'</a>' +
+		i18n( 'colon-separator' ) + this.uploads.length.toLocaleString() + '<br>'
+	);
+
+	ls = this.contribs.longestStreak();
+
+	if ( ls.length === 2 ) {
+		this.$general.append(
+			i18n( 'longest streak' ) + i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
+				return new Date( d ).toUTCString();
+			} ).join( ' - ' ) +
+			i18n( 'word-separator' ) +
+			i18n( 'parentheses',
+				i18n( 'days',
+					( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1
+				)
+			) +
+			'<br>'
+		);
+	}
+
+	this.$general
+	.append(
+		i18n( 'executed in',
+			i18n( 'duration-seconds',
+				Math.floor( ( new Date().getTime() - this.startDate.getTime() ) / 10 ) / 100
+			)
+		)
+	);
+};
+
+/**
+ * Get a <li> element from a user groups change.
+ *
+ * @private
+ * @param {Object} logevt The log event with params
+ * @return {jQuery} The list item
+ */
+Inspector.prototype.mapRights = function ( logevt ) {
+	var oldGroups = logevt.params.oldgroups,
+		newGroups = logevt.params.newgroups,
+		addedGroups = $.grep( newGroups, function ( el ) {
+			return el !== '' && oldGroups.indexOf( el ) === -1;
+		} ),
+		removedGroups = $.grep( oldGroups, function ( el ) {
+			return el !== '' && newGroups.indexOf( el ) === -1;
+		} ),
+		msg = [];
+	if ( addedGroups.length > 0 ) {
+		msg.push( 'became ' + util.listToText( $.map( addedGroups, util.groupColor ) ) );
+	}
+	if ( removedGroups.length > 0 ) {
+		msg.push( 'removed ' + util.listToText( $.map( removedGroups, util.groupColor ) ) );
+	}
+	return $( '<li>' ).html(
+		'<a href="' + this.wikipath + 'Special:Log/' + logevt.logid + '">' +
+		new Date( logevt.timestamp ).toLocaleString() +
+		'</a>' + i18n( 'colon-separator' ) + util.listToText( msg )
+	);
+};
+
+/**
+ * Get an <h3> or a <ul> element for the rights tab.
+ *
+ * @private
+ * @param {Object[]} rights Log events
+ * @return {jQuery}
+ */
+Inspector.prototype.getRights = function ( rights ) {
+	if ( rights.length === 0 ) {
+		return $( '<h3>' ).text( i18n( 'no log entries' ) );
+	}
+
+	return $( '<ul>' )
+		.append( $.map( rights, this.mapRights.bind( this ) ) );
+};
+
+/**
+ * Show information about rights changes to the inspected user's account.
+ *
+ * @private
+ * @param {Object[]} rights Log events
+ */
+Inspector.prototype.showRights = function ( rights ) {
+	$( '#rights' ).append( this.getRights( rights ) );
+
+	$( '<span>' )
+	.addClass( 'badge' )
+	.text( rights.length )
+	.appendTo( 'li>a[href="#rights"]' );
+};
+
+/**
+ * Get a <tr> element for the tags table.
+ *
+ * @private
+ * @param {Object} tagsData Contributions grouped by tag
+ * @param {string} tag The name of the tag
+ * @return {jQuery} Table row
+ */
+Inspector.prototype.mapTag = function ( tagsData, tag ) {
+	return $( '<tr>' )
+		.append(
+			$( '<td>' ).text( tag ),
+			$( '<td>' ).text( util.percent( tagsData[ tag ].length, this.contribs.length ) )
+		);
+};
+
+/**
+ * Generate the tag table.
+ *
+ * @private
+ */
+Inspector.prototype.showTags = function () {
+	var tagsData = this.contribs.filterByTag(),
+	sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
+		return tagsData[ b ].length - tagsData[ a ].length;
+	} );
+
+	this.$tagsTable.find( 'tbody' )
+	.append( $.map( sortedTagNames, this.mapTag.bind( this, tagsData ) ) );
+};
+
+/**
+ * Get information about the use of edit summary by the inspected user.
+ *
+ * @private
+ */
+Inspector.prototype.showEditSummary = function () {
+	this.$editSummary
+	.append(
+		$( '<p>' )
+		.text(
+			i18n(
+				'edit summary percent',
+				util.percent(
+					this.contribs.grepByEditSummary().length,
+					this.contribs.length
+				)
+			)
+		)
+	);
+};
+
+/**
+ * Start the inspection.
+ *
+ * @private
+ */
+Inspector.prototype.realStart = function () {
+	var self = this;
+	self.startDate = new Date();
+	self.dataGetter.namespaces().done( function ( namespaces ) {
+		var toLoadMsgs;
+		allNamespaces = self.namespaces = namespaces;
+		toLoadMsgs = $( '[data-msg]' ).map( function () {
+			return this.dataset.msg;
+		} ).get()
+		// time-related messages
+		.concat( [ 'ago', 'just-now', 'seconds', 'duration-seconds',
+			'minutes', 'hours', 'days', 'weeks', 'months', 'years' ] )
+		// miscellaneous
+		.concat( [ 'and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses',
+			'percent', 'diff', 'nchanges', 'size-bytes', 'tags-hitcount' ] )
+		.concat( util.weekdays )
+		.concat( util.weekdaysShort )
+		.concat( util.months );
+		self.dataGetter.rightsLog().done( function ( rights ) {
+			$.each( rights, function ( i, logevt ) {
+				var oldGroups = logevt.params.oldgroups,
+					newGroups = logevt.params.newgroups;
+				$.each( oldGroups.concat( newGroups ), function ( i, group ) {
+					var msg = 'group-' + group + '-member';
+					if ( toLoadMsgs.indexOf( msg ) === -1 ) {
+						toLoadMsgs.push( msg );
+					}
+				} );
+			} );
+			self.dataGetter.messages( self.userLanguage, toLoadMsgs ).done( function () {
+				util.months = $.map( util.months, function ( el ) {
+					return messages[ el ];
+				} );
+				util.weekdays = $.map( util.weekdays, function ( el ) {
+					return messages[ el ];
+				} );
+				util.weekdaysShort = $.map( util.weekdaysShort, function ( el ) {
+					return messages[ el ];
+				} );
+				$( '[data-msg]' ).each( function () {
+					$( this ).text( messages[ this.dataset.msg ] );
+				} );
+				self.showRights( rights );
+				self.dataGetter.contribs().done( function ( contribs ) {
+					var hideCreditsOnShow;
+
+					self.contribs = new ContribsList( contribs );
+					self.contribs.sort();
+					self.contribs.log();
+					self.editCount = self.dataGetter.editCount;
+
+					$( '.jumbotron' ).removeClass( 'jumbotron' );
+					$( '.container.before-tabs' ).removeClass( 'container' );
+					self.$form.remove();
+					self.generateNamespacesChart();
+
+					/* Tags table */
+					self.showTags();
+
+					/* Programming languages chart */
+					self.generateProgrammingLanguagesChart();
+
+					/* GitHub-like Punchcard */
+					window.charts.punchcard( contribs.toPunchcard(), util.weekdays, function ( n ) {
+						return i18n( 'nedits bold', n );
+					} );
+					hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
+					hideCreditsOnShow.on( 'shown.bs.tab', function () {
+						$( '#credits' ).hide();
+					} );
+					$( 'a[data-toggle="tab"]' ).not( hideCreditsOnShow ).on( 'shown.bs.tab', function () {
+						$( '#credits' ).show();
+					} );
+					self.registerMapTab();
+					$( 'footer' ).show();
+					self.generateMonthsChart();
+					self.dataGetter.votes().done( function ( result ) {
+						self.showVotes( result );
+						self.dataGetter.uploads().done( function ( uploads ) {
+							self.uploads = uploads;
+							self.dataGetter.blockInfo().done( function ( blockInfo ) {
+								self.blockInfo = blockInfo;
+								self.showGeneral();
+							} );
+						} );
+						self.showEditSummary();
+					} );
+				} );
+			} );
+		} );
+	} );
+};
+
+/**
+ * Called once the site matrix has loaded.
+ *
+ * @private
+ * @param {Object} sites Map of project IDs to URLs
+ */
+Inspector.prototype.onSiteMatrix = function ( sites ) {
+	this.sites = sites;
+	this.registerTypeahead();
+	this.$form.on( 'submit', this.onSubmit.bind( this ) );
+	this.tryPermalink();
+};
+
+/**
+ * Actually initialize the inspector.
+ */
+Inspector.prototype.start = function () {
+	this.dataGetter.siteMatrix().done( this.onSiteMatrix.bind( this ) );
+};
+
+$( document ).ready( function () {
+	new Inspector( {
+		globalApiUrl: '//meta.wikimedia.org/w/api.php',
+		userLanguage: navigator.language,
+		$form: $( '#form' ),
+		$user: $( '#u' ),
+		$project: $( '#p' ),
+		$init: $( '#init' ),
+		$general: $( '#general' ),
+		$topEdited: $( '#top-edited' ),
+		$editSummary: $( '#edit-summary' ),
+		$tagsTable: $( '#tags-table' ),
+		$votes: $( '#votes' )
+	} )
+	.start();
 } );
 
 } )();
