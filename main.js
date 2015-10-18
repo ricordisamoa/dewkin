@@ -657,8 +657,9 @@ util = {
 	},
 
 	/**
-	 * Set of HEX colors by MediaWiki namespace number
-	 * from Soxred93's Edit Counter - Copyright (C) 2010 Soxred93 - under the terms of the GNU General Public License
+	 * Set of HEX colors by MediaWiki namespace number from Soxred93's Edit Counter
+	 * Copyright (C) 2010 Soxred93
+	 * Released under the terms of the GNU General Public License
 	 * source code: <https://tools.wmflabs.org/xtools/pcount/source.php?path=index>
 	 */
 	namespaceColors: {
@@ -800,7 +801,8 @@ util = {
 	groupColor: function ( group ) {
 		var local = ( messages[ 'group-' + group + '-member' ] || group );
 		return util.groupsColors[ group ] ?
-			( '<span style="background-color:' + util.groupsColors[ group ] + ';color:white">' + local + '</span>' ) :
+			( '<span style="background-color:' + util.groupsColors[ group ] +
+				';color:white">' + local + '</span>' ) :
 			local;
 	},
 
@@ -811,7 +813,8 @@ util = {
 	 * @return {string[]} Array of month codes in the form yyyy/mm
 	 */
 	allMonths: function ( from ) {
-		var fromYear, fromMonth, months, toYear, toMonth, year, month, m;
+		var fromYear, fromMonth, months, toYear, toMonth,
+			year, actualToYear, month, m;
 		from = from.split( '/' );
 		fromYear = parseInt( from[ 0 ] );
 		fromMonth = parseInt( from[ 1 ] ) - 1;
@@ -819,7 +822,8 @@ util = {
 		toYear = new Date().getUTCFullYear();
 		toMonth = new Date().getUTCMonth();
 		for ( year = fromYear; year <= toYear; year++ ) {
-			for ( month = ( year === fromYear ? fromMonth : 0 ); month <= ( year === toYear ? toMonth : 11 ); month++ ) {
+			actualToYear = ( year === toYear ? toMonth : 11 );
+			for ( month = ( year === fromYear ? fromMonth : 0 ); month <= actualToYear; month++ ) {
 				m = ( month + 1 ).toString();
 				months.push( year + '/' + ( m.length === 1 ? '0' : '' ) + m );
 			}
@@ -841,7 +845,8 @@ util = {
 			case 0: return '';
 			case 1: return array[ 0 ];
 			case 2: return array.join( sep + and + sep );
-			default: return array.slice( 0, -1 ).join( comma ) + comma + and + sep + array[ array.length - 1 ];
+			default: return array.slice( 0, -1 ).join( comma ) + comma +
+				and + sep + array[ array.length - 1 ];
 		}
 	},
 
