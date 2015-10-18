@@ -6,6 +6,7 @@
 	"latedef": true,
 	"noarg": true,
 	"nonew": true,
+	"strict": true,
 	"undef": true,
 	"unused": true,
 

@@ -28,6 +28,8 @@
  *  returns HTML for its tip
  */
 window.charts.punchcard = function ( data, weekdays, nedits ) {
+	'use strict';
+
 	var w, h, pad, leftPad, svg, x, y, xAxis, yAxis, tip, maxR, r;
 
 	w = document.body.clientWidth - 60;

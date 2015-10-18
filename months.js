@@ -29,6 +29,8 @@
  * @param {string[]} colors Namespace colors sorted by namespace id
  */
 window.charts.months = function ( data, namespaces, colors ) {
+	'use strict';
+
 	var n, m, margin, width, height, stack, layers,
 		yGroupMax, yStackMax, x, y, xAxis, yAxis, yAxis2,
 		tip, svg, layer;

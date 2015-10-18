@@ -32,6 +32,7 @@
  * @return {Object} For custom interactions
  */
 window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
+	'use strict';
 
 	var arc, arcOver, pie, svg, chart, legend, u, g, paths;
 
