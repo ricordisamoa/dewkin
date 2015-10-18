@@ -95,7 +95,7 @@ window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 				.attr( 'd', arcOver );
 
 			leg = u
-				.filter( function ( dd, i ) { return dd.data.id === d.data.id; } );
+				.filter( function ( dd ) { return dd.data.id === d.data.id; } );
 
 			leg.selectAll( 'text' )
 				.attr( 'font-weight', 'bold' );
@@ -118,7 +118,7 @@ window.charts.pie = function ( selector, x, y, width, height, radius, data ) {
 			}
 
 			leg = u
-				.filter( function ( dd, i ) { return dd.data.id === d.data.id; } );
+				.filter( function ( dd ) { return dd.data.id === d.data.id; } );
 
 			leg.selectAll( 'text' )
 				.attr( 'font-weight', null );

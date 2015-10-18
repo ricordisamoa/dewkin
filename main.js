@@ -64,6 +64,7 @@ ContribsList.prototype = {
 	},
 
 	log: function () {
+		/* jshint devel:true */
 		console.log( this );
 	},
 
@@ -615,7 +616,7 @@ util = {
 		mult = [ 12, 4.34, 7, 24, 60, 60, 1000 ],
 		diff = ( newdate || new Date() ) - olddate,
 		message = [];
-		$.each( mult, function ( i, e ) {
+		$.each( mult, function ( i ) {
 			var f, fl;
 			if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
 				f = parseInt( mult.slice( i ).reduce( function ( a, b ) {

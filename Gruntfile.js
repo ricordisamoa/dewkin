@@ -1,3 +1,4 @@
+/* jshint node:true */
 module.exports = function ( grunt ) {
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-jscs' );
@@ -5,6 +6,9 @@ module.exports = function ( grunt ) {
 
 	grunt.initConfig( {
 		jshint: {
+			options: {
+				jshintrc: true
+			},
 			all: [ '*.js' ]
 		},
 		jscs: {

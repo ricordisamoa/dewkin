@@ -45,14 +45,14 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 
 	xAxis = d3.svg.axis().scale( x ).orient( 'bottom' )
 		.ticks( 24 )
-		.tickFormat( function ( d, i ) {
+		.tickFormat( function ( d ) {
 			var m = ( d > 11 ) ? 'p' : 'a';
 			return ( d % 12 === 0 ? 12 : d % 12 ) + m;
 		} );
 
 	yAxis = d3.svg.axis().scale( y ).orient( 'left' )
 		.ticks( 7 )
-		.tickFormat( function ( d, i ) {
+		.tickFormat( function ( d ) {
 			return weekdays[ d ];
 		} );
 

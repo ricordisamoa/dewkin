@@ -98,7 +98,7 @@ window.charts.months = function ( data, namespaces, colors ) {
 		.attr( 'class', 'svg-tip svg-tip-small' )
 		.direction( 'e' )
 		.offset( [ 0, 6 ] )
-		.html( function ( d, i ) {
+		.html( function ( d ) {
 			return d.ns + ': ' + d.y;
 		} );
 
