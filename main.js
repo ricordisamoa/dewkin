@@ -21,7 +21,7 @@
 ( function () {
 'use strict';
 
-var ContribsList, util, i18n, messages, allNamespaces; // FIXME: kill messages and allNamespaces
+var ContribsList, util, allNamespaces; // FIXME: kill allNamespaces
 
 window.charts = {};
 
@@ -466,21 +466,19 @@ DataGetter.prototype = {
 	},
 
 	messages: function ( lang, msgs ) {
-		var deferred = $.Deferred();
-		this.localApi.get( {
+		return this.localApi.get( {
 			action: 'query',
 			meta: 'allmessages',
 			amlang: lang,
 			ammessages: msgs.join( '|' )
 		} )
-		.done( function ( data ) {
-			messages = {};
+		.then( function ( data ) {
+			var messages = {};
 			$.each( data.query.allmessages || [], function ( i, v ) {
 				messages[ v.name ] = v[ '*' ];
 			} );
-			util.loadCustomMessages( lang ).done( deferred.resolve );
+			return messages;
 		} );
-		return deferred;
 	},
 
 	rightsLog: function () {
@@ -593,55 +591,6 @@ DataGetter.prototype = {
 };
 
 util = {
-
-	/**
-	 * Get a human-readable difference between two dates.
-	 *
-	 * @param {Date} olddate
-	 * @param {Date} [newdate]
-	 * @param {number|null} [precision]
-	 * @param {boolean} [ago]
-	 * @return {string}
-	 */
-	dateDiff: function ( olddate, newdate, precision, ago ) {
-		var labels = [
-			'years',
-			'months',
-			'weeks',
-			'days',
-			'hours',
-			'minutes',
-			'seconds'
-		],
-		mult = [ 12, 4.34, 7, 24, 60, 60, 1000 ],
-		diff = ( newdate || new Date() ) - olddate,
-		message = [];
-		$.each( mult, function ( i ) {
-			var f, fl;
-			if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
-				f = parseInt( mult.slice( i ).reduce( function ( a, b ) {
-					return a * b;
-				} ) );
-				fl = Math.floor( diff / f );
-				if ( fl > 0 ) {
-					message.push( i18n( labels[ i ], fl ) );
-					diff -= fl * f;
-				}
-			}
-		} );
-		if ( message.length > 0 ) {
-			if ( ago ) {
-				return i18n( 'ago', util.listToText( message ) );
-			}
-			return util.listToText( message );
-		}
-		return i18n( 'just-now' );
-	},
-
-	/* canonical day and month names to load MediaWiki translated messages */
-	weekdays: [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
-	weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
-	months: [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ],
 
 	/**
 	 * Get the month code from a date.
@@ -758,27 +707,6 @@ util = {
 		'lightgrey', 'lime', 'magenta', 'orange', 'purple', 'red', 'teal', 'yellow' ],
 
 	/**
-	 * Get a 'span' or 'strong' HTML element for a given sizediff.
-	 *
-	 * @param {number} sizediff
-	 * @return {string} HTML
-	 */
-	sizediffIndicator: function ( sizediff ) {
-		var className,
-			sizedifftag = Math.abs( sizediff ) > 500 ? 'strong' : 'span';
-		if ( sizediff === 0 ) {
-			className = 'mw-plusminus-null';
-		} else if ( sizediff > 0 ) {
-			className = 'mw-plusminus-pos';
-		} else {
-			className = 'mw-plusminus-neg';
-		}
-		return '<' + sizedifftag + ' class="' + className + '">' +
-			( sizediff > 0 ? '+' : '' ) + i18n( 'size-bytes', sizediff ) +
-			'</' + sizedifftag + '>';
-	},
-
-	/**
 	 * Set of arbitrary HTML colors by MediaWiki user group
 	 */
 	groupsColors: {
@@ -791,20 +719,6 @@ util = {
 		checkuser:        'darkslategray',
 		oversight:        'navy',
 		steward:          'black'
-	},
-
-	/**
-	 * Get the name of a user group on the current project.
-	 *
-	 * @param {string} group
-	 * @return {string} Can be localized and/or HTML
-	 */
-	groupColor: function ( group ) {
-		var local = ( messages[ 'group-' + group + '-member' ] || group );
-		return util.groupsColors[ group ] ?
-			( '<span style="background-color:' + util.groupsColors[ group ] +
-				';color:white">' + local + '</span>' ) :
-			local;
 	},
 
 	/**
@@ -830,88 +744,279 @@ util = {
 			}
 		}
 		return months;
-	},
-
-	/**
-	 * Get an array joined with natural separators.
-	 *
-	 * @param {Array} array
-	 * @return {string}
-	 */
-	listToText: function ( array ) {
-		var comma = i18n( 'comma-separator' ),
-			sep = i18n( 'word-separator' ),
-			and = i18n( 'and' );
-		switch ( array.length ) {
-			case 0: return '';
-			case 1: return array[ 0 ];
-			case 2: return array.join( sep + and + sep );
-			default: return array.slice( 0, -1 ).join( comma ) + comma +
-				and + sep + array[ array.length - 1 ];
-		}
-	},
-
-	percent: function ( num, outof, precision, format ) {
-		if ( precision === undefined ) {
-			precision = 2;
-		}
-		return ( format || num.toLocaleString() ) + i18n( 'word-separator' ) +
-			i18n( 'parentheses',
-				i18n( 'percent', parseFloat(
-					( num / outof * 100 ).toFixed( precision ) )
-				)
-			);
-	},
-
-	loadCustomMessages: function ( lang ) {
-		var self = this,
-			deferred = $.Deferred();
-		$.get( 'i18n/' + lang + '.json', {}, 'jsonp' )
-		.done( function ( data ) {
-			$.extend( messages, data );
-			deferred.resolve( true );
-		} )
-		.fail( function () {
-			if ( lang === 'en' ) {
-				deferred.resolve( false );
-			} else {
-				self.loadCustomMessages( 'en' ).done( deferred.resolve );
-			}
-		} );
-		return deferred;
-	},
-
-	parseMsg: function ( msg ) {
-		var regex = /(^|[^\/])\$(\d+)(?=\D|$)/g,
-		regex2 = new RegExp( regex.source, '' ),
-		args = Array.prototype.slice.call( arguments );
-		msg = msg.replace( regex, function ( el ) {
-			var m = el.match( regex2 );
-			if ( m && args[ parseInt( m[ 2 ] ) ] !== undefined ) {
-				return m[ 1 ] + args[ parseInt( m[ 2 ] ) ];
-			} else {
-				return el;
-			}
-		} );
-		regex = /\{\{PLURAL\:(\d+(\.\d+)?)\|([^\|]*)(\|([^\|]*))?\}\}/g;
-		regex2 = new RegExp( regex.source, '' );
-		msg = msg.replace( regex, function ( el ) {
-			var m = el.match( regex2 );
-			if ( m ) {
-				return parseFloat( m[ 1 ] ) === 1 ? m[ 3 ] : ( m[ 5 ] || m[ 3 ] );
-			} else {
-				return el;
-			}
-		} );
-		return msg;
 	}
 
 };
 
-i18n = function ( msg ) {
+/**
+ * Class to handle localization.
+ *
+ * @class
+ *
+ * @constructor
+ * @param {string} language Language code of the UI
+ * @param {DataGetter} dataGetter To use the allmessages API
+ */
+function Localizer( language, dataGetter ) {
+	this.language = language;
+	this.fallback = 'en';
+	this.dataGetter = dataGetter;
+	this.messages = {};
+}
+
+/**
+ * Get localized messages from the wiki and from the current instance of DEWKIN.
+ *
+ * @param {string[]} messages MediaWiki message keys
+ * @return {jQuery.Promise}
+ */
+Localizer.prototype.loadMessages = function ( messages ) {
+	var self = this;
+	return self.dataGetter.messages( self.language, messages )
+		.then( function ( data ) {
+			$.extend( self.messages, data );
+			self.harvestMonthsAndWeekdays();
+			return self.loadCustomMessages( self.language );
+		} );
+};
+
+/**
+ * Set some properties on the current instance as arrays of localized messages.
+ *
+ * @private
+ */
+Localizer.prototype.harvestMonthsAndWeekdays = function () {
+	var self = this;
+	self.months = $.map( Localizer.months, function ( el ) {
+		return self.messages[ el ];
+	} );
+	self.weekdays = $.map( Localizer.weekdays, function ( el ) {
+		return self.messages[ el ];
+	} );
+	self.weekdaysShort = $.map( Localizer.weekdaysShort, function ( el ) {
+		return self.messages[ el ];
+	} );
+};
+
+/**
+ * Get localized messages from the current instance of DEWKIN.
+ *
+ * @private
+ * @param {string} lang MediaWiki language code
+ * @return {jQuery.Deferred}
+ */
+Localizer.prototype.loadCustomMessages = function ( lang ) {
+	var self = this,
+		deferred = $.Deferred();
+	$.get( 'i18n/' + lang + '.json', {}, 'jsonp' )
+	.done( function ( data ) {
+		$.extend( self.messages, data );
+		deferred.resolve( true );
+	} )
+	.fail( function () {
+		if ( lang === self.fallback ) {
+			deferred.resolve( false );
+		} else {
+			self.loadCustomMessages( self.fallback ).done( deferred.resolve );
+		}
+	} );
+	return deferred;
+};
+
+/**
+ * Apply parameter substitution and evaluate PLURAL syntax within a message.
+ *
+ * @private
+ * @param {string} msg The raw message
+ * @param {...Mixed} arguments The parameters
+ * @return {string} The final message
+ */
+Localizer.prototype.parseMsg = function ( msg ) {
+	var regex = /(^|[^\/])\$(\d+)(?=\D|$)/g,
+	regex2 = new RegExp( regex.source, '' ),
+	args = Array.prototype.slice.call( arguments );
+	msg = msg.replace( regex, function ( el ) {
+		var m = el.match( regex2 );
+		if ( m && args[ parseInt( m[ 2 ] ) ] !== undefined ) {
+			return m[ 1 ] + args[ parseInt( m[ 2 ] ) ];
+		} else {
+			return el;
+		}
+	} );
+	regex = /\{\{PLURAL\:(\d+(\.\d+)?)\|([^\|]*)(\|([^\|]*))?\}\}/g;
+	regex2 = new RegExp( regex.source, '' );
+	msg = msg.replace( regex, function ( el ) {
+		var m = el.match( regex2 );
+		if ( m ) {
+			return parseFloat( m[ 1 ] ) === 1 ? m[ 3 ] : ( m[ 5 ] || m[ 3 ] );
+		} else {
+			return el;
+		}
+	} );
+	return msg;
+};
+
+/**
+ * Get an array joined with natural separators.
+ *
+ * @param {Array} array
+ * @return {string}
+ */
+Localizer.prototype.listToText = function ( array ) {
+	var comma = this.i18n( 'comma-separator' ),
+		sep = this.i18n( 'word-separator' ),
+		and = this.i18n( 'and' );
+	switch ( array.length ) {
+		case 0: return '';
+		case 1: return array[ 0 ];
+		case 2: return array.join( sep + and + sep );
+		default: return array.slice( 0, -1 ).join( comma ) + comma +
+			and + sep + array[ array.length - 1 ];
+	}
+};
+
+/**
+ * Get a localized percentage.
+ *
+ * @param {number} num Numerator
+ * @param {number} outof Denominator
+ * @param {number} [precision=2] Number of decimal digits to show
+ * @param {Mixed} [format] If provided, used instead of num for display
+ * @return {string}
+ */
+Localizer.prototype.percent = function ( num, outof, precision, format ) {
+	if ( precision === undefined ) {
+		precision = 2;
+	}
+	return ( format || num.toLocaleString() ) + this.i18n( 'word-separator' ) +
+		this.i18n( 'parentheses',
+			this.i18n( 'percent', parseFloat(
+				( num / outof * 100 ).toFixed( precision ) )
+			)
+		);
+};
+
+/**
+ * Get the name of a user group on the current project.
+ *
+ * @param {string} group
+ * @return {string} Can be localized and/or HTML
+ */
+Localizer.prototype.groupColor = function ( group ) {
+	var local = ( this.messages[ 'group-' + group + '-member' ] || group );
+	return util.groupsColors[ group ] ?
+		( '<span style="background-color:' + util.groupsColors[ group ] +
+			';color:white">' + local + '</span>' ) :
+		local;
+};
+
+/**
+ * Get a human-readable difference between two dates.
+ *
+ * @param {Date} olddate
+ * @param {Date} [newdate]
+ * @param {number|null} [precision]
+ * @param {boolean} [ago]
+ * @return {string}
+ */
+Localizer.prototype.dateDiff = function ( olddate, newdate, precision, ago ) {
+	var labels = [
+		'years',
+		'months',
+		'weeks',
+		'days',
+		'hours',
+		'minutes',
+		'seconds'
+	],
+	mult = [ 12, 4.34, 7, 24, 60, 60, 1000 ],
+	diff = ( newdate || new Date() ) - olddate,
+	self = this,
+	message = [];
+	$.each( mult, function ( i ) {
+		var f, fl;
+		if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
+			f = parseInt( mult.slice( i ).reduce( function ( a, b ) {
+				return a * b;
+			} ) );
+			fl = Math.floor( diff / f );
+			if ( fl > 0 ) {
+				message.push( self.i18n( labels[ i ], fl ) );
+				diff -= fl * f;
+			}
+		}
+	} );
+	if ( message.length > 0 ) {
+		if ( ago ) {
+			return self.i18n( 'ago', self.listToText( message ) );
+		}
+		return self.listToText( message );
+	}
+	return self.i18n( 'just-now' );
+};
+
+/* canonical day and month names to load MediaWiki translated messages */
+Localizer.weekdays = [
+	'Sunday',
+	'Monday',
+	'Tuesday',
+	'Wednesday',
+	'Thursday',
+	'Friday',
+	'Saturday'
+];
+Localizer.weekdaysShort = [
+	'Sun',
+	'Mon',
+	'Tue',
+	'Wed',
+	'Thu',
+	'Fri',
+	'Sat'
+];
+Localizer.months = [
+	'Jan',
+	'Feb',
+	'Mar',
+	'Apr',
+	'May',
+	'Jun',
+	'Jul',
+	'Aug',
+	'Sep',
+	'Oct',
+	'Nov',
+	'Dec'
+];
+
+/**
+ * Get the keys of messages that should always be loaded.
+ *
+ * @return {string[]} MediaWiki message keys
+ */
+Localizer.prototype.getEssentialMessages = function () {
+	// time-related messages
+	return [ 'ago', 'just-now', 'seconds', 'duration-seconds',
+		'minutes', 'hours', 'days', 'weeks', 'months', 'years' ]
+		// miscellaneous
+		.concat( [ 'and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses',
+			'percent', 'diff', 'nchanges', 'size-bytes', 'tags-hitcount' ] )
+		.concat( Localizer.weekdays )
+		.concat( Localizer.weekdaysShort )
+		.concat( Localizer.months );
+};
+
+/**
+ * Apply parameter substitution and evaluate PLURAL syntax within a message.
+ *
+ * @param {string} msg The message key
+ * @param {...Mixed} arguments The parameters
+ * @return {string} The final message
+ */
+Localizer.prototype.i18n = function ( msg ) {
 	var params = Array.prototype.slice.call( arguments );
-	params[ 0 ] = messages[ msg ];
-	return util.parseMsg.apply( this, params );
+	params[ 0 ] = this.messages[ msg ];
+	return this.parseMsg.apply( this, params );
 };
 
 /**
@@ -937,7 +1042,7 @@ function Inspector( config ) {
 	this.dataGetter = new DataGetter( {
 		globalApi: new MediaWikiApi( config.globalApiUrl )
 	} );
-	this.userLanguage = config.userLanguage;
+	this.localizer = new Localizer( config.userLanguage, this.dataGetter );
 	this.$form = config.$form;
 	this.$user = config.$user;
 	this.$project = config.$project;
@@ -948,6 +1053,36 @@ function Inspector( config ) {
 	this.$tagsTable = config.$tagsTable;
 	this.$votes = config.$votes;
 }
+
+/**
+ * Shorthand for this.localizer.i18n().
+ *
+ * @private
+ */
+Inspector.prototype.i18n = function () {
+	return this.localizer.i18n.apply( this.localizer, arguments );
+};
+
+/**
+ * Get a 'span' or 'strong' HTML element for a given sizediff.
+ *
+ * @param {number} sizediff
+ * @return {string} HTML
+ */
+Inspector.prototype.sizediffIndicator = function ( sizediff ) {
+	var className,
+		sizedifftag = Math.abs( sizediff ) > 500 ? 'strong' : 'span';
+	if ( sizediff === 0 ) {
+		className = 'mw-plusminus-null';
+	} else if ( sizediff > 0 ) {
+		className = 'mw-plusminus-pos';
+	} else {
+		className = 'mw-plusminus-neg';
+	}
+	return '<' + sizedifftag + ' class="' + className + '">' +
+		( sizediff > 0 ? '+' : '' ) + this.i18n( 'size-bytes', sizediff ) +
+		'</' + sizedifftag + '>';
+};
 
 /**
  * Try to get a user name and a project ID from the current location.
@@ -1070,8 +1205,8 @@ Inspector.prototype.generateNamespacesChart = function () {
 				id: ns,
 				name: nsName,
 				value: contribsByNamespace[ ns ].length,
-				label: nsName + i18n( 'colon-separator' ) +
-					util.percent( contribsByNamespace[ ns ].length, inspector.contribs.length ),
+				label: nsName + inspector.i18n( 'colon-separator' ) +
+					inspector.localizer.percent( contribsByNamespace[ ns ].length, inspector.contribs.length ),
 				color: util.colorFromNamespace( ns )
 			};
 		}
@@ -1104,7 +1239,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 			.append(
 				$( '<h2>' )
 				.text(
-					i18n(
+					inspector.i18n(
 						te[ 1 ] ? 'top edited in ns' : 'edited in ns',
 						Object.keys( te[ 0 ] ).length,
 						d.data.name
@@ -1137,7 +1272,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 Inspector.prototype.getVoteItem = function ( poll, vote ) {
 	return $( '<li>' )
 		.html(
-			i18n(
+			this.i18n(
 				// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
 				'voted for',
 				new Date( vote.vt_timestamp ).toUTCString(),
@@ -1145,9 +1280,9 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
 				$( '<a>' )
 				.attr( {
 					href: poll.b_project + '?diff=' + vote.vt_diff,
-					title: i18n( 'diff on project', vote.vt_diff, poll.b_project )
+					title: this.i18n( 'diff on project', vote.vt_diff, poll.b_project )
 				} )
-				.text( i18n( 'diff' ) )
+				.text( this.i18n( 'diff' ) )
 				.get( 0 ).outerHTML
 				// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
 			)
@@ -1163,7 +1298,7 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
  */
 Inspector.prototype.mapVotes = function ( poll ) {
 	if ( poll.votes.length === 0 ) {
-		return i18n( 'did not vote' );
+		return this.i18n( 'did not vote' );
 	}
 
 	return $( '<ul>' )
@@ -1223,8 +1358,8 @@ Inspector.prototype.generateProgrammingLanguagesChart = function () {
 			id: ext,
 			name: langName,
 			value: langs[ ext ].length,
-			label: langName + i18n( 'colon-separator' ) +
-				util.percent( langs[ ext ].length, self.contribs.length ),
+			label: langName + self.i18n( 'colon-separator' ) +
+				self.localizer.percent( langs[ ext ].length, self.contribs.length ),
 			color: '#' + util.programmingLanguages[ ext ][ 1 ]
 		};
 	} );
@@ -1263,14 +1398,14 @@ Inspector.prototype.registerMapTab = function () {
 				.addTo( map );
 				$.each( geodata, function ( index, marker ) {
 					var edits,
-						sizediff = util.sizediffIndicator( marker.sizediff ),
+						sizediff = self.sizediffIndicator( marker.sizediff ),
 						markerRadius = scale( marker.numedits );
 					if ( marker.revid ) {
 						edits = '<a href="' + self.wikipath + '?diff=' + marker.revid + '">' +
-							i18n( 'nchanges', '1' ) +
+							self.i18n( 'nchanges', '1' ) +
 							'</a>';
 					} else {
-						edits = i18n( 'nchanges', marker.numedits );
+						edits = self.i18n( 'nchanges', marker.numedits );
 					}
 					L.marker( marker.coords, {
 						icon: L.icon( {
@@ -1285,11 +1420,11 @@ Inspector.prototype.registerMapTab = function () {
 						'<strong><a href="' + self.wikipath + marker.title + '">' +
 						marker.title +
 						'</a></strong><br>' +
-						i18n( 'bytes with nchanges', sizediff, edits )
+						self.i18n( 'bytes with nchanges', sizediff, edits )
 					);
 				} );
 			} else {
-				$( '#map' ).empty().append( i18n( 'no geodata' ) );
+				$( '#map' ).empty().append( self.i18n( 'no geodata' ) );
 			}
 		} );
 	} );
@@ -1343,17 +1478,19 @@ Inspector.prototype.showGeneral = function () {
 	this.$general
 	.append(
 		'<a href="' + this.wikipath + '?diff=' + this.contribs[ 0 ].revid + '">' +
-		i18n( 'first edit' ) +
+		this.i18n( 'first edit' ) +
 		'</a>' +
-		i18n( 'colon-separator' ) + firstContribDate.toUTCString() + i18n( 'word-separator' ) +
-		i18n( 'parentheses', util.dateDiff( firstContribDate, new Date(), 4, true ) ) + '<br>'
+		this.i18n( 'colon-separator' ) + firstContribDate.toUTCString() + this.i18n( 'word-separator' ) +
+		this.i18n( 'parentheses', this.localizer.dateDiff( firstContribDate, new Date(), 4, true ) ) +
+		'<br>'
 	)
 	.append(
 		'<a href="' + this.wikipath + '?diff=' + this.contribs[ this.contribs.length - 1 ].revid + '">' +
-		i18n( 'most recent edit' ) +
+		this.i18n( 'most recent edit' ) +
 		'</a>' +
-		i18n( 'colon-separator' ) + latestContribDate.toUTCString() + i18n( 'word-separator' ) +
-		i18n( 'parentheses', util.dateDiff( latestContribDate, new Date(), 5, true ) ) + '<br>'
+		this.i18n( 'colon-separator' ) + latestContribDate.toUTCString() + this.i18n( 'word-separator' ) +
+		this.i18n( 'parentheses', this.localizer.dateDiff( latestContribDate, new Date(), 5, true ) ) +
+		'<br>'
 	)
 	.append( 'Live edits: ' + this.contribs.length.toLocaleString() + '<br>' );
 
@@ -1369,21 +1506,21 @@ Inspector.prototype.showGeneral = function () {
 	this.$general
 	.append(
 		'<a href="' + this.wikipath + 'Special:Log/upload?user=' + this.user + '">' +
-		i18n( 'statistics-files' ) +
+		this.i18n( 'statistics-files' ) +
 		'</a>' +
-		i18n( 'colon-separator' ) + this.uploads.length.toLocaleString() + '<br>'
+		this.i18n( 'colon-separator' ) + this.uploads.length.toLocaleString() + '<br>'
 	);
 
 	ls = this.contribs.longestStreak();
 
 	if ( ls.length === 2 ) {
 		this.$general.append(
-			i18n( 'longest streak' ) + i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
+			this.i18n( 'longest streak' ) + this.i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
 				return new Date( d ).toUTCString();
 			} ).join( ' - ' ) +
-			i18n( 'word-separator' ) +
-			i18n( 'parentheses',
-				i18n( 'days',
+			this.i18n( 'word-separator' ) +
+			this.i18n( 'parentheses',
+				this.i18n( 'days',
 					( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1
 				)
 			) +
@@ -1393,8 +1530,8 @@ Inspector.prototype.showGeneral = function () {
 
 	this.$general
 	.append(
-		i18n( 'executed in',
-			i18n( 'duration-seconds',
+		this.i18n( 'executed in',
+			this.i18n( 'duration-seconds',
 				Math.floor( ( new Date().getTime() - this.startDate.getTime() ) / 10 ) / 100
 			)
 		)
@@ -1419,15 +1556,21 @@ Inspector.prototype.mapRights = function ( logevt ) {
 		} ),
 		msg = [];
 	if ( addedGroups.length > 0 ) {
-		msg.push( 'became ' + util.listToText( $.map( addedGroups, util.groupColor ) ) );
+		msg.push( 'became ' + this.localizer.listToText( $.map(
+			addedGroups,
+			this.localizer.groupColor.bind( this.localizer )
+		) ) );
 	}
 	if ( removedGroups.length > 0 ) {
-		msg.push( 'removed ' + util.listToText( $.map( removedGroups, util.groupColor ) ) );
+		msg.push( 'removed ' + this.localizer.listToText( $.map(
+			removedGroups,
+			this.localizer.groupColor.bind( this.localizer )
+		) ) );
 	}
 	return $( '<li>' ).html(
 		'<a href="' + this.wikipath + 'Special:Log/' + logevt.logid + '">' +
 		new Date( logevt.timestamp ).toLocaleString() +
-		'</a>' + i18n( 'colon-separator' ) + util.listToText( msg )
+		'</a>' + this.i18n( 'colon-separator' ) + this.localizer.listToText( msg )
 	);
 };
 
@@ -1440,7 +1583,7 @@ Inspector.prototype.mapRights = function ( logevt ) {
  */
 Inspector.prototype.getRights = function ( rights ) {
 	if ( rights.length === 0 ) {
-		return $( '<h3>' ).text( i18n( 'no log entries' ) );
+		return $( '<h3>' ).text( this.i18n( 'no log entries' ) );
 	}
 
 	return $( '<ul>' )
@@ -1474,7 +1617,10 @@ Inspector.prototype.mapTag = function ( tagsData, tag ) {
 	return $( '<tr>' )
 		.append(
 			$( '<td>' ).text( tag ),
-			$( '<td>' ).text( util.percent( tagsData[ tag ].length, this.contribs.length ) )
+			$( '<td>' ).text( this.localizer.percent(
+				tagsData[ tag ].length,
+				this.contribs.length
+			) )
 		);
 };
 
@@ -1503,9 +1649,9 @@ Inspector.prototype.showEditSummary = function () {
 	.append(
 		$( '<p>' )
 		.text(
-			i18n(
+			this.i18n(
 				'edit summary percent',
-				util.percent(
+				this.localizer.percent(
 					this.contribs.grepByEditSummary().length,
 					this.contribs.length
 				)
@@ -1528,15 +1674,7 @@ Inspector.prototype.realStart = function () {
 		toLoadMsgs = $( '[data-msg]' ).map( function () {
 			return this.dataset.msg;
 		} ).get()
-		// time-related messages
-		.concat( [ 'ago', 'just-now', 'seconds', 'duration-seconds',
-			'minutes', 'hours', 'days', 'weeks', 'months', 'years' ] )
-		// miscellaneous
-		.concat( [ 'and', 'comma-separator', 'colon-separator', 'word-separator', 'parentheses',
-			'percent', 'diff', 'nchanges', 'size-bytes', 'tags-hitcount' ] )
-		.concat( util.weekdays )
-		.concat( util.weekdaysShort )
-		.concat( util.months );
+		.concat( self.localizer.getEssentialMessages() );
 		self.dataGetter.rightsLog().done( function ( rights ) {
 			$.each( rights, function ( i, logevt ) {
 				var oldGroups = logevt.params.oldgroups,
@@ -1548,18 +1686,9 @@ Inspector.prototype.realStart = function () {
 					}
 				} );
 			} );
-			self.dataGetter.messages( self.userLanguage, toLoadMsgs ).done( function () {
-				util.months = $.map( util.months, function ( el ) {
-					return messages[ el ];
-				} );
-				util.weekdays = $.map( util.weekdays, function ( el ) {
-					return messages[ el ];
-				} );
-				util.weekdaysShort = $.map( util.weekdaysShort, function ( el ) {
-					return messages[ el ];
-				} );
+			self.localizer.loadMessages( toLoadMsgs ).done( function () {
 				$( '[data-msg]' ).each( function () {
-					$( this ).text( messages[ this.dataset.msg ] );
+					$( this ).text( self.localizer.messages[ this.dataset.msg ] );
 				} );
 				self.showRights( rights );
 				self.dataGetter.contribs().done( function ( contribs ) {
@@ -1582,8 +1711,8 @@ Inspector.prototype.realStart = function () {
 					self.generateProgrammingLanguagesChart();
 
 					/* GitHub-like Punchcard */
-					window.charts.punchcard( contribs.toPunchcard(), util.weekdays, function ( n ) {
-						return i18n( 'nedits bold', n );
+					window.charts.punchcard( contribs.toPunchcard(), self.localizer.weekdays, function ( n ) {
+						return self.i18n( 'nedits bold', n );
 					} );
 					hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
 					hideCreditsOnShow.on( 'shown.bs.tab', function () {
