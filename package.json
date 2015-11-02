@@ -2,7 +2,6 @@
 	"name": "dewkin",
 	"version": "0.4.0",
 	"description": "Advanced edit counter for Wikimedia projects, featuring visual data representations.",
-	"main": "main.js",
 	"scripts": {
 		"test": "grunt test"
 	},
