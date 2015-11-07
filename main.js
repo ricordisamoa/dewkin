@@ -543,6 +543,10 @@ DataGetter.prototype = {
 		} );
 		geodata = {};
 		titles = Object.keys( occurr );
+		if ( titles.length === 0 ) {
+			// Don't waste an AJAX request
+			return $.Deferred().resolve( [] ).promise();
+		}
 		getGeodataRecursive = function () {
 			return self.localApi.get( {
 				action: 'query',
