@@ -35,7 +35,7 @@ ContribsList = function () {
 		method,
 		args = Array.prototype.slice.call( arguments );
 
-	if ( args.length === 1 && $.isArray( args[ 0 ] ) ) {
+	if ( args.length === 1 && Array.isArray( args[ 0 ] ) ) {
 		list = args[ 0 ];
 	} else {
 		list = Object.create( Array.prototype );
@@ -377,7 +377,7 @@ DataGetter.prototype = {
 		.then( function ( data ) {
 			var dbNames = {};
 			$.each( data.sitematrix, function () {
-				$.each( this.site || ( $.isArray( this ) ? this : [] ), function () {
+				$.each( this.site || ( Array.isArray( this ) ? this : [] ), function () {
 					if ( this.dbname && this.url && this.private === undefined && this.fishbowl === undefined ) {
 						dbNames[ this.dbname ] = this.url.replace( /^http\:\/\//, '//' );
 					}
