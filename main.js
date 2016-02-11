@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2015 Ricordisamoa
+ * Copyright (C) 2013-2016 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -1572,7 +1572,8 @@ Inspector.prototype.mapRights = function ( logevt ) {
 		) ) );
 	}
 	return $( '<li>' ).html(
-		'<a href="' + this.wikipath + 'Special:Log/' + logevt.logid + '">' +
+		// Permalink requires commit 1b294bd3c538c874156d9f924200cbf659789dfb in MediaWiki core
+		'<a href="' + this.wikipath + 'Special:Redirect/logid/' + logevt.logid + '">' +
 		new Date( logevt.timestamp ).toLocaleString() +
 		'</a>' + this.i18n( 'colon-separator' ) + this.localizer.listToText( msg )
 	);
