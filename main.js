@@ -447,13 +447,16 @@ DataGetter.prototype = {
 			} else {
 				params.list += '|users';
 				params.ususers = self.user;
-				params.usprop = 'editcount';
+				params.usprop = 'registration|editcount';
 				params.continue = '';
 			}
 			return self.localApi.get( params ).then( function ( data ) {
+				var userObj;
 				contribs = contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
-					self.editCount = data.query.users[ Object.keys( data.query.users )[ 0 ] ].editcount;
+					userObj = data.query.users[ Object.keys( data.query.users )[ 0 ] ];
+					self.registration = userObj.registration;
+					self.editCount = userObj.editcount;
 				}
 				if ( data.continue ) {
 					return getContribsRecursive( data.continue );
@@ -1467,7 +1470,7 @@ Inspector.prototype.generateMonthsChart = function () {
  * @private
  */
 Inspector.prototype.showGeneral = function () {
-	var firstContribDate, latestContribDate, ls;
+	var firstContribDate, latestContribDate, registrationDate, ls;
 
 	if ( this.blockInfo.blockid !== undefined ) {
 		this.$general.append(
@@ -1478,6 +1481,25 @@ Inspector.prototype.showGeneral = function () {
 
 	firstContribDate = new Date( this.contribs[ 0 ].timestamp );
 	latestContribDate = new Date( this.contribs[ this.contribs.length - 1 ].timestamp );
+
+	if ( this.registration !== undefined && this.registration !== null ) {
+		registrationDate = new Date( this.registration );
+
+		this.$general.append(
+			$( '<a>' )
+			.attr( 'href', this.wikipath + 'Special:Log/newusers?user=' + this.user )
+			.text( this.i18n( 'registration date' ) ),
+			document.createTextNode(
+				this.i18n( 'colon-separator' ) +
+				registrationDate.toUTCString() +
+				this.i18n( 'word-separator' ) +
+				this.i18n( 'parentheses',
+					this.localizer.dateDiff( registrationDate, new Date(), 4, true )
+				)
+			),
+			'<br>'
+		);
+	}
 
 	this.$general
 	.append(
@@ -1702,6 +1724,7 @@ Inspector.prototype.realStart = function () {
 					self.contribs = new ContribsList( contribs );
 					self.contribs.sort();
 					self.contribs.log();
+					self.registration = self.dataGetter.registration;
 					self.editCount = self.dataGetter.editCount;
 
 					$( '.jumbotron' ).removeClass( 'jumbotron' );

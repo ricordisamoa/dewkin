@@ -7,6 +7,7 @@
 	"loading": "Label of the 'Yes' button after being clicked on",
 	"coming soon": "Placeholder for tabs that have not been implemented yet",
 	"overview": "Title of the 'Overview' tab",
+	"registration date": "Label for the inspected user's registration date",
 	"first edit": "Label for the inspected user's first known edit",
 	"most recent edit": "Label for the inspected user's latest known edit",
 	"longest streak": "Label for the longest series of days with at least one contribution by the inspected user",
