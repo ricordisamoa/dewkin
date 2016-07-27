@@ -817,7 +817,7 @@ Localizer.prototype.loadCustomMessages = function ( lang ) {
 		deferred = $.Deferred();
 	$.get( 'i18n/' + lang + '.json', {}, 'jsonp' )
 	.done( function ( data ) {
-		$.extend( self.messages, data );
+		self.messages = $.extend( {}, data, self.messages );
 		if ( lang === self.fallback ) {
 			deferred.resolve( true );
 		} else {
