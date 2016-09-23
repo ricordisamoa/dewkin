@@ -854,7 +854,7 @@ Localizer.prototype.parseMsg = function ( msg ) {
 			return el;
 		}
 	} );
-	regex = /\{\{PLURAL\:(\d+(\.\d+)?)\|([^\|]*)(\|([^\|]*))?\}\}/g;
+	regex = /\{\{PLURAL\:(\-?\d+(\.\d+)?)\|([^\|]*)(\|([^\|]*))?\}\}/g;
 	regex2 = new RegExp( regex.source, '' );
 	msg = msg.replace( regex, function ( el ) {
 		var m = el.match( regex2 );
