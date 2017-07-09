@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2016 Ricordisamoa
+ * Copyright (C) 2013-2017 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -1396,7 +1396,7 @@ Inspector.prototype.registerMapTab = function () {
 				maxEdits = geodata[ 0 ].numedits;
 				scale = d3.scale.sqrt()
 					.domain( [ 0, maxEdits ] )
-					.range( [ 5, 18 ] );
+					.range( [ 0, 20 ] );
 				map = L.map( 'map' ).setView( [ 0, 0 ], 2 );
 				new L.TileLayer(
 					'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
