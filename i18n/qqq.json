@@ -25,6 +25,7 @@
 	"punchcard": "Title of the 'Punchcard' tab",
 	"nedits bold": "Tooltip for circles in the punchcard representing the number of edits ($1) by the inspected user",
 	"map": "Title of the 'Map' tab",
+	"map desc": "Description of the 'Map' tab",
 	"bytes with nchanges": "Tooltip for map markers representing edits by the inspected user: $1 is the number of changed bytes, $2 the number of edits",
 	"no geodata": "Message shown when the 'Map' tab is empty",
 	"votes": "Title of the 'Votes' tab",
