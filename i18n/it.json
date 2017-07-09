@@ -25,6 +25,7 @@
 	"punchcard": "Punch card",
 	"nedits bold": "<strong>$1</strong> {{PLURAL:$1|modifica|modifiche}}",
 	"map": "Mappa",
+	"map desc": "La mappa mostra i luoghi associati con le pagine nei namespace principale e File modificate dall'utente. L'area di ciascun cerchio è proporzionale al numero di modifiche effettuate dall'utente alla pagina corrispondente.",
 	"bytes with nchanges": "$1 con $2",
 	"no geodata": "Nessun dato di geolocalizzazione trovato per le pagine modificate.",
 	"votes": "Voti",

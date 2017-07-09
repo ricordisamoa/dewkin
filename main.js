@@ -1392,12 +1392,15 @@ Inspector.prototype.registerMapTab = function () {
 		.done( function ( geodata ) {
 			var maxEdits, scale, map;
 			if ( geodata.length > 0 ) {
-				$( '#map' ).empty().css( 'height', '400px' );
+				$( '#map' ).empty()
+				.append( $( '<p>' ).text( self.i18n( 'map desc' ) ) )
+				.append( $( '<div>' ).attr( 'id', 'map-container' ).css( 'height', '400px' ) );
+
 				maxEdits = geodata[ 0 ].numedits;
 				scale = d3.scale.sqrt()
 					.domain( [ 0, maxEdits ] )
 					.range( [ 0, 20 ] );
-				map = L.map( 'map' ).setView( [ 0, 0 ], 2 );
+				map = L.map( 'map-container' ).setView( [ 0, 0 ], 2 );
 				new L.TileLayer(
 					'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 					{

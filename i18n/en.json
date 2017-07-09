@@ -25,6 +25,7 @@
 	"punchcard": "Punch card",
 	"nedits bold": "<strong>$1</strong> {{PLURAL:$1|edit|edits}}",
 	"map": "Map",
+	"map desc": "The map shows locations associated with pages in the Main and File namespaces edited by the user. The area of each circle is proportional to the number of edits the user made to the corresponding page.",
 	"bytes with nchanges": "$1 with $2",
 	"no geodata": "No geolocation data about edited pages found.",
 	"votes": "Votes",
