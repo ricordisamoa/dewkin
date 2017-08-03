@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2015 Ricordisamoa
+ * Copyright (C) 2013-2017 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -21,6 +21,10 @@
 
 body {
 	padding: 1em;
+}
+
+.github-fork-ribbon:before {
+	background-color: #f80;
 }
 
 /* Acronym */
