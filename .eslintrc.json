@@ -1,7 +1,6 @@
 {
 	"extends": "wikimedia",
 	"rules": {
-		"block-spacing": "off",
 		"indent": [
 			"error",
 			"tab",

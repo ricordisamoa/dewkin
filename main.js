@@ -281,7 +281,7 @@ ContribsList.prototype = {
 			} else if ( cur.length === 2 ) {
 				if ( i < cc.length && sameOrNext( cur[ 1 ], d ) ) {
 					cur[ 1 ] = d;// continue streak
-				} else {// streak broken
+				} else { // streak broken
 					if ( prev.length === 0 || cur[ 1 ] - cur[ 0 ] > prev[ 1 ] - prev[ 0 ] ) {
 						prev = cur;// (over)write longest streak
 					}
