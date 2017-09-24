@@ -1,0 +1,34 @@
+{
+	"extends": "wikimedia",
+	"rules": {
+		"block-spacing": "off",
+		"indent": [
+			"error",
+			"tab",
+			{
+				"MemberExpression": "off",
+				"SwitchCase": 1,
+				"ignoredNodes": [ "FunctionExpression > *", "VariableDeclaration" ]
+			}
+		],
+		"key-spacing": [ "error", { "mode": "minimum" } ],
+		"no-unused-vars": "off",
+		"no-useless-escape": "off",
+		"valid-jsdoc": "off",
+		"wrap-iife": "off"
+	},
+	"overrides": [
+		{
+			"files": "*.js",
+			"excludedFiles": "Gruntfile.js",
+			"env": {
+				"browser": true,
+				"jquery": true
+			},
+			"globals": {
+				"L": false,
+				"d3": false
+			}
+		}
+	]
+}

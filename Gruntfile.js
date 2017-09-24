@@ -1,19 +1,12 @@
-/* jshint node:true */
+/* eslint-env node */
 module.exports = function ( grunt ) {
 	'use strict';
 
-	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
-	grunt.loadNpmTasks( 'grunt-jscs' );
+	grunt.loadNpmTasks( 'grunt-eslint' );
 	grunt.loadNpmTasks( 'grunt-banana-checker' );
 
 	grunt.initConfig( {
-		jshint: {
-			options: {
-				jshintrc: true
-			},
-			all: [ '*.js' ]
-		},
-		jscs: {
+		eslint: {
 			all: [ '*.js' ]
 		},
 		banana: {
@@ -24,5 +17,5 @@ module.exports = function ( grunt ) {
 		}
 	} );
 
-	grunt.registerTask( 'test', [ 'jshint', 'jscs', 'banana' ] );
+	grunt.registerTask( 'test', [ 'eslint', 'banana' ] );
 };

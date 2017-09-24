@@ -64,7 +64,7 @@ ContribsList.prototype = {
 	},
 
 	log: function () {
-		/* jshint devel:true */
+		// eslint-disable-next-line no-console
 		console.log( this );
 	},
 
@@ -246,7 +246,7 @@ ContribsList.prototype = {
 			contr = this,
 			data = [];
 		for ( d = 0; d < 7; d++ ) {
-			/* jshint loopfunc:true */
+			// eslint-disable-next-line no-loop-func
 			$.each( contr.grepByDay( d ).filterByHour(), function ( h, c ) {
 				data.push( [ d, h, c.length ] );
 			} );
@@ -1284,7 +1284,6 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
 	return $( '<li>' )
 		.html(
 			this.i18n(
-				// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
 				'voted for',
 				new Date( vote.vt_timestamp ).toUTCString(),
 				vote.s_name,
@@ -1295,7 +1294,6 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
 				} )
 				.text( this.i18n( 'diff' ) )
 				.get( 0 ).outerHTML
-				// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
 			)
 		);
 };
@@ -1326,14 +1324,12 @@ Inspector.prototype.mapVotes = function ( poll ) {
 Inspector.prototype.mapPoll = function ( poll ) {
 	return [
 		$( '<h3>' ).append(
-			// jscs: disable requireCamelCaseOrUpperCaseIdentifiers
 			$( '<a>' )
 			.attr( {
 				href: poll.b_url,
 				title: poll.b_title
 			} )
 			.text( poll.b_title )
-			// jscs: enable requireCamelCaseOrUpperCaseIdentifiers
 		),
 		this.mapVotes( poll )
 	];
