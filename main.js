@@ -379,7 +379,7 @@ DataGetter.prototype = {
 			$.each( data.sitematrix, function () {
 				$.each( this.site || ( Array.isArray( this ) ? this : [] ), function () {
 					if ( this.dbname && this.url && this.private === undefined && this.fishbowl === undefined ) {
-						dbNames[ this.dbname ] = this.url.replace( /^http\:\/\//, '//' );
+						dbNames[ this.dbname ] = this.url.replace( /^http:\/\//, '//' );
 					}
 				} );
 			} );
@@ -843,7 +843,7 @@ Localizer.prototype.loadCustomMessages = function ( lang ) {
  * @return {string} The final message
  */
 Localizer.prototype.parseMsg = function ( msg ) {
-	var regex = /(^|[^\/])\$(\d+)(?=\D|$)/g,
+	var regex = /(^|[^/])\$(\d+)(?=\D|$)/g,
 	regex2 = new RegExp( regex.source, '' ),
 	args = Array.prototype.slice.call( arguments );
 	msg = msg.replace( regex, function ( el ) {
@@ -854,7 +854,7 @@ Localizer.prototype.parseMsg = function ( msg ) {
 			return el;
 		}
 	} );
-	regex = /\{\{PLURAL\:(\-?\d+(\.\d+)?)\|([^\|]*)(\|([^\|]*))?\}\}/g;
+	regex = /\{\{PLURAL:(-?\d+(\.\d+)?)\|([^|]*)(\|([^|]*))?\}\}/g;
 	regex2 = new RegExp( regex.source, '' );
 	msg = msg.replace( regex, function ( el ) {
 		var m = el.match( regex2 );
@@ -1163,7 +1163,7 @@ Inspector.prototype.onSubmit = function ( event ) {
 	this.dataGetter.user = this.user = this.$user.val().replace( /_/g, ' ' );
 
 	// 'Permalink'
-	if ( window.history.pushState && window.location.pathname.split( /[^\/]\/[^\/]/ ).length === 1 ) {
+	if ( window.history.pushState && window.location.pathname.split( /[^/]\/[^/]/ ).length === 1 ) {
 		window.history.pushState(
 			{},
 			'',

@@ -13,7 +13,6 @@
 		],
 		"key-spacing": [ "error", { "mode": "minimum" } ],
 		"no-unused-vars": "off",
-		"no-useless-escape": "off",
 		"valid-jsdoc": "off",
 		"wrap-iife": "off"
 	},
