@@ -44,6 +44,8 @@ h1 abbr,
 }
 .jumbotron h1 abbr {
 	display: inline;
+	border-bottom-width: 4px;
+	text-decoration: none;
 }
 h1:hover span {
 	display: inline;
