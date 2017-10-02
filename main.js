@@ -313,7 +313,7 @@ function MediaWikiApi( url ) {
  * Send a GET request to the MediaWiki API.
  *
  * @param {Object} data Parameters for the request
- * @return {jQuery.Promise}
+ * @return {JQuery.Promise}
  */
 MediaWikiApi.prototype.get = function ( data ) {
 	return $.ajax( {
@@ -775,7 +775,7 @@ function Localizer( language, dataGetter ) {
  * Get localized messages from the wiki and from the current instance of DEWKIN.
  *
  * @param {string[]} messages MediaWiki message keys
- * @return {jQuery.Promise}
+ * @return {JQuery.Promise}
  */
 Localizer.prototype.loadMessages = function ( messages ) {
 	var self = this;
@@ -810,7 +810,7 @@ Localizer.prototype.harvestMonthsAndWeekdays = function () {
  *
  * @private
  * @param {string} lang MediaWiki language code
- * @return {jQuery.Deferred}
+ * @return {JQuery.Deferred}
  */
 Localizer.prototype.loadCustomMessages = function ( lang ) {
 	var self = this,
@@ -1152,7 +1152,7 @@ Inspector.prototype.registerTypeahead = function () {
  * Handle the 'submit' event on the form.
  *
  * @private
- * @param {jQuery.Event} event Submit event
+ * @param {JQuery.Event} event Submit event
  */
 Inspector.prototype.onSubmit = function ( event ) {
 	var project;
@@ -1278,7 +1278,7 @@ Inspector.prototype.generateNamespacesChart = function () {
  * @private
  * @param {Object} poll Object with b_project, b_title, b_url, votes
  * @param {Object} vote Object with s_name, vt_diff, vt_timestamp
- * @return {jQuery} The list item
+ * @return {JQuery} The list item
  */
 Inspector.prototype.getVoteItem = function ( poll, vote ) {
 	return $( '<li>' )
@@ -1303,7 +1303,7 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
  *
  * @private
  * @param {Object} poll Object with b_project, b_title, b_url, votes
- * @return {jQuery|string} A vote list or a placeholder
+ * @return {JQuery|string} A vote list or a placeholder
  */
 Inspector.prototype.mapVotes = function ( poll ) {
 	if ( poll.votes.length === 0 ) {
@@ -1572,7 +1572,7 @@ Inspector.prototype.showGeneral = function () {
  *
  * @private
  * @param {Object} logevt The log event with params
- * @return {jQuery} The list item
+ * @return {JQuery} The list item
  */
 Inspector.prototype.mapRights = function ( logevt ) {
 	var oldGroups = logevt.params.oldgroups,
@@ -1609,7 +1609,7 @@ Inspector.prototype.mapRights = function ( logevt ) {
  *
  * @private
  * @param {Object[]} rights Log events
- * @return {jQuery}
+ * @return {JQuery}
  */
 Inspector.prototype.getRights = function ( rights ) {
 	if ( rights.length === 0 ) {
@@ -1641,7 +1641,7 @@ Inspector.prototype.showRights = function ( rights ) {
  * @private
  * @param {Object} tagsData Contributions grouped by tag
  * @param {string} tag The name of the tag
- * @return {jQuery} Table row
+ * @return {JQuery} Table row
  */
 Inspector.prototype.mapTag = function ( tagsData, tag ) {
 	return $( '<tr>' )
