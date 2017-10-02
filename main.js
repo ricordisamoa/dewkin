@@ -484,6 +484,9 @@ DataGetter.prototype = {
 		} );
 	},
 
+	/**
+	 * @return {JQuery.Promise<RightsLogEvent[]>}
+	 */
 	rightsLog: function () {
 		return this.localApi.get( {
 			action: 'query',
@@ -1276,11 +1279,26 @@ Inspector.prototype.generateNamespacesChart = function () {
 };
 
 /**
+ * @typedef {Object} Vote
+ * @property {string} vt_diff
+ * @property {string} vt_timestamp
+ * @property {string} s_name
+ */
+
+/**
+ * @typedef {Object} Poll
+ * @property {string} b_project
+ * @property {string} b_url
+ * @property {string} b_title
+ * @property {Vote[]} votes
+ */
+
+/**
  * Get a <li> element representing a vote.
  *
  * @private
- * @param {Object} poll Object with b_project, b_title, b_url, votes
- * @param {Object} vote Object with s_name, vt_diff, vt_timestamp
+ * @param {Poll} poll
+ * @param {Vote} vote
  * @return {JQuery} The list item
  */
 Inspector.prototype.getVoteItem = function ( poll, vote ) {
@@ -1305,7 +1323,7 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
  * Get an element or a string representing a list of votes.
  *
  * @private
- * @param {Object} poll Object with b_project, b_title, b_url, votes
+ * @param {Poll} poll
  * @return {JQuery|string} A vote list or a placeholder
  */
 Inspector.prototype.mapVotes = function ( poll ) {
@@ -1321,7 +1339,7 @@ Inspector.prototype.mapVotes = function ( poll ) {
  * Get an array of jQuery objects or strings representing a poll.
  *
  * @private
- * @param {Object} poll Object with b_project, b_title, b_url, votes
+ * @param {Poll} poll
  * @return {Array} jQuery objects or strings to append
  */
 Inspector.prototype.mapPoll = function ( poll ) {
@@ -1571,10 +1589,17 @@ Inspector.prototype.showGeneral = function () {
 };
 
 /**
+ * @typedef {Object} RightsLogEvent
+ * @property {number} logid
+ * @property {{oldgroups: string[], newgroups: string[]}} params
+ * @property {string} timestamp
+ */
+
+/**
  * Get a <li> element from a user groups change.
  *
  * @private
- * @param {Object} logevt The log event with params
+ * @param {RightsLogEvent} logevt The log event with params
  * @return {JQuery} The list item
  */
 Inspector.prototype.mapRights = function ( logevt ) {
@@ -1611,7 +1636,7 @@ Inspector.prototype.mapRights = function ( logevt ) {
  * Get an <h3> or a <ul> element for the rights tab.
  *
  * @private
- * @param {Object[]} rights Log events
+ * @param {RightsLogEvent[]} rights Log events
  * @return {JQuery}
  */
 Inspector.prototype.getRights = function ( rights ) {
@@ -1627,7 +1652,7 @@ Inspector.prototype.getRights = function ( rights ) {
  * Show information about rights changes to the inspected user's account.
  *
  * @private
- * @param {Object[]} rights Log events
+ * @param {RightsLogEvent[]} rights Log events
  */
 Inspector.prototype.showRights = function ( rights ) {
 	$( '#rights' ).append( this.getRights( rights ) );
