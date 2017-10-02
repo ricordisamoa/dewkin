@@ -818,10 +818,7 @@ Localizer.prototype.harvestMonthsAndWeekdays = function () {
 Localizer.prototype.loadCustomMessages = function ( lang ) {
 	var self = this,
 		deferred = $.Deferred();
-	$.get( {
-		url: 'i18n/' + lang + '.json',
-		dataType: 'jsonp'
-	} )
+	$.get( 'i18n/' + lang + '.json' )
 	.done( function ( data ) {
 		self.messages = $.extend( {}, data, self.messages );
 		if ( lang === self.fallback ) {
