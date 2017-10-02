@@ -102,8 +102,8 @@ ContribsList.prototype = {
 
 	filterByTag: function () {
 		var contr = {};
-		$.each( this, function ( i, e ) {
-			$.each( e.tags || [], function ( x, tag ) {
+		this.forEach( function ( e ) {
+			( e.tags || [] ).forEach( function ( tag ) {
 				if ( contr[ tag ] ) {
 					contr[ tag ].push( e );
 				} else {
@@ -181,25 +181,25 @@ ContribsList.prototype = {
 	},
 
 	grepByEditSummary: function ( summary ) {
-		return new ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( this.filter( function ( e ) {
 			return ( summary === undefined ? e.comment !== '' : e.comment === summary );
 		} ) );
 	},
 
 	grepByNamespace: function ( ns ) {
-		return new ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( this.filter( function ( e ) {
 			return Array.isArray( ns ) ? ( ns.indexOf( e.ns ) !== -1 ) : ( e.ns === ns );
 		} ) );
 	},
 
 	grepByDay: function ( number ) {
-		return new ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( this.filter( function ( e ) {
 			return new Date( e.timestamp ).getUTCDay() === number;
 		} ) );
 	},
 
 	grepByHour: function ( number ) {
-		return new ContribsList( $.grep( this, function ( e ) {
+		return new ContribsList( this.filter( function ( e ) {
 			return new Date( e.timestamp ).getUTCHours() === number;
 		} ) );
 	},
@@ -210,11 +210,11 @@ ContribsList.prototype = {
 		if ( ns !== undefined ) {
 			c = c.grepByNamespace( ns );
 		}
-		titles = $.map( c, function ( e ) {
+		titles = c.map( function ( e ) {
 			return e.title;
 		} );
 		occurr = {};
-		$.each( titles, function ( i, e ) {
+		titles.forEach( function ( e ) {
 			if ( occurr[ e ] ) {
 				occurr[ e ] = occurr[ e ] + 1;
 			} else {
@@ -230,7 +230,7 @@ ContribsList.prototype = {
 			sortedKeys = sortedKeys.slice( 0, 30 );
 		}
 		sortedOccurr = {};
-		$.each( sortedKeys, function ( i, e ) {
+		sortedKeys.forEach( function ( e ) {
 			sortedOccurr[ e ] = occurr[ e ];
 		} );
 		return [ sortedOccurr, overflow ];
@@ -268,7 +268,7 @@ ContribsList.prototype = {
 				return d1 === d2 || ( d2 - d1 === 86400000 );
 			};
 		cc.sort();
-		$.each( cc, function ( i, ct ) {
+		cc.forEach( function ( ct, i ) {
 			var d = new Date( ct.timestamp ).setHours( 0, 0, 0, 0 );
 			if ( cur.length === 0 ) {
 				cur[ 0 ] = d;// start streak
@@ -477,7 +477,7 @@ DataGetter.prototype = {
 		} )
 		.then( function ( data ) {
 			var messages = {};
-			$.each( data.query.allmessages || [], function ( i, v ) {
+			( data.query.allmessages || [] ).forEach( function ( v ) {
 				messages[ v.name ] = v[ '*' ];
 			} );
 			return messages;
@@ -497,7 +497,7 @@ DataGetter.prototype = {
 			lelimit: 'max'
 		} )
 		.then( function ( data ) {
-			return $.grep( data.query.logevents, function ( el ) {
+			return data.query.logevents.filter( function ( el ) {
 				// hack for old log entries
 				return (
 					el.params !== undefined &&
@@ -947,7 +947,7 @@ Localizer.prototype.dateDiff = function ( olddate, newdate, precision, ago ) {
 	diff = ( newdate || new Date() ).getTime() - olddate.getTime(),
 	self = this,
 	message = [];
-	$.each( mult, function ( i ) {
+	mult.forEach( function ( num, i ) {
 		var f, fl;
 		if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
 			f = Math.floor( mult.slice( i ).reduce( function ( a, b ) {
@@ -1424,7 +1424,7 @@ Inspector.prototype.registerMapTab = function () {
 					}
 				)
 				.addTo( map );
-				$.each( geodata, function ( index, marker ) {
+				geodata.forEach( function ( marker ) {
 					var edits,
 						sizediff = self.sizediffIndicator( marker.sizediff ),
 						markerRadius = scale( marker.numedits );
@@ -1602,10 +1602,10 @@ Inspector.prototype.showGeneral = function () {
 Inspector.prototype.mapRights = function ( logevt ) {
 	var oldGroups = logevt.params.oldgroups,
 		newGroups = logevt.params.newgroups,
-		addedGroups = $.grep( newGroups, function ( el ) {
+		addedGroups = newGroups.filter( function ( el ) {
 			return el !== '' && oldGroups.indexOf( el ) === -1;
 		} ),
-		removedGroups = $.grep( oldGroups, function ( el ) {
+		removedGroups = oldGroups.filter( function ( el ) {
 			return el !== '' && newGroups.indexOf( el ) === -1;
 		} ),
 		msg = [];
@@ -1731,10 +1731,10 @@ Inspector.prototype.realStart = function () {
 		} ).get()
 		.concat( self.localizer.getEssentialMessages() );
 		self.dataGetter.rightsLog().done( function ( rights ) {
-			$.each( rights, function ( i, logevt ) {
+			rights.forEach( function ( logevt ) {
 				var oldGroups = logevt.params.oldgroups,
 					newGroups = logevt.params.newgroups;
-				$.each( oldGroups.concat( newGroups ), function ( i, group ) {
+				oldGroups.concat( newGroups ).forEach( function ( group ) {
 					var msg = 'group-' + group + '-member';
 					if ( toLoadMsgs.indexOf( msg ) === -1 ) {
 						toLoadMsgs.push( msg );
