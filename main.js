@@ -211,7 +211,7 @@ ContribsList.prototype = {
 			c = c.grepByNamespace( ns );
 		}
 		titles = $.map( c, function ( e ) {
-			return [ e.title ];
+			return e.title;
 		} );
 		occurr = {};
 		$.each( titles, function ( i, e ) {
@@ -735,11 +735,11 @@ util = {
 	 * @return {string[]} Array of month codes in the form yyyy/mm
 	 */
 	allMonths: function ( from ) {
-		var fromYear, fromMonth, months, toYear, toMonth,
+		var fromSplit, fromYear, fromMonth, months, toYear, toMonth,
 			year, actualToYear, month, m;
-		from = from.split( '/' );
-		fromYear = parseInt( from[ 0 ] );
-		fromMonth = parseInt( from[ 1 ] ) - 1;
+		fromSplit = from.split( '/' );
+		fromYear = parseInt( fromSplit[ 0 ] );
+		fromMonth = parseInt( fromSplit[ 1 ] ) - 1;
 		months = [];
 		toYear = new Date().getUTCFullYear();
 		toMonth = new Date().getUTCMonth();
@@ -815,7 +815,10 @@ Localizer.prototype.harvestMonthsAndWeekdays = function () {
 Localizer.prototype.loadCustomMessages = function ( lang ) {
 	var self = this,
 		deferred = $.Deferred();
-	$.get( 'i18n/' + lang + '.json', {}, 'jsonp' )
+	$.get( {
+		url: 'i18n/' + lang + '.json',
+		dataType: 'jsonp'
+	} )
 	.done( function ( data ) {
 		self.messages = $.extend( {}, data, self.messages );
 		if ( lang === self.fallback ) {
@@ -941,13 +944,13 @@ Localizer.prototype.dateDiff = function ( olddate, newdate, precision, ago ) {
 		'seconds'
 	],
 	mult = [ 12, 4.34, 7, 24, 60, 60, 1000 ],
-	diff = ( newdate || new Date() ) - olddate,
+	diff = ( newdate || new Date() ).getTime() - olddate.getTime(),
 	self = this,
 	message = [];
 	$.each( mult, function ( i ) {
 		var f, fl;
 		if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
-			f = parseInt( mult.slice( i ).reduce( function ( a, b ) {
+			f = Math.floor( mult.slice( i ).reduce( function ( a, b ) {
 				return a * b;
 			} ) );
 			fl = Math.floor( diff / f );
@@ -1452,7 +1455,7 @@ Inspector.prototype.generateMonthsChart = function () {
 
 	contribsByMonthAndNamespace = this.contribs.filterByMonthAndNamespace();
 	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
-		return a - b;
+		return Number( a ) - Number( b );
 	} );
 	nsNames = $.map( nsIdsSortedByNumericValue, self.namespaceName.bind( self ) );
 	nsColors = $.map( nsIdsSortedByNumericValue, util.colorFromNamespace.bind( util ) );
@@ -1550,7 +1553,7 @@ Inspector.prototype.showGeneral = function () {
 			this.i18n( 'word-separator' ) +
 			this.i18n( 'parentheses',
 				this.i18n( 'days',
-					( new Date( ls[ 1 ] ) - new Date( ls[ 0 ] ) ) / 86400000 + 1
+					( new Date( ls[ 1 ] ).getTime() - new Date( ls[ 0 ] ).getTime() ) / 86400000 + 1
 				)
 			) +
 			'<br>'
