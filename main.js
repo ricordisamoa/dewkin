@@ -1726,10 +1726,7 @@ Inspector.prototype.realStart = function () {
 	self.dataGetter.namespaces().done( function ( namespaces ) {
 		var toLoadMsgs;
 		allNamespaces = self.namespaces = namespaces;
-		toLoadMsgs = $( '[data-msg]' ).map( function () {
-			return this.dataset.msg;
-		} ).get()
-		.concat( self.localizer.getEssentialMessages() );
+		toLoadMsgs = self.localizer.getEssentialMessages();
 		self.dataGetter.rightsLog().done( function ( rights ) {
 			rights.forEach( function ( logevt ) {
 				var oldGroups = logevt.params.oldgroups,
