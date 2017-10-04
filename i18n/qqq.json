@@ -10,6 +10,7 @@
 	"registration date": "Label for the inspected user's registration date",
 	"first edit": "Label for the inspected user's first known edit",
 	"most recent edit": "Label for the inspected user's latest known edit",
+	"uploads link": "Label for the inspected user's upload log",
 	"longest streak": "Label for the longest series of days with at least one contribution by the inspected user",
 	"edited in ns": "Label for the full list of pages ($1 items) edited by the inspected user in a certain namespace ($2)",
 	"top edited in ns": "Label for the truncated list of pages ($1 items shown) most edited by the inspected user in a certain namespace ($2)",

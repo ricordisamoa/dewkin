@@ -10,6 +10,7 @@
 	"registration date": "Registration date",
 	"first edit": "First edit",
 	"most recent edit": "Most recent edit",
+	"uploads link": "Uploaded files",
 	"longest streak": "Longest streak",
 	"edited in ns": "$1 {{PLURAL:$1|page|pages}} edited in namespace \"$2\"",
 	"top edited in ns": "Top $1 {{PLURAL:$1|page|pages}} edited in namespace \"$2\"",

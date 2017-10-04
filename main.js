@@ -1553,7 +1553,7 @@ Inspector.prototype.showGeneral = function () {
 	this.$general
 	.append(
 		'<a href="' + this.wikipath + 'Special:Log/upload?user=' + this.user + '">' +
-		this.i18n( 'statistics-files' ) +
+		this.i18n( 'uploads link' ) +
 		'</a>' +
 		this.i18n( 'colon-separator' ) + this.uploads.length.toLocaleString() + '<br>'
 	);
