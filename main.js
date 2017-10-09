@@ -418,8 +418,8 @@ DataGetter.prototype = {
 				params.continue = '';
 			}
 			return self.localApi.get( params ).then( function ( data ) {
-				uploads = uploads.concat( $.map( data.query.allimages, function ( e ) {
-					return [ e.name.replace( /_/g, ' ' ) ];
+				uploads = uploads.concat( data.query.allimages.map( function ( e ) {
+					return e.name.replace( /_/g, ' ' );
 				} ) );
 				if ( data.continue ) {
 					return getUploadsRecursive( data.continue );
@@ -797,13 +797,13 @@ Localizer.prototype.loadMessages = function ( messages ) {
  */
 Localizer.prototype.harvestMonthsAndWeekdays = function () {
 	var self = this;
-	self.months = $.map( Localizer.months, function ( el ) {
+	self.months = Localizer.months.map( function ( el ) {
 		return self.messages[ el ];
 	} );
-	self.weekdays = $.map( Localizer.weekdays, function ( el ) {
+	self.weekdays = Localizer.weekdays.map( function ( el ) {
 		return self.messages[ el ];
 	} );
-	self.weekdaysShort = $.map( Localizer.weekdaysShort, function ( el ) {
+	self.weekdaysShort = Localizer.weekdaysShort.map( function ( el ) {
 		return self.messages[ el ];
 	} );
 };
@@ -1136,7 +1136,7 @@ Inspector.prototype.registerTypeahead = function () {
 				func = 'globalAllUsers';
 			}
 			self.dataGetter[ func ]( query ).done( function ( users ) {
-				return process( $.map( users, function ( user ) {
+				return process( users.map( function ( user ) {
 					return user.name;
 				} ) );
 			} );
@@ -1211,19 +1211,20 @@ Inspector.prototype.generateNamespacesChart = function () {
 	nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
 		return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
 	} );
-	nsChartData = $.map( nsIdsSortedByNumberOfEdits, function ( ns ) {
-		var nsName;
-		if ( contribsByNamespace[ ns ].length > 0 ) { // only namespaces with contributions
-			nsName = inspector.namespaceName( ns );
-			return {
-				id: ns,
-				name: nsName,
-				value: contribsByNamespace[ ns ].length,
-				label: nsName + inspector.i18n( 'colon-separator' ) +
-					inspector.localizer.percent( contribsByNamespace[ ns ].length, inspector.contribs.length ),
-				color: util.colorFromNamespace( ns )
-			};
-		}
+	nsChartData = nsIdsSortedByNumberOfEdits.filter( function ( ns ) {
+		// only namespaces with contributions
+		return contribsByNamespace[ ns ].length > 0;
+	} )
+	.map( function ( ns ) {
+		var nsName = inspector.namespaceName( ns );
+		return {
+			id: ns,
+			name: nsName,
+			value: contribsByNamespace[ ns ].length,
+			label: nsName + inspector.i18n( 'colon-separator' ) +
+				inspector.localizer.percent( contribsByNamespace[ ns ].length, inspector.contribs.length ),
+			color: util.colorFromNamespace( ns )
+		};
 	} );
 	nsChart = window.charts.pie( '#ns-chart', 20, 20, 600, 400, 150, nsChartData );
 	nsChart.paths
@@ -1329,7 +1330,7 @@ Inspector.prototype.mapVotes = function ( poll ) {
 	}
 
 	return $( '<ul>' )
-		.append( $.map( poll.votes, this.getVoteItem.bind( this, poll ) ) );
+		.append( poll.votes.map( this.getVoteItem.bind( this, poll ) ) );
 };
 
 /**
@@ -1377,7 +1378,7 @@ Inspector.prototype.generateProgrammingLanguagesChart = function () {
 	sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
 		return langs[ b ].length - langs[ a ].length;
 	} );
-	codeChartData = $.map( sortedLangExts, function ( ext ) {
+	codeChartData = sortedLangExts.map( function ( ext ) {
 		var langName = util.programmingLanguages[ ext ][ 0 ];
 		return {
 			id: ext,
@@ -1472,8 +1473,8 @@ Inspector.prototype.generateMonthsChart = function () {
 	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
 		return Number( a ) - Number( b );
 	} );
-	nsNames = $.map( nsIdsSortedByNumericValue, self.namespaceName.bind( self ) );
-	nsColors = $.map( nsIdsSortedByNumericValue, util.colorFromNamespace.bind( util ) );
+	nsNames = nsIdsSortedByNumericValue.map( self.namespaceName.bind( self ) );
+	nsColors = nsIdsSortedByNumericValue.map( util.colorFromNamespace.bind( util ) );
 	nsData = [];
 	$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
 		var p = [ month, [] ];
@@ -1562,7 +1563,7 @@ Inspector.prototype.showGeneral = function () {
 
 	if ( ls.length === 2 ) {
 		this.$general.append(
-			this.i18n( 'longest streak' ) + this.i18n( 'colon-separator' ) + $.map( ls, function ( d ) {
+			this.i18n( 'longest streak' ) + this.i18n( 'colon-separator' ) + ls.map( function ( d ) {
 				return new Date( d ).toUTCString();
 			} ).join( ' - ' ) +
 			this.i18n( 'word-separator' ) +
@@ -1610,14 +1611,12 @@ Inspector.prototype.mapRights = function ( logevt ) {
 		} ),
 		msg = [];
 	if ( addedGroups.length > 0 ) {
-		msg.push( 'became ' + this.localizer.listToText( $.map(
-			addedGroups,
+		msg.push( 'became ' + this.localizer.listToText( addedGroups.map(
 			this.localizer.groupColor.bind( this.localizer )
 		) ) );
 	}
 	if ( removedGroups.length > 0 ) {
-		msg.push( 'removed ' + this.localizer.listToText( $.map(
-			removedGroups,
+		msg.push( 'removed ' + this.localizer.listToText( removedGroups.map(
 			this.localizer.groupColor.bind( this.localizer )
 		) ) );
 	}
@@ -1642,7 +1641,7 @@ Inspector.prototype.getRights = function ( rights ) {
 	}
 
 	return $( '<ul>' )
-		.append( $.map( rights, this.mapRights.bind( this ) ) );
+		.append( rights.map( this.mapRights.bind( this ) ) );
 };
 
 /**
@@ -1691,7 +1690,7 @@ Inspector.prototype.showTags = function () {
 	} );
 
 	this.$tagsTable.find( 'tbody' )
-	.append( $.map( sortedTagNames, this.mapTag.bind( this, tagsData ) ) );
+	.append( sortedTagNames.map( this.mapTag.bind( this, tagsData ) ) );
 };
 
 /**
