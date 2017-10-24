@@ -1107,7 +1107,7 @@ Inspector.prototype.tryPermalink = function () {
 	var path, inspData;
 	path = window.location.pathname.split( '/' );
 	if ( path.length === 3 ) {
-		inspData = path[ 2 ].split( '@' );
+		inspData = decodeURIComponent( path[ 2 ] ).split( '@' );
 		if ( inspData.length === 2 ) {
 			this.$user.val( inspData[ 0 ] );
 			this.$project.val( inspData[ 1 ] );
