@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2017 Ricordisamoa
+ * Copyright (C) 2013-2018 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -469,19 +469,31 @@ DataGetter.prototype = {
 	},
 
 	messages: function ( lang, msgs ) {
-		return this.localApi.get( {
-			action: 'query',
-			meta: 'allmessages',
-			amlang: lang,
-			ammessages: msgs.join( '|' )
-		} )
-		.then( function ( data ) {
-			var messages = {};
-			( data.query.allmessages || [] ).forEach( function ( v ) {
-				messages[ v.name ] = v[ '*' ];
+		var getMessagesRecursive,
+			self = this,
+			messages = {};
+
+		msgs = msgs.slice(); // clone
+
+		getMessagesRecursive = function () {
+			return self.localApi.get( {
+				action: 'query',
+				meta: 'allmessages',
+				amlang: lang,
+				ammessages: msgs.splice( 0, 50 ).join( '|' )
+			} )
+			.then( function ( data ) {
+				( data.query.allmessages || [] ).forEach( function ( v ) {
+					messages[ v.name ] = v[ '*' ];
+				} );
+				if ( msgs.length > 0 ) {
+					return getMessagesRecursive();
+				}
+				return messages;
 			} );
-			return messages;
-		} );
+		};
+
+		return getMessagesRecursive();
 	},
 
 	/**
