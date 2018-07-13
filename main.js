@@ -43,6 +43,7 @@ ContribsList = function () {
 	}
 
 	for ( method in ContribsList.prototype ) {
+		// eslint-disable-next-line no-prototype-builtins
 		if ( ContribsList.prototype.hasOwnProperty( method ) ) {
 			list[ method ] = ContribsList.prototype[ method ];
 		}
@@ -222,7 +223,9 @@ ContribsList.prototype = {
 			}
 		} );
 		sortedKeys = Object.keys( occurr ).sort( function ( a, b ) {
-			return ( ( occurr[ a ] > occurr[ b ] ) ? -1 : ( ( occurr[ a ] < occurr[ b ] ) ? 1 : 0 ) );
+			return (
+				( occurr[ a ] > occurr[ b ] ) ? -1 : ( ( occurr[ a ] < occurr[ b ] ) ? 1 : 0 )
+			);
 		} );
 		overflow = false;
 		if ( sortedKeys.length > 30 ) {
@@ -378,7 +381,12 @@ DataGetter.prototype = {
 			var dbNames = {};
 			$.each( data.sitematrix, function () {
 				$.each( this.site || ( Array.isArray( this ) ? this : [] ), function () {
-					if ( this.dbname && this.url && this.private === undefined && this.fishbowl === undefined ) {
+					if (
+						this.dbname &&
+						this.url &&
+						this.private === undefined &&
+						this.fishbowl === undefined
+					) {
 						dbNames[ this.dbname ] = this.url.replace( /^http:\/\//, '//' );
 					}
 				} );
@@ -961,7 +969,12 @@ Localizer.prototype.dateDiff = function ( olddate, newdate, precision, ago ) {
 	message = [];
 	mult.forEach( function ( num, i ) {
 		var f, fl;
-		if ( precision === undefined || precision === null || i <= precision || message.length === 0 ) {
+		if (
+			precision === undefined ||
+			precision === null ||
+			i <= precision ||
+			message.length === 0
+		) {
 			f = Math.floor( mult.slice( i ).reduce( function ( a, b ) {
 				return a * b;
 			} ) );
@@ -1234,7 +1247,10 @@ Inspector.prototype.generateNamespacesChart = function () {
 			name: nsName,
 			value: contribsByNamespace[ ns ].length,
 			label: nsName + inspector.i18n( 'colon-separator' ) +
-				inspector.localizer.percent( contribsByNamespace[ ns ].length, inspector.contribs.length ),
+				inspector.localizer.percent(
+					contribsByNamespace[ ns ].length,
+					inspector.contribs.length
+				),
 			color: util.colorFromNamespace( ns )
 		};
 	} );
@@ -1451,7 +1467,9 @@ Inspector.prototype.registerMapTab = function () {
 					L.marker( marker.coords, {
 						icon: L.icon( {
 							iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' +
-								util.markerColors[ Math.floor( Math.random() * util.markerColors.length ) ] +
+								util.markerColors[
+									Math.floor( Math.random() * util.markerColors.length )
+								] +
 								'.svg',
 							iconSize: [ markerRadius, markerRadius ]
 						} )
@@ -1775,9 +1793,13 @@ Inspector.prototype.realStart = function () {
 					self.generateProgrammingLanguagesChart();
 
 					/* GitHub-like Punchcard */
-					window.charts.punchcard( contribs.toPunchcard(), self.localizer.weekdays, function ( n ) {
-						return self.i18n( 'nedits bold', n );
-					} );
+					window.charts.punchcard(
+						contribs.toPunchcard(),
+						self.localizer.weekdays,
+						function ( n ) {
+							return self.i18n( 'nedits bold', n );
+						}
+					);
 					hideCreditsOnShow = $( 'li>a[href="#map"],li>a[href="#votes"]' );
 					hideCreditsOnShow.on( 'shown.bs.tab', function () {
 						$( '#credits' ).hide();
