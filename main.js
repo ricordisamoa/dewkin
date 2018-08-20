@@ -1496,14 +1496,13 @@ Inspector.prototype.registerMapTab = function () {
  */
 Inspector.prototype.generateMonthsChart = function () {
 	var contribsByMonthAndNamespace, nsIdsSortedByNumericValue,
-		nsNames, nsColors, nsData,
-		self = this;
+		nsNames, nsColors, nsData;
 
 	contribsByMonthAndNamespace = this.contribs.filterByMonthAndNamespace();
 	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
 		return Number( a ) - Number( b );
 	} );
-	nsNames = nsIdsSortedByNumericValue.map( self.namespaceName.bind( self ) );
+	nsNames = nsIdsSortedByNumericValue.map( this.namespaceName.bind( this ) );
 	nsColors = nsIdsSortedByNumericValue.map( util.colorFromNamespace.bind( util ) );
 	nsData = [];
 	$.each( contribsByMonthAndNamespace, function ( month, byNs ) {
