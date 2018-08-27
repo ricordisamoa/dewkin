@@ -64,11 +64,6 @@ ContribsList.prototype = {
 		} ) );
 	},
 
-	log: function () {
-		// eslint-disable-next-line no-console
-		console.log( this );
-	},
-
 	groupByNamespace: function ( alsoEmpty ) {
 		var contr = {},
 			self = this;
@@ -1776,7 +1771,8 @@ Inspector.prototype.realStart = function () {
 
 					self.contribs = new ContribsList( contribs );
 					self.contribs.sort();
-					self.contribs.log();
+					// eslint-disable-next-line no-console
+					console.log( self.contribs );
 					self.registration = self.dataGetter.registration;
 					self.editCount = self.dataGetter.editCount;
 
