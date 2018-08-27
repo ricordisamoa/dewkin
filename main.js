@@ -69,7 +69,7 @@ ContribsList.prototype = {
 		console.log( this );
 	},
 
-	filterByNamespace: function ( alsoEmpty ) {
+	groupByNamespace: function ( alsoEmpty ) {
 		var contr = {},
 			self = this;
 		$.each( $.map( allNamespaces, function ( e ) {
@@ -83,7 +83,7 @@ ContribsList.prototype = {
 		return contr;
 	},
 
-	filterByDay: function () {
+	groupByDay: function () {
 		var j,
 			contr = {};
 		for ( j = 0; j < 7; j++ ) {
@@ -92,7 +92,7 @@ ContribsList.prototype = {
 		return contr;
 	},
 
-	filterByHour: function () {
+	groupByHour: function () {
 		var j,
 			contr = [];
 		for ( j = 0; j < 24; j++ ) {
@@ -101,7 +101,7 @@ ContribsList.prototype = {
 		return contr;
 	},
 
-	filterByTag: function () {
+	groupByTag: function () {
 		var contr = {};
 		this.forEach( function ( e ) {
 			( e.tags || [] ).forEach( function ( tag ) {
@@ -115,7 +115,7 @@ ContribsList.prototype = {
 		return contr;
 	},
 
-	filterByMonth: function () {
+	groupByMonth: function () {
 		var firstMonth,
 			contr = {},
 			s = {};
@@ -141,23 +141,23 @@ ContribsList.prototype = {
 		return s;
 	},
 
-	filterByMonthAndNamespace: function () {
+	groupByMonthAndNamespace: function () {
 		var contr = {};
-		$.each( this.filterByMonth(), function ( k, v ) {
-			contr[ k ] = v.filterByNamespace( true );
+		$.each( this.groupByMonth(), function ( k, v ) {
+			contr[ k ] = v.groupByNamespace( true );
 		} );
 		return contr;
 	},
 
-	filterByNamespaceAndMonth: function () {
+	groupByNamespaceAndMonth: function () {
 		var contr = {};
-		$.each( this.filterByNamespace( true ), function ( k, v ) {
-			contr[ k ] = new ContribsList( v ).filterByMonth();
+		$.each( this.groupByNamespace( true ), function ( k, v ) {
+			contr[ k ] = new ContribsList( v ).groupByMonth();
 		} );
 		return contr;
 	},
 
-	filterByProgrammingLanguage: function () {
+	groupByProgrammingLanguage: function () {
 		var contr = {};
 		$.each( this, function ( i, c ) {
 			var lang, m;
@@ -250,7 +250,7 @@ ContribsList.prototype = {
 			data = [];
 		for ( d = 0; d < 7; d++ ) {
 			// eslint-disable-next-line no-loop-func
-			$.each( contr.grepByDay( d ).filterByHour(), function ( h, c ) {
+			$.each( contr.grepByDay( d ).groupByHour(), function ( h, c ) {
 				data.push( [ d, h, c.length ] );
 			} );
 		}
@@ -1232,7 +1232,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 		nsChartData, nsChart;
 
 	inspector = this;
-	contribsByNamespace = inspector.contribs.filterByNamespace( true );
+	contribsByNamespace = inspector.contribs.groupByNamespace( true );
 	nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
 		return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
 	} );
@@ -1402,7 +1402,7 @@ Inspector.prototype.generateProgrammingLanguagesChart = function () {
 	var langs, sortedLangExts, codeChartData,
 		self = this;
 
-	langs = self.contribs.filterByProgrammingLanguage();
+	langs = self.contribs.groupByProgrammingLanguage();
 	sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
 		return langs[ b ].length - langs[ a ].length;
 	} );
@@ -1498,7 +1498,7 @@ Inspector.prototype.generateMonthsChart = function () {
 	var contribsByMonthAndNamespace, nsIdsSortedByNumericValue,
 		nsNames, nsColors, nsData;
 
-	contribsByMonthAndNamespace = this.contribs.filterByMonthAndNamespace();
+	contribsByMonthAndNamespace = this.contribs.groupByMonthAndNamespace();
 	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
 		return Number( a ) - Number( b );
 	} );
@@ -1713,7 +1713,7 @@ Inspector.prototype.mapTag = function ( tagsData, tag ) {
  * @private
  */
 Inspector.prototype.showTags = function () {
-	var tagsData = this.contribs.filterByTag(),
+	var tagsData = this.contribs.groupByTag(),
 	sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
 		return tagsData[ b ].length - tagsData[ a ].length;
 	} );
