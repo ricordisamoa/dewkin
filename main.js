@@ -70,7 +70,7 @@ ContribsList.prototype = {
 		$.each( $.map( allNamespaces, function ( e ) {
 			return e;
 		} ), function ( nsIndex, ns ) {
-			var f = self.grepByNamespace( ns.id );
+			var f = self.filterByNamespace( ns.id );
 			if ( f.length > 0 || alsoEmpty === true ) {
 				contr[ ns.id ] = f;
 			}
@@ -82,7 +82,7 @@ ContribsList.prototype = {
 		var j,
 			contr = {};
 		for ( j = 0; j < 7; j++ ) {
-			contr[ j ] = this.grepByDay( j );
+			contr[ j ] = this.filterByDay( j );
 		}
 		return contr;
 	},
@@ -91,7 +91,7 @@ ContribsList.prototype = {
 		var j,
 			contr = [];
 		for ( j = 0; j < 24; j++ ) {
-			contr.push( this.grepByHour( j ) );
+			contr.push( this.filterByHour( j ) );
 		}
 		return contr;
 	},
@@ -176,25 +176,25 @@ ContribsList.prototype = {
 		return contr;
 	},
 
-	grepByEditSummary: function ( summary ) {
+	filterByEditSummary: function ( summary ) {
 		return new ContribsList( this.filter( function ( e ) {
 			return ( summary === undefined ? e.comment !== '' : e.comment === summary );
 		} ) );
 	},
 
-	grepByNamespace: function ( ns ) {
+	filterByNamespace: function ( ns ) {
 		return new ContribsList( this.filter( function ( e ) {
 			return Array.isArray( ns ) ? ( ns.indexOf( e.ns ) !== -1 ) : ( e.ns === ns );
 		} ) );
 	},
 
-	grepByDay: function ( number ) {
+	filterByDay: function ( number ) {
 		return new ContribsList( this.filter( function ( e ) {
 			return new Date( e.timestamp ).getUTCDay() === number;
 		} ) );
 	},
 
-	grepByHour: function ( number ) {
+	filterByHour: function ( number ) {
 		return new ContribsList( this.filter( function ( e ) {
 			return new Date( e.timestamp ).getUTCHours() === number;
 		} ) );
@@ -204,7 +204,7 @@ ContribsList.prototype = {
 		var titles, occurr, sortedKeys, overflow, sortedOccurr,
 			c = this;
 		if ( ns !== undefined ) {
-			c = c.grepByNamespace( ns );
+			c = c.filterByNamespace( ns );
 		}
 		titles = c.map( function ( e ) {
 			return e.title;
@@ -245,7 +245,7 @@ ContribsList.prototype = {
 			data = [];
 		for ( d = 0; d < 7; d++ ) {
 			// eslint-disable-next-line no-loop-func
-			$.each( contr.grepByDay( d ).groupByHour(), function ( h, c ) {
+			$.each( contr.filterByDay( d ).groupByHour(), function ( h, c ) {
 				data.push( [ d, h, c.length ] );
 			} );
 		}
@@ -1426,7 +1426,7 @@ Inspector.prototype.registerMapTab = function () {
 	$( 'li>a[href="#map"]' )
 	.one( 'shown.bs.tab', function () {
 		$( '#map' ).append( 'Loading geodata...' );
-		self.dataGetter.geoData( self.contribs.grepByNamespace( [ 0, 6 ] ) )
+		self.dataGetter.geoData( self.contribs.filterByNamespace( [ 0, 6 ] ) )
 		.done( function ( geodata ) {
 			var maxEdits, scale, map;
 			if ( geodata.length > 0 ) {
@@ -1730,7 +1730,7 @@ Inspector.prototype.showEditSummary = function () {
 			this.i18n(
 				'edit summary percent',
 				this.localizer.percent(
-					this.contribs.grepByEditSummary().length,
+					this.contribs.filterByEditSummary().length,
 					this.contribs.length
 				)
 			)
