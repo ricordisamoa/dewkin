@@ -1366,7 +1366,7 @@ Inspector.prototype.mapVotes = function ( poll ) {
  *
  * @private
  * @param {Poll} poll
- * @return {Array} jQuery objects or strings to append
+ * @return {[JQuery, JQuery|string]} jQuery object for heading, jQuery object or string for votes
  */
 Inspector.prototype.mapPoll = function ( poll ) {
 	return [
