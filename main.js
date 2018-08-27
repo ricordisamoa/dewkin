@@ -51,18 +51,20 @@ ContribsList = function () {
 	return list;
 };
 
-ContribsList.prototype = {
+/**
+ * Comparison function for sorting arrays of timestamp-based items.
+ *
+ * @param {{timestamp: string}} a
+ * @param {{timestamp: string}} b
+ * @return {-1|0|1} -1 if a < b, 1 if a > b, 0 otherwise
+ */
+function compareByTimestamp( a, b ) {
+	var ts1 = new Date( a.timestamp ),
+		ts2 = new Date( b.timestamp );
+	return ( ( ts1 < ts2 ) ? -1 : ( ( ts1 > ts2 ) ? 1 : 0 ) );
+}
 
-	/**
-	 * Sort the ContribsList by timestamp, in place, in ascending order.
-	 */
-	sort: function () {
-		return new ContribsList( Array.prototype.sort.call( this, function ( a, b ) {
-			var ts1 = new Date( a.timestamp ),
-				ts2 = new Date( b.timestamp );
-			return ( ( ts1 < ts2 ) ? -1 : ( ( ts1 > ts2 ) ? 1 : 0 ) );
-		} ) );
-	},
+ContribsList.prototype = {
 
 	groupByNamespace: function ( alsoEmpty ) {
 		var contr = {},
@@ -265,7 +267,7 @@ ContribsList.prototype = {
 			sameOrNext = function ( d1, d2 ) {
 				return d1 === d2 || ( d2 - d1 === 86400000 );
 			};
-		cc.sort();
+		cc.sort( compareByTimestamp );
 		cc.forEach( function ( ct, i ) {
 			var d = new Date( ct.timestamp ).setHours( 0, 0, 0, 0 );
 			if ( cur.length === 0 ) {
@@ -1770,7 +1772,7 @@ Inspector.prototype.realStart = function () {
 					var hideCreditsOnShow;
 
 					self.contribs = new ContribsList( contribs );
-					self.contribs.sort();
+					self.contribs.sort( compareByTimestamp );
 					// eslint-disable-next-line no-console
 					console.log( self.contribs );
 					self.registration = self.dataGetter.registration;
