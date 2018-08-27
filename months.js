@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2015 Ricordisamoa
+ * Copyright (C) 2013-2015, 2018 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -32,7 +32,7 @@ window.charts.months = function ( data, namespaces, colors ) {
 	'use strict';
 
 	var n, m, margin, width, height, stack, layers,
-		yGroupMax, yStackMax, x, y, xAxis, yAxis, yAxis2,
+		yStackMax, x, y, xAxis, yAxis, yAxis2,
 		tip, svg, layer;
 
 	n = namespaces.length;
@@ -61,11 +61,6 @@ window.charts.months = function ( data, namespaces, colors ) {
 		return a;
 	} ) );
 
-	yGroupMax = d3.max( layers, function ( layer ) {
-			return d3.max( layer, function ( d ) {
-				return d.y;
-			} );
-		} );
 	yStackMax = d3.max( layers, function ( layer ) {
 			return d3.max( layer, function ( d ) {
 				return d.y0 + d.y;
