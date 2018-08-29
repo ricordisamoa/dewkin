@@ -70,7 +70,7 @@ function groupByMonth( array ) {
 	var firstMonth,
 		contr = {},
 		s = {};
-	$.each( array, function ( i, e ) {
+	array.forEach( function ( e ) {
 		var date = new Date( e.timestamp ),
 			code = util.yearMonth( date );
 		if ( firstMonth === undefined || code < firstMonth ) {
@@ -82,7 +82,7 @@ function groupByMonth( array ) {
 			contr[ code ] = [ e ];
 		}
 	} );
-	$.each( util.allMonths( firstMonth ), function ( i, e ) {
+	util.allMonths( firstMonth ).forEach( function ( e ) {
 		if ( contr[ e ] ) {
 			s[ e ] = contr[ e ];
 		} else {
@@ -101,7 +101,7 @@ function groupByMonth( array ) {
  */
 function groupByProgrammingLanguage( array ) {
 	var contr = {};
-	$.each( array, function ( i, c ) {
+	array.forEach( function ( c ) {
 		var lang, m;
 		if ( c.ns === 828 ) { // Scribunto modules
 			lang = 'lua';
@@ -161,9 +161,9 @@ function filterByNamespace( array, ns ) {
  */
 function groupByNamespace( array, alsoEmpty ) {
 	var contr = {};
-	$.each( $.map( allNamespaces, function ( e ) {
+	$.map( allNamespaces, function ( e ) {
 		return e;
-	} ), function ( nsIndex, ns ) {
+	} ).forEach( function ( ns ) {
 		var f = filterByNamespace( array, ns.id );
 		if ( f.length > 0 || alsoEmpty === true ) {
 			contr[ ns.id ] = f;
@@ -282,7 +282,7 @@ function toPunchcard( array ) {
 		data = [];
 	for ( d = 0; d < 7; d++ ) {
 		// eslint-disable-next-line no-loop-func
-		$.each( groupByHour( filterByDay( array, d ) ), function ( h, c ) {
+		groupByHour( filterByDay( array, d ) ).forEach( function ( c, h ) {
 			data.push( [ d, h, c.length ] );
 		} );
 	}
@@ -412,14 +412,14 @@ DataGetter.prototype = {
 		.then( function ( data ) {
 			var dbNames = {};
 			$.each( data.sitematrix, function () {
-				$.each( this.site || ( Array.isArray( this ) ? this : [] ), function () {
+				( this.site || ( Array.isArray( this ) ? this : [] ) ).forEach( function ( site ) {
 					if (
-						this.dbname &&
-						this.url &&
-						this.private === undefined &&
-						this.fishbowl === undefined
+						site.dbname &&
+						site.url &&
+						site.private === undefined &&
+						site.fishbowl === undefined
 					) {
-						dbNames[ this.dbname ] = this.url.replace( /^http:\/\//, '//' );
+						dbNames[ site.dbname ] = site.url.replace( /^http:\/\//, '//' );
 					}
 				} );
 			} );
@@ -584,7 +584,7 @@ DataGetter.prototype = {
 		var geodata, titles, getGeodataRecursive,
 			occurr = {},
 			self = this;
-		$.each( contribs, function ( key, val ) {
+		contribs.forEach( function ( val ) {
 			if ( occurr[ val.title ] ) {
 				if ( occurr[ val.title ].revid ) {
 					occurr[ val.title ] = {
