@@ -21,35 +21,9 @@
 ( function () {
 'use strict';
 
-var ContribsList, util, allNamespaces; // FIXME: kill allNamespaces
+var util, allNamespaces; // FIXME: kill allNamespaces
 
 window.charts = {};
-
-/**
- * @class
- * @extends Array
- * @constructor
- */
-ContribsList = function () {
-	var list,
-		method,
-		args = Array.prototype.slice.call( arguments );
-
-	if ( args.length === 1 && Array.isArray( args[ 0 ] ) ) {
-		list = args[ 0 ];
-	} else {
-		list = Object.create( Array.prototype );
-		list = ( Array.apply( list, arguments ) || list );
-	}
-
-	for ( method in ContribsList.prototype ) {
-		// eslint-disable-next-line no-prototype-builtins
-		if ( ContribsList.prototype.hasOwnProperty( method ) ) {
-			list[ method ] = ContribsList.prototype[ method ];
-		}
-	}
-	return list;
-};
 
 /**
  * Comparison function for sorting arrays of timestamp-based items.
@@ -64,218 +38,301 @@ function compareByTimestamp( a, b ) {
 	return ( ( ts1 < ts2 ) ? -1 : ( ( ts1 > ts2 ) ? 1 : 0 ) );
 }
 
-ContribsList.prototype = {
-
-	groupByNamespace: function ( alsoEmpty ) {
-		var contr = {},
-			self = this;
-		$.each( $.map( allNamespaces, function ( e ) {
-			return e;
-		} ), function ( nsIndex, ns ) {
-			var f = self.filterByNamespace( ns.id );
-			if ( f.length > 0 || alsoEmpty === true ) {
-				contr[ ns.id ] = f;
-			}
-		} );
-		return contr;
-	},
-
-	groupByHour: function () {
-		var j,
-			contr = [];
-		for ( j = 0; j < 24; j++ ) {
-			contr.push( this.filterByHour( j ) );
-		}
-		return contr;
-	},
-
-	groupByTag: function () {
-		var contr = {};
-		this.forEach( function ( e ) {
-			( e.tags || [] ).forEach( function ( tag ) {
-				if ( contr[ tag ] ) {
-					contr[ tag ].push( e );
-				} else {
-					contr[ tag ] = [ e ];
-				}
-			} );
-		} );
-		return contr;
-	},
-
-	groupByMonth: function () {
-		var firstMonth,
-			contr = {},
-			s = {};
-		$.each( this, function ( i, e ) {
-			var date = new Date( e.timestamp ),
-				code = util.yearMonth( date );
-			if ( firstMonth === undefined || code < firstMonth ) {
-				firstMonth = code;
-			}
-			if ( contr[ code ] ) {
-				contr[ code ].push( e );
+/**
+ * Group items by edit tag.
+ *
+ * @template {{tags?: string[]}} T
+ * @param {T[]} array Array of items
+ * @return {Object<string, T[]>} Map of tag to array of items
+ */
+function groupByTag( array ) {
+	var contr = {};
+	array.forEach( function ( e ) {
+		( e.tags || [] ).forEach( function ( tag ) {
+			if ( contr[ tag ] ) {
+				contr[ tag ].push( e );
 			} else {
-				contr[ code ] = [ e ];
+				contr[ tag ] = [ e ];
 			}
 		} );
-		$.each( util.allMonths( firstMonth ), function ( i, e ) {
-			if ( contr[ e ] ) {
-				s[ e ] = new ContribsList( contr[ e ] );
-			} else {
-				s[ e ] = new ContribsList();
-			}
-		} );
-		return s;
-	},
+	} );
+	return contr;
+}
 
-	groupByMonthAndNamespace: function () {
-		var contr = {};
-		$.each( this.groupByMonth(), function ( k, v ) {
-			contr[ k ] = v.groupByNamespace( true );
-		} );
-		return contr;
-	},
-
-	groupByProgrammingLanguage: function () {
-		var contr = {};
-		$.each( this, function ( i, c ) {
-			var lang, m;
-			if ( c.ns === 828 ) { // Scribunto modules
-				lang = 'lua';
-			} else if ( [ 2, 8 ].indexOf( c.ns ) !== -1 ) {
-				m = c.title.toLowerCase().match( /\.(js|css)$/ );
-				if ( m !== null ) {
-					lang = m[ 1 ];
-				} else if ( c.ns === 2 && /\.py$/.test( c.title ) ) {
-					lang = 'py';
-				}
-			}
-			if ( lang ) {
-				if ( !contr[ lang ] ) {
-					contr[ lang ] = new ContribsList();
-				}
-				contr[ lang ].push( c );
-			}
-		} );
-		return contr;
-	},
-
-	filterByEditSummary: function ( summary ) {
-		return new ContribsList( this.filter( function ( e ) {
-			return ( summary === undefined ? e.comment !== '' : e.comment === summary );
-		} ) );
-	},
-
-	filterByNamespace: function ( ns ) {
-		return new ContribsList( this.filter( function ( e ) {
-			return Array.isArray( ns ) ? ( ns.indexOf( e.ns ) !== -1 ) : ( e.ns === ns );
-		} ) );
-	},
-
-	filterByDay: function ( number ) {
-		return new ContribsList( this.filter( function ( e ) {
-			return new Date( e.timestamp ).getUTCDay() === number;
-		} ) );
-	},
-
-	filterByHour: function ( number ) {
-		return new ContribsList( this.filter( function ( e ) {
-			return new Date( e.timestamp ).getUTCHours() === number;
-		} ) );
-	},
-
-	topEdited: function ( ns ) {
-		var titles, occurr, sortedKeys, overflow, sortedOccurr,
-			c = this;
-		if ( ns !== undefined ) {
-			c = c.filterByNamespace( ns );
+/**
+ * Group items by year & month.
+ *
+ * @template {{timestamp: string}} T
+ * @param {T[]} array Array of timestamped items
+ * @return {Object<string, T[]>} Map of year & month to array of items
+ */
+function groupByMonth( array ) {
+	var firstMonth,
+		contr = {},
+		s = {};
+	$.each( array, function ( i, e ) {
+		var date = new Date( e.timestamp ),
+			code = util.yearMonth( date );
+		if ( firstMonth === undefined || code < firstMonth ) {
+			firstMonth = code;
 		}
-		titles = c.map( function ( e ) {
-			return e.title;
-		} );
-		occurr = {};
-		titles.forEach( function ( e ) {
-			if ( occurr[ e ] ) {
-				occurr[ e ] = occurr[ e ] + 1;
-			} else {
-				occurr[ e ] = 1;
-			}
-		} );
-		sortedKeys = Object.keys( occurr ).sort( function ( a, b ) {
-			return (
-				( occurr[ a ] > occurr[ b ] ) ? -1 : ( ( occurr[ a ] < occurr[ b ] ) ? 1 : 0 )
-			);
-		} );
-		overflow = false;
-		if ( sortedKeys.length > 30 ) {
-			overflow = true;
-			sortedKeys = sortedKeys.slice( 0, 30 );
+		if ( contr[ code ] ) {
+			contr[ code ].push( e );
+		} else {
+			contr[ code ] = [ e ];
 		}
-		sortedOccurr = {};
-		sortedKeys.forEach( function ( e ) {
-			sortedOccurr[ e ] = occurr[ e ];
-		} );
-		return [ sortedOccurr, overflow ];
-	},
-
-	/**
-	 * Get data suitable for a punchcard chart.
-	 *
-	 * @return {number[][]} Arrays in the form [day 0-6, hour 0-23, number of edits]
-	 */
-	toPunchcard: function () {
-		var d,
-			contr = this,
-			data = [];
-		for ( d = 0; d < 7; d++ ) {
-			// eslint-disable-next-line no-loop-func
-			$.each( contr.filterByDay( d ).groupByHour(), function ( h, c ) {
-				data.push( [ d, h, c.length ] );
-			} );
+	} );
+	$.each( util.allMonths( firstMonth ), function ( i, e ) {
+		if ( contr[ e ] ) {
+			s[ e ] = contr[ e ];
+		} else {
+			s[ e ] = [];
 		}
-		return data;
-	},
+	} );
+	return s;
+}
 
-	/**
-	 * Compute the longest sequence of consecutive days with contributions.
-	 *
-	 * @return {Date[]} The start and end date of one of the longest streaks,
-	 *  or empty if none can be found
-	 */
-	longestStreak: function () {
-		var prev = [],
-			cur = [],
-			cc = new ContribsList( this.slice( 0 ) ),
-			sameOrNext = function ( d1, d2 ) {
-				return d1 === d2 || ( d2 - d1 === 86400000 );
-			};
-		cc.sort( compareByTimestamp );
-		cc.forEach( function ( ct, i ) {
-			var d = new Date( ct.timestamp ).setHours( 0, 0, 0, 0 );
-			if ( cur.length === 0 ) {
-				cur[ 0 ] = d;// start streak
-			} else if ( cur.length === 1 ) {
-				if ( sameOrNext( cur[ 0 ], d ) ) {
-					cur[ 1 ] = d;// continue streak
-				} else {
-					cur = [];
-				}
-			} else if ( cur.length === 2 ) {
-				if ( i < cc.length && sameOrNext( cur[ 1 ], d ) ) {
-					cur[ 1 ] = d;// continue streak
-				} else { // streak broken
-					if ( prev.length === 0 || cur[ 1 ] - cur[ 0 ] > prev[ 1 ] - prev[ 0 ] ) {
-						prev = cur;// (over)write longest streak
-					}
-					cur = [];// reset current streak anyway
-				}
+/**
+ * Group items by programming language.
+ *
+ * @template {{ns: number, title: string}} T
+ * @param {T[]} array Array of items with namespace number and title
+ * @return {Object<string, T[]>} Map of language identifier to array of items
+ */
+function groupByProgrammingLanguage( array ) {
+	var contr = {};
+	$.each( array, function ( i, c ) {
+		var lang, m;
+		if ( c.ns === 828 ) { // Scribunto modules
+			lang = 'lua';
+		} else if ( [ 2, 8 ].indexOf( c.ns ) !== -1 ) {
+			m = c.title.toLowerCase().match( /\.(js|css)$/ );
+			if ( m !== null ) {
+				lang = m[ 1 ];
+			} else if ( c.ns === 2 && /\.py$/.test( c.title ) ) {
+				lang = 'py';
 			}
-		} );
-		return prev;
+		}
+		if ( lang ) {
+			if ( !contr[ lang ] ) {
+				contr[ lang ] = [];
+			}
+			contr[ lang ].push( c );
+		}
+	} );
+	return contr;
+}
+
+/**
+ * Filter items by edit summary.
+ *
+ * @template {{comment: string}} T
+ * @param {T[]} array Array of items with comment
+ * @param {string} [summary] String for exact match, undefined to match any non-empty summary
+ * @return {T[]} Filtered array
+ */
+function filterByEditSummary( array, summary ) {
+	return array.filter( function ( e ) {
+		return ( summary === undefined ? e.comment !== '' : e.comment === summary );
+	} );
+}
+
+/**
+ * Filter items by namespace number.
+ *
+ * @template {{ns: number}} T
+ * @param {T[]} array Array of items with namespace number
+ * @param {number|number[]} ns Namespace number(s)
+ * @return {T[]} Filtered array
+ */
+function filterByNamespace( array, ns ) {
+	return array.filter( function ( e ) {
+		return Array.isArray( ns ) ? ( ns.indexOf( e.ns ) !== -1 ) : ( e.ns === ns );
+	} );
+}
+
+/**
+ * Group items by namespace number.
+ *
+ * @template {{ns: number}} T
+ * @param {T[]} array Array of items with namespace number
+ * @param {boolean} alsoEmpty Whether to include namespaces with no occurrences
+ * @return {Object<string, T[]>} Map of namespace number to array of items
+ */
+function groupByNamespace( array, alsoEmpty ) {
+	var contr = {};
+	$.each( $.map( allNamespaces, function ( e ) {
+		return e;
+	} ), function ( nsIndex, ns ) {
+		var f = filterByNamespace( array, ns.id );
+		if ( f.length > 0 || alsoEmpty === true ) {
+			contr[ ns.id ] = f;
+		}
+	} );
+	return contr;
+}
+
+/**
+ * Group items by year & month, then by namespace number.
+ *
+ * @template {{ns: number, timestamp: string}} T
+ * @param {T[]} array Array of items with namespace number and timestamp
+ * @return {Object<string, Object<string, T[]>>} Map of year & month to map of
+ *  namespace number to array of items
+ */
+function groupByMonthAndNamespace( array ) {
+	var contr = {};
+	$.each( groupByMonth( array ), function ( k, v ) {
+		contr[ k ] = groupByNamespace( v, true );
+	} );
+	return contr;
+}
+
+/**
+ * Filter items by day of the week.
+ *
+ * @template {{timestamp: string}} T
+ * @param {T[]} array Array of timestamped items
+ * @param {number} number Day of the week (0 for Sunday, etc.)
+ * @returns {T[]} Filtered array
+ */
+function filterByDay( array, number ) {
+	return array.filter( function ( e ) {
+		return new Date( e.timestamp ).getUTCDay() === number;
+	} );
+}
+
+/**
+ * Filter items by hour of the day.
+ *
+ * @template {{timestamp: string}} T
+ * @param {T[]} array Array of timestamped items
+ * @param {number} number Hour of the day
+ * @return {T[]} Filtered array
+ */
+function filterByHour( array, number ) {
+	return array.filter( function ( e ) {
+		return new Date( e.timestamp ).getUTCHours() === number;
+	} );
+}
+
+/**
+ * Group items by hour of the day.
+ *
+ * @template {{timestamp: string}} T
+ * @param {T[]} array Array of timestamped items
+ * @return {T[][]} Array of arrays of items
+ */
+function groupByHour( array ) {
+	var j,
+		contr = [];
+	for ( j = 0; j < 24; j++ ) {
+		contr.push( filterByHour( array, j ) );
 	}
+	return contr;
+}
 
-};
+/**
+ * Get the (at most) 30 titles with the highest number of occurrences.
+ *
+ * @template {{ns: number, title: string}} T
+ * @param {T[]} array Array of items with namespace number and title
+ * @param {number} [ns] Namespace number for filtering
+ * @return {[Object<string, number>, boolean]} Map of title to occurrence count sorted by
+ *  value in descending order, and whether more than 30 unique titles were found
+ */
+function topEdited( array, ns ) {
+	var titles, occurr, sortedKeys, overflow, sortedOccurr,
+		c = array;
+	if ( ns !== undefined ) {
+		c = filterByNamespace( c, ns );
+	}
+	titles = c.map( function ( e ) {
+		return e.title;
+	} );
+	occurr = {};
+	titles.forEach( function ( e ) {
+		if ( occurr[ e ] ) {
+			occurr[ e ] = occurr[ e ] + 1;
+		} else {
+			occurr[ e ] = 1;
+		}
+	} );
+	sortedKeys = Object.keys( occurr ).sort( function ( a, b ) {
+		return (
+			( occurr[ a ] > occurr[ b ] ) ? -1 : ( ( occurr[ a ] < occurr[ b ] ) ? 1 : 0 )
+		);
+	} );
+	overflow = false;
+	if ( sortedKeys.length > 30 ) {
+		overflow = true;
+		sortedKeys = sortedKeys.slice( 0, 30 );
+	}
+	sortedOccurr = {};
+	sortedKeys.forEach( function ( e ) {
+		sortedOccurr[ e ] = occurr[ e ];
+	} );
+	return [ sortedOccurr, overflow ];
+}
+
+/**
+ * Get data suitable for a punchcard chart.
+ *
+ * @template {{timestamp: string}} T
+ * @param {T[]} array Array of timestamped items
+ * @return {[number, number, number][]} Arrays in the form [day 0-6, hour 0-23, number of edits]
+ */
+function toPunchcard( array ) {
+	var d,
+		data = [];
+	for ( d = 0; d < 7; d++ ) {
+		// eslint-disable-next-line no-loop-func
+		$.each( groupByHour( filterByDay( array, d ) ), function ( h, c ) {
+			data.push( [ d, h, c.length ] );
+		} );
+	}
+	return data;
+}
+
+/**
+ * Compute the longest sequence of consecutive days with at least one occurrence each.
+ *
+ * @template {{timestamp: string}} T
+ * @param {T[]} array Array of timestamped items
+ * @return {[number, number]|[]} The start and end date of one of the longest streaks,
+ *  or empty if none can be found
+ */
+function longestStreak( array ) {
+	var prev = [],
+		cur = [],
+		cc = array.slice(),
+		sameOrNext = function ( d1, d2 ) {
+			return d1 === d2 || ( d2 - d1 === 86400000 );
+		};
+	cc.sort( compareByTimestamp );
+	cc.forEach( function ( ct, i ) {
+		var d = new Date( ct.timestamp ).setHours( 0, 0, 0, 0 );
+		if ( cur.length === 0 ) {
+			cur[ 0 ] = d;// start streak
+		} else if ( cur.length === 1 ) {
+			if ( sameOrNext( cur[ 0 ], d ) ) {
+				cur[ 1 ] = d;// continue streak
+			} else {
+				cur = [];
+			}
+		} else if ( cur.length === 2 ) {
+			if ( i < cc.length && sameOrNext( cur[ 1 ], d ) ) {
+				cur[ 1 ] = d;// continue streak
+			} else { // streak broken
+				if ( prev.length === 0 || cur[ 1 ] - cur[ 0 ] > prev[ 1 ] - prev[ 0 ] ) {
+					prev = cur;// (over)write longest streak
+				}
+				cur = [];// reset current streak anyway
+			}
+		}
+	} );
+	return prev;
+}
 
 /**
  * Interface to MediaWiki's action API.
@@ -1212,7 +1269,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 		nsChartData, nsChart;
 
 	inspector = this;
-	contribsByNamespace = inspector.contribs.groupByNamespace( true );
+	contribsByNamespace = groupByNamespace( inspector.contribs, true );
 	nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
 		return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
 	} );
@@ -1256,7 +1313,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 			self
 				.classed( 'selected', true )
 				.attr( 'd', nsChart.arcOver );
-			te = inspector.contribs.topEdited( parseInt( d.data.id ) );
+			te = topEdited( inspector.contribs, parseInt( d.data.id ) );
 			inspector.$topEdited
 			.empty()
 			.append(
@@ -1382,7 +1439,7 @@ Inspector.prototype.generateProgrammingLanguagesChart = function () {
 	var langs, sortedLangExts, codeChartData,
 		self = this;
 
-	langs = self.contribs.groupByProgrammingLanguage();
+	langs = groupByProgrammingLanguage( self.contribs );
 	sortedLangExts = Object.keys( langs ).sort( function ( a, b ) {
 		return langs[ b ].length - langs[ a ].length;
 	} );
@@ -1411,7 +1468,7 @@ Inspector.prototype.registerMapTab = function () {
 	$( 'li>a[href="#map"]' )
 	.one( 'shown.bs.tab', function () {
 		$( '#map' ).append( 'Loading geodata...' );
-		self.dataGetter.geoData( self.contribs.filterByNamespace( [ 0, 6 ] ) )
+		self.dataGetter.geoData( filterByNamespace( self.contribs, [ 0, 6 ] ) )
 		.done( function ( geodata ) {
 			var maxEdits, scale, map;
 			if ( geodata.length > 0 ) {
@@ -1478,7 +1535,7 @@ Inspector.prototype.generateMonthsChart = function () {
 	var contribsByMonthAndNamespace, nsIdsSortedByNumericValue,
 		nsNames, nsColors, nsData;
 
-	contribsByMonthAndNamespace = this.contribs.groupByMonthAndNamespace();
+	contribsByMonthAndNamespace = groupByMonthAndNamespace( this.contribs );
 	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
 		return Number( a ) - Number( b );
 	} );
@@ -1568,7 +1625,7 @@ Inspector.prototype.showGeneral = function () {
 		this.i18n( 'colon-separator' ) + this.uploads.length.toLocaleString() + '<br>'
 	);
 
-	ls = this.contribs.longestStreak();
+	ls = longestStreak( this.contribs );
 
 	if ( ls.length === 2 ) {
 		this.$general.append(
@@ -1693,7 +1750,7 @@ Inspector.prototype.mapTag = function ( tagsData, tag ) {
  * @private
  */
 Inspector.prototype.showTags = function () {
-	var tagsData = this.contribs.groupByTag(),
+	var tagsData = groupByTag( this.contribs ),
 	sortedTagNames = Object.keys( tagsData ).sort( function ( a, b ) {
 		return tagsData[ b ].length - tagsData[ a ].length;
 	} );
@@ -1715,7 +1772,7 @@ Inspector.prototype.showEditSummary = function () {
 			this.i18n(
 				'edit summary percent',
 				this.localizer.percent(
-					this.contribs.filterByEditSummary().length,
+					filterByEditSummary( this.contribs ).length,
 					this.contribs.length
 				)
 			)
@@ -1754,7 +1811,7 @@ Inspector.prototype.realStart = function () {
 				self.dataGetter.contribs().done( function ( contribs ) {
 					var hideCreditsOnShow;
 
-					self.contribs = new ContribsList( contribs );
+					self.contribs = contribs;
 					self.contribs.sort( compareByTimestamp );
 					// eslint-disable-next-line no-console
 					console.log( self.contribs );
@@ -1774,7 +1831,7 @@ Inspector.prototype.realStart = function () {
 
 					/* GitHub-like Punchcard */
 					window.charts.punchcard(
-						contribs.toPunchcard(),
+						toPunchcard( contribs ),
 						self.localizer.weekdays,
 						function ( n ) {
 							return self.i18n( 'nedits bold', n );
