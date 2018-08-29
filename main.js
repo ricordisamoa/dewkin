@@ -80,15 +80,6 @@ ContribsList.prototype = {
 		return contr;
 	},
 
-	groupByDay: function () {
-		var j,
-			contr = {};
-		for ( j = 0; j < 7; j++ ) {
-			contr[ j ] = this.filterByDay( j );
-		}
-		return contr;
-	},
-
 	groupByHour: function () {
 		var j,
 			contr = [];
@@ -142,14 +133,6 @@ ContribsList.prototype = {
 		var contr = {};
 		$.each( this.groupByMonth(), function ( k, v ) {
 			contr[ k ] = v.groupByNamespace( true );
-		} );
-		return contr;
-	},
-
-	groupByNamespaceAndMonth: function () {
-		var contr = {};
-		$.each( this.groupByNamespace( true ), function ( k, v ) {
-			contr[ k ] = new ContribsList( v ).groupByMonth();
 		} );
 		return contr;
 	},
