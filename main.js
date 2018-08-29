@@ -235,19 +235,14 @@ function groupByHour( array ) {
 /**
  * Get the (at most) 30 titles with the highest number of occurrences.
  *
- * @template {{ns: number, title: string}} T
- * @param {T[]} array Array of items with namespace number and title
- * @param {number} [ns] Namespace number for filtering
+ * @template {{title: string}} T
+ * @param {T[]} array Array of items with title
  * @return {[Object<string, number>, boolean]} Map of title to occurrence count sorted by
  *  value in descending order, and whether more than 30 unique titles were found
  */
-function topEdited( array, ns ) {
-	var titles, occurr, sortedKeys, overflow, sortedOccurr,
-		c = array;
-	if ( ns !== undefined ) {
-		c = filterByNamespace( c, ns );
-	}
-	titles = c.map( function ( e ) {
+function topEdited( array ) {
+	var titles, occurr, sortedKeys, overflow, sortedOccurr;
+	titles = array.map( function ( e ) {
 		return e.title;
 	} );
 	occurr = {};
@@ -1313,7 +1308,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 			self
 				.classed( 'selected', true )
 				.attr( 'd', nsChart.arcOver );
-			te = topEdited( inspector.contribs, parseInt( d.data.id ) );
+			te = topEdited( filterByNamespace( inspector.contribs, parseInt( d.data.id ) ) );
 			inspector.$topEdited
 			.empty()
 			.append(
