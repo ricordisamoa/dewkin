@@ -189,50 +189,6 @@ function groupByMonthAndNamespace( array, nsNumbers ) {
 }
 
 /**
- * Filter items by day of the week.
- *
- * @template {{timestamp: string}} T
- * @param {T[]} array Array of timestamped items
- * @param {number} number Day of the week (0 for Sunday, etc.)
- * @returns {T[]} Filtered array
- */
-function filterByDay( array, number ) {
-	return array.filter( function ( e ) {
-		return new Date( e.timestamp ).getUTCDay() === number;
-	} );
-}
-
-/**
- * Filter items by hour of the day.
- *
- * @template {{timestamp: string}} T
- * @param {T[]} array Array of timestamped items
- * @param {number} number Hour of the day
- * @return {T[]} Filtered array
- */
-function filterByHour( array, number ) {
-	return array.filter( function ( e ) {
-		return new Date( e.timestamp ).getUTCHours() === number;
-	} );
-}
-
-/**
- * Group items by hour of the day.
- *
- * @template {{timestamp: string}} T
- * @param {T[]} array Array of timestamped items
- * @return {T[][]} Array of arrays of items
- */
-function groupByHour( array ) {
-	var j,
-		contr = [];
-	for ( j = 0; j < 24; j++ ) {
-		contr.push( filterByHour( array, j ) );
-	}
-	return contr;
-}
-
-/**
  * Get the (at most) 30 titles with the highest number of occurrences.
  *
  * @template {{title: string}} T
@@ -278,14 +234,21 @@ function topEdited( array ) {
  * @return {[number, number, number][]} Arrays in the form [day 0-6, hour 0-23, number of edits]
  */
 function toPunchcard( array ) {
-	var d,
+	var d, h,
 		data = [];
+
 	for ( d = 0; d < 7; d++ ) {
-		// eslint-disable-next-line no-loop-func
-		groupByHour( filterByDay( array, d ) ).forEach( function ( c, h ) {
-			data.push( [ d, h, c.length ] );
-		} );
+		for ( h = 0; h < 24; h++ ) {
+			data.push( [ d, h, 0 ] );
+		}
 	}
+
+	array.forEach( function ( e ) {
+		var date = new Date( e.timestamp );
+
+		data[ date.getUTCDay() * 24 + date.getUTCHours() ][ 2 ]++;
+	} );
+
 	return data;
 }
 
