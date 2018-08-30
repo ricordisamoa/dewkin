@@ -21,7 +21,7 @@
 ( function () {
 'use strict';
 
-var util, allNamespaces; // FIXME: kill allNamespaces
+var util;
 
 window.charts = {};
 
@@ -156,17 +156,16 @@ function filterByNamespace( array, ns ) {
  *
  * @template {{ns: number}} T
  * @param {T[]} array Array of items with namespace number
+ * @param {number[]} nsNumbers Array of namespace numbers
  * @param {boolean} alsoEmpty Whether to include namespaces with no occurrences
  * @return {Object<string, T[]>} Map of namespace number to array of items
  */
-function groupByNamespace( array, alsoEmpty ) {
+function groupByNamespace( array, nsNumbers, alsoEmpty ) {
 	var contr = {};
-	$.map( allNamespaces, function ( e ) {
-		return e;
-	} ).forEach( function ( ns ) {
-		var f = filterByNamespace( array, ns.id );
+	nsNumbers.forEach( function ( ns ) {
+		var f = filterByNamespace( array, ns );
 		if ( f.length > 0 || alsoEmpty === true ) {
-			contr[ ns.id ] = f;
+			contr[ ns ] = f;
 		}
 	} );
 	return contr;
@@ -177,13 +176,14 @@ function groupByNamespace( array, alsoEmpty ) {
  *
  * @template {{ns: number, timestamp: string}} T
  * @param {T[]} array Array of items with namespace number and timestamp
+ * @param {number[]} nsNumbers Array of namespace numbers
  * @return {Object<string, Object<string, T[]>>} Map of year & month to map of
  *  namespace number to array of items
  */
-function groupByMonthAndNamespace( array ) {
+function groupByMonthAndNamespace( array, nsNumbers ) {
 	var contr = {};
 	$.each( groupByMonth( array ), function ( k, v ) {
-		contr[ k ] = groupByNamespace( v, true );
+		contr[ k ] = groupByNamespace( v, nsNumbers, true );
 	} );
 	return contr;
 }
@@ -1264,7 +1264,7 @@ Inspector.prototype.generateNamespacesChart = function () {
 		nsChartData, nsChart;
 
 	inspector = this;
-	contribsByNamespace = groupByNamespace( inspector.contribs, true );
+	contribsByNamespace = groupByNamespace( inspector.contribs, inspector.nsNumbers, true );
 	nsIdsSortedByNumberOfEdits = Object.keys( contribsByNamespace ).sort( function ( a, b ) {
 		return contribsByNamespace[ b ].length - contribsByNamespace[ a ].length;
 	} );
@@ -1530,7 +1530,7 @@ Inspector.prototype.generateMonthsChart = function () {
 	var contribsByMonthAndNamespace, nsIdsSortedByNumericValue,
 		nsNames, nsColors, nsData;
 
-	contribsByMonthAndNamespace = groupByMonthAndNamespace( this.contribs );
+	contribsByMonthAndNamespace = groupByMonthAndNamespace( this.contribs, this.nsNumbers );
 	nsIdsSortedByNumericValue = Object.keys( this.namespaces ).sort( function ( a, b ) {
 		return Number( a ) - Number( b );
 	} );
@@ -1785,7 +1785,10 @@ Inspector.prototype.realStart = function () {
 	self.startDate = new Date();
 	self.dataGetter.namespaces().done( function ( namespaces ) {
 		var toLoadMsgs;
-		allNamespaces = self.namespaces = namespaces;
+		self.namespaces = namespaces;
+		self.nsNumbers = $.map( self.namespaces, function ( e ) {
+			return e.id;
+		} );
 		toLoadMsgs = self.localizer.getEssentialMessages();
 		self.dataGetter.rightsLog().done( function ( rights ) {
 			rights.forEach( function ( logevt ) {
