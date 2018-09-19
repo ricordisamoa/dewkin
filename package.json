@@ -6,8 +6,8 @@
 		"test": "grunt test"
 	},
 	"devDependencies": {
-		"eslint": "~5.4.0",
-		"eslint-config-wikimedia": "~0.7.2",
+		"eslint": "~5.6.0",
+		"eslint-config-wikimedia": "~0.8.1",
 		"grunt": "~1.0.0",
 		"grunt-banana-checker": "~0.6.0",
 		"grunt-eslint": "~21.0.0"
