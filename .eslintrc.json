@@ -25,6 +25,9 @@
 			"globals": {
 				"L": false,
 				"d3": false
+			},
+			"rules": {
+				"no-console": "error"
 			}
 		}
 	]

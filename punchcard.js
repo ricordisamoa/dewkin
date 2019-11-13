@@ -77,7 +77,9 @@ window.charts.punchcard = function ( data, weekdays, nedits ) {
 
 	svg.call( tip );
 
-	maxR = d3.max( data, function ( d ) { return d[ 2 ]; } );
+	maxR = d3.max( data, function ( d ) {
+		return d[ 2 ];
+	} );
 
 	r = d3.scale.sqrt()
 		.domain( [ 0, maxR ] )

@@ -6,11 +6,11 @@
 		"test": "grunt test"
 	},
 	"devDependencies": {
-		"eslint": "~5.6.0",
-		"eslint-config-wikimedia": "~0.8.1",
+		"eslint": "~6.6.0",
+		"eslint-config-wikimedia": "~0.15.0",
 		"grunt": "~1.0.0",
 		"grunt-banana-checker": "~0.6.0",
-		"grunt-eslint": "~21.0.0"
+		"grunt-eslint": "~22.0.0"
 	},
 	"repository": {
 		"type": "git",
