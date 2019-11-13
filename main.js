@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2018 Ricordisamoa
+ * Copyright (C) 2013-2019 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -569,10 +569,27 @@ DataGetter.prototype = {
 			return $.Deferred().resolve( [] ).promise();
 		}
 		getGeodataRecursive = function () {
+			// Prevent queries from exceeding the title count limit as well
+			// as the URL length limit for Wikimedia servers
+			var cut, len,
+				maxLength = 8070;
+			for ( cut = 0, len = 0; cut < titles.length && cut < 50; cut++ ) {
+				len += encodeURIComponent( titles[ cut ] ).length;
+				if ( len === maxLength ) {
+					// include titles up to current one
+					cut++;
+					break;
+				}
+				if ( len > maxLength ) {
+					// include titles up to previous one
+					break;
+				}
+				len += 3; // separator: %7C
+			}
 			return self.localApi.get( {
 				action: 'query',
 				prop: 'coordinates',
-				titles: titles.splice( 0, 50 ).join( '|' )
+				titles: titles.splice( 0, cut ).join( '|' )
 			} )
 			.then( function ( data ) {
 				$.extend( geodata, data.query.pages );
