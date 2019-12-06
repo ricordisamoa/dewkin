@@ -34,6 +34,7 @@
 	"bytes with nchanges": "Tooltip for map markers representing edits by the inspected user: $1 is the number of changed bytes, $2 the number of edits",
 	"no geodata": "Message shown when the 'Map' tab is empty",
 	"votes": "Title of the 'Votes' tab",
+	"votes-error": "Message shown when the inspected user's votes cannot be successfully retrieved for whatever reason.",
 	"voted for": "Indicates that the inspected user has voted for $2 in a poll ($1 is the human-readable timestamp, $3 is a link to the diff)",
 	"diff on project": "Tooltip for the 'diff' link in 'voted for' ($1 is the revid, $2 is the base URL of the wiki in which the vote was cast)",
 	"did not vote": "Shown next to polls for which the inspected user has not cast any votes",

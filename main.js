@@ -1406,6 +1406,16 @@ Inspector.prototype.showVotes = function ( result ) {
 };
 
 /**
+ * Display a generic error message in the votes tab.
+ *
+ * @private
+ */
+Inspector.prototype.showVotesError = function () {
+	this.$votes
+	.append( $( '<p>' ).text( this.i18n( 'votes-error' ) ) );
+};
+
+/**
  * Generate the pie chart of edits by programming language.
  *
  * @private
@@ -1827,15 +1837,18 @@ Inspector.prototype.realStart = function () {
 					self.generateMonthsChart();
 					self.dataGetter.votes().done( function ( result ) {
 						self.showVotes( result );
-						self.dataGetter.uploads().done( function ( uploads ) {
-							self.uploads = uploads;
-							self.dataGetter.blockInfo().done( function ( blockInfo ) {
-								self.blockInfo = blockInfo;
-								self.showGeneral();
-							} );
-						} );
-						self.showEditSummary();
+					} )
+					.fail( function () {
+						self.showVotesError();
 					} );
+					self.dataGetter.uploads().done( function ( uploads ) {
+						self.uploads = uploads;
+						self.dataGetter.blockInfo().done( function ( blockInfo ) {
+							self.blockInfo = blockInfo;
+							self.showGeneral();
+						} );
+					} );
+					self.showEditSummary();
 				} );
 			} );
 		} );

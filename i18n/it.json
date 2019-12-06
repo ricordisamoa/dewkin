@@ -34,6 +34,7 @@
 	"bytes with nchanges": "$1 con $2",
 	"no geodata": "Nessun dato di geolocalizzazione trovato per le pagine modificate.",
 	"votes": "Voti",
+	"votes-error": "Si è verificato un errore con la richiesta delle informazioni di voto.",
 	"voted for": "$1 - Ha votato per $2 ($3)",
 	"diff on project": "diff $1 su $2",
 	"did not vote": "Non ha votato.",
