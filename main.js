@@ -1358,15 +1358,15 @@ Inspector.prototype.getVoteItem = function ( poll, vote ) {
 };
 
 /**
- * Get an element or a string representing a list of votes.
+ * Get an element representing a list of votes.
  *
  * @private
  * @param {Poll} poll
- * @return {JQuery|string} A vote list or a placeholder
+ * @return {JQuery} An unordered list of votes, or a placeholder if empty
  */
 Inspector.prototype.mapVotes = function ( poll ) {
 	if ( poll.votes.length === 0 ) {
-		return this.i18n( 'did not vote' );
+		return $( '<p>' ).text( this.i18n( 'did not vote' ) );
 	}
 
 	return $( '<ul>' )
@@ -1374,11 +1374,11 @@ Inspector.prototype.mapVotes = function ( poll ) {
 };
 
 /**
- * Get an array of jQuery objects or strings representing a poll.
+ * Get an array of jQuery objects representing a poll.
  *
  * @private
  * @param {Poll} poll
- * @return {[JQuery, JQuery|string]} jQuery object for heading, jQuery object or string for votes
+ * @return {[JQuery, JQuery]} jQuery objects for heading and votes respectively
  */
 Inspector.prototype.mapPoll = function ( poll ) {
 	return [
