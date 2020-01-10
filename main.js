@@ -297,7 +297,6 @@ function longestStreak( array ) {
  *
  * @class
  *
- * @constructor
  * @param {string} url
  */
 function MediaWikiApi( url ) {
@@ -327,10 +326,10 @@ MediaWikiApi.prototype.get = function ( data ) {
  *
  * @class
  *
- * @constructor
  * @param {Object} config Configuration options
- * @cfg {MediaWikiApi} localApi Interface to the API of the site the inspector should run on
- * @cfg {MediaWikiApi} globalApi Interface to the API of the site exposing the site matrix
+ * @param {MediaWikiApi} [config.localApi] Interface to the API of the site the
+ *  inspector should run on
+ * @param {MediaWikiApi} config.globalApi Interface to the API of the site exposing the site matrix
  */
 function DataGetter( config ) {
 	this.localApi = config.localApi;
@@ -795,7 +794,6 @@ util = {
  *
  * @class
  *
- * @constructor
  * @param {string} language Language code of the UI
  * @param {DataGetter} dataGetter To use the allmessages API
  */
@@ -1075,19 +1073,18 @@ Localizer.prototype.i18n = function ( msg ) {
  *
  * @class
  *
- * @constructor
  * @param {Object} config Configuration options
- * @cfg {string} globalApiUrl Address of the api.php endpoint exposing the sitematrix
- * @cfg {string} userLanguage Language code to get interface messages for
- * @cfg {jQuery} $form Form element to start the inspector
- * @cfg {jQuery} $user Input field for the inspected user's name
- * @cfg {jQuery} $project Input field for the wiki ID
- * @cfg {jQuery} $init Submit button triggering the inspector
- * @cfg {jQuery} $general Container for general information
- * @cfg {jQuery} $topEdited Container for the '(top) edited in namespace' list
- * @cfg {jQuery} $editSummary Element of the 'edit summary' tab
- * @cfg {jQuery} $tagsTable Table element for edit tags
- * @cfg {jQuery} $votes Element of the 'votes' tab
+ * @param {string} config.globalApiUrl Address of the api.php endpoint exposing the sitematrix
+ * @param {string} config.userLanguage Language code to get interface messages for
+ * @param {JQuery} config.$form Form element to start the inspector
+ * @param {JQuery} config.$user Input field for the inspected user's name
+ * @param {JQuery} config.$project Input field for the wiki ID
+ * @param {JQuery} config.$init Submit button triggering the inspector
+ * @param {JQuery} config.$general Container for general information
+ * @param {JQuery} config.$topEdited Container for the '(top) edited in namespace' list
+ * @param {JQuery} config.$editSummary Element of the 'edit summary' tab
+ * @param {JQuery} config.$tagsTable Table element for edit tags
+ * @param {JQuery} config.$votes Element of the 'votes' tab
  */
 function Inspector( config ) {
 	this.dataGetter = new DataGetter( {
