@@ -459,7 +459,7 @@ DataGetter.prototype = {
 				var userObj;
 				contribs = contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
-					userObj = data.query.users[ Object.keys( data.query.users )[ 0 ] ];
+					userObj = data.query.users[ 0 ];
 					self.registration = userObj.registration;
 					self.editCount = userObj.editcount;
 				}
