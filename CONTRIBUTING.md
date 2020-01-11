@@ -18,7 +18,7 @@ There is no aided translation system yet. You have to copy one of the existing
 JSON files from the `i18n` folder — preferably English or Italian, since those
 are the most up to date. Sorry for the inconvenience.
 
-[strict mode]: //developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
-[CC]: //www.mediawiki.org/wiki/Manual:Coding_conventions/JavaScript
-[CC-doc]: //www.mediawiki.org/wiki/Manual:Coding_conventions/JavaScript#Documentation
-[cdnjs]: //tools.wmflabs.org/cdnjs/
+[strict mode]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
+[CC]: https://www.mediawiki.org/wiki/Manual:Coding_conventions/JavaScript
+[CC-doc]: https://www.mediawiki.org/wiki/Manual:Coding_conventions/JavaScript#Documentation
+[cdnjs]: https://tools.wmflabs.org/cdnjs/

@@ -535,7 +535,7 @@ DataGetter.prototype = {
 	},
 
 	votes: function () {
-		return $.getJSON( '//tools.wmflabs.org/octodata/sucker.php', {
+		return $.getJSON( 'https://tools.wmflabs.org/octodata/sucker.php', {
 			action: 'votelookup',
 			username: this.user,
 			groupby: 'ballot'
@@ -1464,11 +1464,11 @@ Inspector.prototype.registerMapTab = function () {
 					.range( [ 0, 20 ] );
 				map = L.map( 'map-container' ).setView( [ 0, 0 ], 2 );
 				new L.TileLayer(
-					'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+					'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 					{
 						minZoom: 2,
 						maxZoom: 18,
-						attribution: 'Map data © <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+						attribution: 'Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 					}
 				)
 				.addTo( map );
@@ -1485,7 +1485,7 @@ Inspector.prototype.registerMapTab = function () {
 					}
 					L.marker( marker.coords, {
 						icon: L.icon( {
-							iconUrl: '//commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' +
+							iconUrl: 'https://commons.wikimedia.org/wiki/Special:Filepath/Location_dot_' +
 								util.markerColors[
 									Math.floor( Math.random() * util.markerColors.length )
 								] +
@@ -1874,7 +1874,7 @@ Inspector.prototype.start = function () {
 
 $( document ).ready( function () {
 	new Inspector( {
-		globalApiUrl: '//meta.wikimedia.org/w/api.php',
+		globalApiUrl: 'https://meta.wikimedia.org/w/api.php',
 		userLanguage: navigator.language,
 		$form: $( '#form' ),
 		$user: $( '#u' ),
