@@ -408,6 +408,7 @@ DataGetter.prototype = {
 		getUploadsRecursive = function ( continuation ) {
 			var params = {
 				action: 'query',
+				formatversion: '2',
 				list: 'allimages',
 				aiprop: '',
 				aisort: 'timestamp',
@@ -416,8 +417,6 @@ DataGetter.prototype = {
 			};
 			if ( continuation !== undefined ) {
 				$.extend( params, continuation );
-			} else {
-				params.continue = '';
 			}
 			return self.localApi.get( params ).then( function ( data ) {
 				uploads = uploads.concat( data.query.allimages.map( function ( e ) {
