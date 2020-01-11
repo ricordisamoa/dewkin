@@ -442,6 +442,7 @@ DataGetter.prototype = {
 		getContribsRecursive = function ( continuation ) {
 			var params = {
 				action: 'query',
+				formatversion: '2',
 				list: 'usercontribs',
 				ucuser: self.user,
 				ucprop: 'title|timestamp|comment|tags|ids|sizediff',
@@ -453,7 +454,6 @@ DataGetter.prototype = {
 				params.list += '|users';
 				params.ususers = self.user;
 				params.usprop = 'registration|editcount';
-				params.continue = '';
 			}
 			return self.localApi.get( params ).then( function ( data ) {
 				var userObj;
