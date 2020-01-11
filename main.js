@@ -341,6 +341,7 @@ DataGetter.prototype = {
 	allUsers: function ( prefix ) {
 		return this.localApi.get( {
 			action: 'query',
+			formatversion: '2',
 			list: 'allusers',
 			auwitheditsonly: 1,
 			auprefix: prefix,
@@ -355,6 +356,7 @@ DataGetter.prototype = {
 	globalAllUsers: function ( prefix ) {
 		return this.globalApi.get( {
 			action: 'query',
+			formatversion: '2',
 			list: 'globalallusers',
 			aguprefix: prefix,
 			agulimit: 8,
