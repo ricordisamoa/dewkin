@@ -370,6 +370,7 @@ DataGetter.prototype = {
 	siteMatrix: function () {
 		return this.globalApi.get( {
 			action: 'sitematrix',
+			formatversion: '2',
 			smsiteprop: 'dbname|url',
 			smlangprop: 'site'
 		} )
@@ -380,8 +381,8 @@ DataGetter.prototype = {
 					if (
 						site.dbname &&
 						site.url &&
-						site.private === undefined &&
-						site.fishbowl === undefined
+						!site.private &&
+						!site.fishbowl
 					) {
 						dbNames[ site.dbname ] = site.url;
 					}
