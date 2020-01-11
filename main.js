@@ -381,7 +381,7 @@ DataGetter.prototype = {
 						site.private === undefined &&
 						site.fishbowl === undefined
 					) {
-						dbNames[ site.dbname ] = site.url.replace( /^http:\/\//, '//' );
+						dbNames[ site.dbname ] = site.url;
 					}
 				} );
 			} );
