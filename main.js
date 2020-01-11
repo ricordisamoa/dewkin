@@ -483,13 +483,14 @@ DataGetter.prototype = {
 		getMessagesRecursive = function () {
 			return self.localApi.get( {
 				action: 'query',
+				formatversion: '2',
 				meta: 'allmessages',
 				amlang: lang,
 				ammessages: msgs.splice( 0, 50 ).join( '|' )
 			} )
 			.then( function ( data ) {
 				( data.query.allmessages || [] ).forEach( function ( v ) {
-					messages[ v.name ] = v[ '*' ];
+					messages[ v.name ] = v.content;
 				} );
 				if ( msgs.length > 0 ) {
 					return getMessagesRecursive();
