@@ -333,9 +333,21 @@ MediaWikiApi.prototype.get = function ( data ) {
  */
 
 /**
- * @typedef {Object} UserInfo
+ * @typedef {Object} BaseUserInfo
  * @property {string|null|undefined} registration Timestamp in ISO 8601 format
  * @property {number|undefined} editcount Total edits as counted by MediaWiki
+ */
+
+/**
+ * @typedef {Object} BlockInfo
+ * @property {number} blockid ID of the block
+ * @property {string} blockedby Name of the user who placed/changed the block
+ * @property {string} blockreason Reason provided for the block
+ * @property {string} blockexpiry Expiration time of the block (may be infinite)
+ */
+
+/**
+ * @typedef {BaseUserInfo & (BlockInfo | {})} UserInfo
  */
 
 /**
@@ -454,7 +466,7 @@ DataGetter.prototype = {
 	},
 
 	/**
-	 * Fetch registration timestamp, edit count and all contributions.
+	 * Fetch registration timestamp, edit count, block info and all contributions.
 	 *
 	 * @return {JQuery.Promise<{contribs: Edit[], info: UserInfo}>}
 	 */
@@ -476,7 +488,7 @@ DataGetter.prototype = {
 			} else {
 				params.list += '|users';
 				params.ususers = self.user;
-				params.usprop = 'registration|editcount';
+				params.usprop = 'registration|editcount|blockinfo';
 			}
 			return self.localApi.get( params ).then( function ( data ) {
 				contribs = contribs.concat( data.query.usercontribs );
@@ -544,18 +556,6 @@ DataGetter.prototype = {
 					el.params.newgroups !== undefined
 				);
 			} );
-		} );
-	},
-
-	blockInfo: function () {
-		return this.localApi.get( {
-			action: 'query',
-			list: 'users',
-			ususers: this.user,
-			usprop: 'blockinfo'
-		} )
-		.then( function ( data ) {
-			return ( data.query.users[ 0 ] || {} );
 		} );
 	},
 
@@ -1567,10 +1567,10 @@ Inspector.prototype.generateMonthsChart = function () {
 Inspector.prototype.showGeneral = function () {
 	var firstContribDate, latestContribDate, registrationDate, ls;
 
-	if ( this.blockInfo.blockid !== undefined ) {
+	if ( 'blockid' in this.userInfo ) {
 		this.$general.append(
-			'<strong>Currently blocked by ' + this.blockInfo.blockedby + ' with an expiry time of ' +
-			this.blockInfo.blockexpiry + ' because "<i>' + this.blockInfo.blockreason + '</i>"<br>'
+			'<strong>Currently blocked by ' + this.userInfo.blockedby + ' with an expiry time of ' +
+			this.userInfo.blockexpiry + ' because "<i>' + this.userInfo.blockreason + '</i>"<br>'
 		);
 	}
 
@@ -1864,10 +1864,7 @@ Inspector.prototype.realStart = function () {
 					} );
 					self.dataGetter.uploads().done( function ( uploads ) {
 						self.uploads = uploads;
-						self.dataGetter.blockInfo().done( function ( blockInfo ) {
-							self.blockInfo = blockInfo;
-							self.showGeneral();
-						} );
+						self.showGeneral();
 					} );
 					self.showEditSummary();
 				} );
