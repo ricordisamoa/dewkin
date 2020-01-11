@@ -333,6 +333,12 @@ MediaWikiApi.prototype.get = function ( data ) {
  */
 
 /**
+ * @typedef {Object} UserInfo
+ * @property {string|null|undefined} registration Timestamp in ISO 8601 format
+ * @property {number|undefined} editcount Total edits as counted by MediaWiki
+ */
+
+/**
  * Helper class for getting data from the MediaWiki API.
  *
  * @class
@@ -450,10 +456,11 @@ DataGetter.prototype = {
 	/**
 	 * Fetch registration timestamp, edit count and all contributions.
 	 *
-	 * @return {JQuery.Promise<Edit[]>}
+	 * @return {JQuery.Promise<{contribs: Edit[], info: UserInfo}>}
 	 */
 	contribs: function () {
-		var self = this,
+		var info,
+		self = this,
 		contribs = [],
 		getContribsRecursive = function ( continuation ) {
 			var params = {
@@ -472,17 +479,14 @@ DataGetter.prototype = {
 				params.usprop = 'registration|editcount';
 			}
 			return self.localApi.get( params ).then( function ( data ) {
-				var userObj;
 				contribs = contribs.concat( data.query.usercontribs );
 				if ( data.query.users ) {
-					userObj = data.query.users[ 0 ];
-					self.registration = userObj.registration;
-					self.editCount = userObj.editcount;
+					info = data.query.users[ 0 ];
 				}
 				if ( data.continue ) {
 					return getContribsRecursive( data.continue );
 				} else {
-					return contribs;
+					return { contribs: contribs, info: info };
 				}
 			} );
 		};
@@ -1573,8 +1577,8 @@ Inspector.prototype.showGeneral = function () {
 	firstContribDate = new Date( this.contribs[ 0 ].timestamp );
 	latestContribDate = new Date( this.contribs[ this.contribs.length - 1 ].timestamp );
 
-	if ( this.registration !== undefined && this.registration !== null ) {
-		registrationDate = new Date( this.registration );
+	if ( this.userInfo.registration !== undefined && this.userInfo.registration !== null ) {
+		registrationDate = new Date( this.userInfo.registration );
 
 		this.$general.append(
 			$( '<a>' )
@@ -1611,11 +1615,11 @@ Inspector.prototype.showGeneral = function () {
 	)
 	.append( 'Live edits: ' + this.contribs.length.toLocaleString() + '<br>' );
 
-	if ( this.editCount !== undefined ) {
+	if ( this.userInfo.editcount !== undefined ) {
 		this.$general.append(
-			'Deleted edits: ' + ( this.editCount - this.contribs.length ).toLocaleString(),
+			'Deleted edits: ' + ( this.userInfo.editcount - this.contribs.length ).toLocaleString(),
 			'<br>',
-			'<b>Total edits (including deleted): ' + this.editCount.toLocaleString() + '</b>',
+			'<b>Total edits (including deleted): ' + this.userInfo.editcount.toLocaleString() + '</b>',
 			'<br>'
 		);
 	}
@@ -1814,15 +1818,14 @@ Inspector.prototype.realStart = function () {
 					$( this ).text( self.localizer.messages[ this.dataset.msg ] );
 				} );
 				self.showRights( rights );
-				self.dataGetter.contribs().done( function ( contribs ) {
+				self.dataGetter.contribs().done( function ( userData ) {
 					var hideCreditsOnShow;
 
-					self.contribs = contribs;
+					self.contribs = userData.contribs;
 					self.contribs.sort( compareByTimestamp );
 					// eslint-disable-next-line no-console
 					console.log( self.contribs );
-					self.registration = self.dataGetter.registration;
-					self.editCount = self.dataGetter.editCount;
+					self.userInfo = userData.info;
 
 					$( '.jumbotron' ).removeClass( 'jumbotron' );
 					$( '.container.before-tabs' ).removeClass( 'container' );
@@ -1837,7 +1840,7 @@ Inspector.prototype.realStart = function () {
 
 					/* GitHub-like Punchcard */
 					window.charts.punchcard(
-						toPunchcard( contribs ),
+						toPunchcard( self.contribs ),
 						self.localizer.weekdays,
 						function ( n ) {
 							return self.i18n( 'nedits bold', n );
