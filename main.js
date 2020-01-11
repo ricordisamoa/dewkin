@@ -586,7 +586,7 @@ DataGetter.prototype = {
 				occurr[ val.title ] = val;
 			}
 		} );
-		geodata = {};
+		geodata = [];
 		titles = Object.keys( occurr );
 		if ( titles.length === 0 ) {
 			// Don't waste an AJAX request
@@ -612,11 +612,12 @@ DataGetter.prototype = {
 			}
 			return self.localApi.get( {
 				action: 'query',
+				formatversion: '2',
 				prop: 'coordinates',
 				titles: titles.splice( 0, cut ).join( '|' )
 			} )
 			.then( function ( data ) {
-				$.extend( geodata, data.query.pages );
+				geodata = geodata.concat( data.query.pages );
 				if ( titles.length > 0 ) {
 					return getGeodataRecursive();
 				} else {
@@ -627,7 +628,7 @@ DataGetter.prototype = {
 		return getGeodataRecursive().then( function ( coords ) {
 			var coordinates, edits, numedits, marker,
 				markers = [];
-			$.each( coords, function ( pageid, page ) {
+			coords.forEach( function ( page ) {
 				if ( page.coordinates ) {
 					coordinates = page.coordinates;
 					if ( coordinates.length === 1 ) {
