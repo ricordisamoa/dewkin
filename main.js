@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2019 Ricordisamoa
+ * Copyright (C) 2013-2020 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -395,6 +395,7 @@ DataGetter.prototype = {
 	namespaces: function () {
 		return this.localApi.get( {
 			action: 'query',
+			formatversion: '2',
 			meta: 'siteinfo',
 			siprop: 'namespaces'
 		} )
@@ -1229,7 +1230,7 @@ Inspector.prototype.onSubmit = function ( event ) {
  */
 Inspector.prototype.namespaceName = function ( number ) {
 	return this.namespaces[ number ] ?
-		this.namespaces[ number ][ '*' ].replace( /^(Talk)?$/, 'Article $1' ).trim() :
+		this.namespaces[ number ].name.replace( /^(Talk)?$/, 'Article $1' ).trim() :
 		( 'ns-' + number );
 };
 
