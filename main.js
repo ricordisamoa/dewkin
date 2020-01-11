@@ -322,6 +322,17 @@ MediaWikiApi.prototype.get = function ( data ) {
 };
 
 /**
+ * @typedef {Object} Edit
+ * @property {number} revid Unique revision key
+ * @property {number} ns Namespace code
+ * @property {string} title Full page title
+ * @property {string} timestamp ISO 8601 format
+ * @property {string} comment Edit summary
+ * @property {number} sizediff Size delta in bytes against the parent (or empty) revision
+ * @property {string[]} tags Change tags
+ */
+
+/**
  * Helper class for getting data from the MediaWiki API.
  *
  * @class
@@ -436,6 +447,11 @@ DataGetter.prototype = {
 		return getUploadsRecursive();
 	},
 
+	/**
+	 * Fetch registration timestamp, edit count and all contributions.
+	 *
+	 * @return {JQuery.Promise<Edit[]>}
+	 */
 	contribs: function () {
 		var self = this,
 		contribs = [],
