@@ -508,6 +508,7 @@ DataGetter.prototype = {
 	rightsLog: function () {
 		return this.localApi.get( {
 			action: 'query',
+			formatversion: '2',
 			list: 'logevents',
 			letype: 'rights',
 			letitle: 'User:' + this.user,
