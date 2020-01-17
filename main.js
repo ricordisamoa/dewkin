@@ -913,12 +913,12 @@ Localizer.prototype.parseMsg = function ( msg ) {
 			return el;
 		}
 	} );
-	regex = /\{\{PLURAL:(-?\d+(\.\d+)?)\|([^|]*)(\|([^|]*))?\}\}/g;
+	regex = /\{\{PLURAL:(-?\d+(?:\.\d+)?)\|([^|]*)(?:\|([^|]*))?\}\}/g;
 	regex2 = new RegExp( regex.source, '' );
 	msg = msg.replace( regex, function ( el ) {
 		var m = el.match( regex2 );
 		if ( m ) {
-			return parseFloat( m[ 1 ] ) === 1 ? m[ 3 ] : ( m[ 5 ] || m[ 3 ] );
+			return parseFloat( m[ 1 ] ) === 1 ? m[ 2 ] : ( m[ 3 ] || m[ 2 ] );
 		} else {
 			return el;
 		}
