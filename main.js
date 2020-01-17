@@ -904,11 +904,11 @@ Localizer.prototype.loadCustomMessages = function ( lang ) {
 Localizer.prototype.parseMsg = function ( msg ) {
 	var regex = /(^|[^/])\$(\d+)(?=\D|$)/g,
 	regex2 = new RegExp( regex.source, '' ),
-	args = Array.prototype.slice.call( arguments );
+	args = Array.prototype.slice.call( arguments, 1 );
 	msg = msg.replace( regex, function ( el ) {
 		var m = el.match( regex2 );
-		if ( m && args[ parseInt( m[ 2 ] ) ] !== undefined ) {
-			return m[ 1 ] + args[ parseInt( m[ 2 ] ) ];
+		if ( m && args[ parseInt( m[ 2 ] ) - 1 ] !== undefined ) {
+			return m[ 1 ] + args[ parseInt( m[ 2 ] ) - 1 ];
 		} else {
 			return el;
 		}
