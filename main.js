@@ -903,25 +903,17 @@ Localizer.prototype.loadCustomMessages = function ( lang ) {
  */
 Localizer.prototype.parseMsg = function ( msg ) {
 	var regex = /(^|[^/])\$(\d+)(?=\D|$)/g,
-	regex2 = new RegExp( regex.source, '' ),
 	args = Array.prototype.slice.call( arguments, 1 );
-	msg = msg.replace( regex, function ( el ) {
-		var m = el.match( regex2 );
-		if ( m && args[ parseInt( m[ 2 ] ) - 1 ] !== undefined ) {
-			return m[ 1 ] + args[ parseInt( m[ 2 ] ) - 1 ];
+	msg = msg.replace( regex, function ( el, p1, p2 ) {
+		if ( args[ parseInt( p2 ) - 1 ] !== undefined ) {
+			return p1 + args[ parseInt( p2 ) - 1 ];
 		} else {
 			return el;
 		}
 	} );
 	regex = /\{\{PLURAL:(-?\d+(?:\.\d+)?)\|([^|]*)(?:\|([^|]*))?\}\}/g;
-	regex2 = new RegExp( regex.source, '' );
-	msg = msg.replace( regex, function ( el ) {
-		var m = el.match( regex2 );
-		if ( m ) {
-			return parseFloat( m[ 1 ] ) === 1 ? m[ 2 ] : ( m[ 3 ] || m[ 2 ] );
-		} else {
-			return el;
-		}
+	msg = msg.replace( regex, function ( el, p1, p2, p3 ) {
+		return parseFloat( p1 ) === 1 ? p2 : ( p3 || p2 );
 	} );
 	return msg;
 };
