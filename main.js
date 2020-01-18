@@ -374,8 +374,7 @@ DataGetter.prototype = {
 			list: 'allusers',
 			auwitheditsonly: 1,
 			auprefix: prefix,
-			aulimit: 8,
-			prop: ''
+			aulimit: 8
 		} )
 		.then( function ( data ) {
 			return data.query.allusers;
@@ -388,8 +387,7 @@ DataGetter.prototype = {
 			formatversion: '2',
 			list: 'globalallusers',
 			aguprefix: prefix,
-			agulimit: 8,
-			aguprop: ''
+			agulimit: 8
 		} )
 		.then( function ( data ) {
 			return data.query.globalallusers;
