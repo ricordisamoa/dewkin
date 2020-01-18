@@ -365,8 +365,28 @@ function DataGetter( config ) {
 	this.globalApi = config.globalApi;
 }
 
+/**
+ * @typedef {Object} User
+ * @property {number} userid
+ * @property {string} name
+ */
+
+/**
+ * @typedef {Object} GlobalUser
+ * @property {string} id
+ * @property {string} name
+ */
+
 DataGetter.prototype = {
 
+	/**
+	 * Fetch local accounts with editcount > 0 whose names begin with the given prefix.
+	 *
+	 * Names are selected in ascending order. Up to eight items will be returned.
+	 *
+	 * @param {string} prefix
+	 * @return {JQuery.Promise<User[]>}
+	 */
 	allUsers: function ( prefix ) {
 		return this.localApi.get( {
 			action: 'query',
@@ -381,6 +401,14 @@ DataGetter.prototype = {
 		} );
 	},
 
+	/**
+	 * Fetch global accounts whose names begin with the given prefix.
+	 *
+	 * Names are selected in ascending order. Up to eight items will be returned.
+	 *
+	 * @param {string} prefix
+	 * @return {JQuery.Promise<GlobalUser[]>}
+	 */
 	globalAllUsers: function ( prefix ) {
 		return this.globalApi.get( {
 			action: 'query',
