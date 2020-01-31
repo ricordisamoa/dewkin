@@ -860,7 +860,7 @@ function Localizer( language, dataGetter ) {
  * Get localized messages from the wiki and from the current instance of DEWKIN.
  *
  * @param {string[]} messages MediaWiki message keys
- * @return {JQuery.Promise}
+ * @return {JQuery.Promise<void>}
  */
 Localizer.prototype.loadMessages = function ( messages ) {
 	var self = this;
