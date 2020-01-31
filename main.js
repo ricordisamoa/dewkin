@@ -895,28 +895,22 @@ Localizer.prototype.harvestMonthsAndWeekdays = function () {
  *
  * @private
  * @param {string} lang MediaWiki language code
- * @return {JQuery.Deferred<void>}
+ * @return {JQuery.Promise<void>}
  */
 Localizer.prototype.loadCustomMessages = function ( lang ) {
-	var self = this,
-		deferred = $.Deferred();
-	$.get( 'i18n/' + lang + '.json' )
-	.done( function ( data ) {
+	var self = this;
+	return $.get( 'i18n/' + lang + '.json' )
+	.then( function ( data ) {
 		self.messages = $.extend( {}, data, self.messages );
-		if ( lang === self.fallback ) {
-			deferred.resolve();
-		} else {
-			self.loadCustomMessages( self.fallback ).done( deferred.resolve );
+		if ( lang !== self.fallback ) {
+			return self.loadCustomMessages( self.fallback );
 		}
 	} )
-	.fail( function () {
-		if ( lang === self.fallback ) {
-			deferred.resolve();
-		} else {
-			self.loadCustomMessages( self.fallback ).done( deferred.resolve );
+	.catch( function () {
+		if ( lang !== self.fallback ) {
+			return self.loadCustomMessages( self.fallback );
 		}
 	} );
-	return deferred;
 };
 
 /**
