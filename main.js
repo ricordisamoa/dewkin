@@ -895,7 +895,7 @@ Localizer.prototype.harvestMonthsAndWeekdays = function () {
  *
  * @private
  * @param {string} lang MediaWiki language code
- * @return {JQuery.Deferred}
+ * @return {JQuery.Deferred<void>}
  */
 Localizer.prototype.loadCustomMessages = function ( lang ) {
 	var self = this,
@@ -904,14 +904,14 @@ Localizer.prototype.loadCustomMessages = function ( lang ) {
 	.done( function ( data ) {
 		self.messages = $.extend( {}, data, self.messages );
 		if ( lang === self.fallback ) {
-			deferred.resolve( true );
+			deferred.resolve();
 		} else {
 			self.loadCustomMessages( self.fallback ).done( deferred.resolve );
 		}
 	} )
 	.fail( function () {
 		if ( lang === self.fallback ) {
-			deferred.resolve( false );
+			deferred.resolve();
 		} else {
 			self.loadCustomMessages( self.fallback ).done( deferred.resolve );
 		}
