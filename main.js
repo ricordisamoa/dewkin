@@ -1178,8 +1178,8 @@ Inspector.prototype.sizediffIndicator = function ( sizediff ) {
 Inspector.prototype.tryPermalink = function () {
 	var path, inspData;
 	path = window.location.pathname.split( '/' );
-	if ( path.length === 3 ) {
-		inspData = decodeURIComponent( path[ 2 ] ).split( '@' );
+	if ( path.length === 2 ) {
+		inspData = decodeURIComponent( path[ 1 ] ).split( '@' );
 		if ( inspData.length === 2 ) {
 			this.$user.val( inspData[ 0 ] );
 			this.$project.val( inspData[ 1 ] );
@@ -1238,12 +1238,11 @@ Inspector.prototype.onSubmit = function ( event ) {
 	this.dataGetter.user = this.user = this.$user.val().replace( /_/g, ' ' );
 
 	// 'Permalink'
-	if ( window.history.pushState && window.location.pathname.split( /[^/]\/[^/]/ ).length === 1 ) {
+	if ( window.history.pushState && window.location.pathname === '/' ) {
 		window.history.pushState(
 			{},
 			'',
-			window.location.pathname.replace( /\/$/, '' ) + '/' +
-				this.user.replace( / /g, '_' ) + '@' + project
+			'/' + this.user.replace( / /g, '_' ) + '@' + project
 		);
 	}
 
