@@ -1,0 +1,42 @@
+{
+	"@metadata": {
+		"authors": [
+			"Ricordisamoa"
+		]
+	},
+	"loading": "Chargement… ",
+	"coming soon": "Bientôt disponible ! :)",
+	"overview": "Vue générale",
+	"registration date": "Date d'inscription",
+	"first edit": "Première édition",
+	"most recent edit": "Modification la plus récente",
+	"uploads link": "Fichiers importés",
+	"longest streak": "La plus longue durée",
+	"edited in ns": "$1 {{PLURAL:$1|page éditée|pages éditées}} dans l'espace de noms \"$2\"",
+	"top edited in ns": "{{PLURAL:$1|La page éditée|Les $1 premières pages éditées}} dans l'espace de noms \"$2\"",
+	"executed in": "Exécuté en $1.",
+	"advanced": "Avancé",
+	"edit summary": "Édition de résumé",
+	"edit summary desc": "Cet onglet affiche des statistiques sur l'utilisation du résumé de modification par l'utilisateur.",
+	"edit summary percent": "Modifications avec résumé non vide: $1",
+	"timeline": "Chronologie",
+	"rights": "Droits",
+	"no log entries": "Aucune entrée de journal trouvée.",
+	"tags": "Balises",
+	"tags desc": "Le tableau suivant présente les balises de modification par nombre de modifications affectées. Chaque modification peut avoir un nombre entier de balises.",
+	"files": "Fichiers importés",
+	"code": "Code",
+	"code desc": "Cet onglet affiche des informations sur les langages de programmation dans lesquels l'utilisateur a contribué.",
+	"punchcard": "Carte perforée",
+	"nedits bold": "<strong>$1</strong> {{PLURAL:$1|édition|éditions}}",
+	"map": "Carte géographique",
+	"map desc": "La carte montre les emplacements associés aux pages dans les espaces de noms Principal et Fichier modifiés par l'utilisateur. La zone de chaque cercle est proportionnelle au nombre de modifications que l'utilisateur a apportées à la page correspondante.",
+	"bytes with nchanges": "$1 avec $2",
+	"no geodata": "Aucune donnée de géolocalisation sur les pages modifiées n'a été trouvée.",
+	"votes": "Votes",
+	"votes-error": "Une erreur s'est produite lors de la demande de données de vote.",
+	"voted for": "$1 - Voté pour $2 ($3)",
+	"diff on project": "diff $1 sur $2",
+	"did not vote": "N'a pas voté.",
+	"feedback": "retour d'information"
+}
