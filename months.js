@@ -1,6 +1,6 @@
 /**
  * DEep WiKi INspector (DEWKIN)
- * Copyright (C) 2013-2015, 2018 Ricordisamoa
+ * Copyright (C) 2013-2015, 2020 Ricordisamoa
  *
  * https://meta.wikimedia.org/wiki/User:Ricordisamoa
  * https://tools.wmflabs.org/ricordisamoa/
@@ -31,8 +31,8 @@
 window.charts.months = function ( data, namespaces, colors ) {
 	'use strict';
 
-	var n, m, margin, width, height, stack, layers,
-		yStackMax, x, y, xAxis, yAxis, yAxis2,
+	var n, m, margin, width, step, paddingInner, paddingOuter, height,
+		stack, layers, yStackMax, x, y, xAxis, yAxis, yAxis2,
 		tip, svg, layer;
 
 	n = namespaces.length;
@@ -45,7 +45,10 @@ window.charts.months = function ( data, namespaces, colors ) {
 		left: 90
 	};
 	width = document.body.clientWidth - 80 - margin.left - margin.right;
-	height = ( 700 / 28 * m ) - margin.top - margin.bottom;
+	step = 24;
+	paddingInner = 5;
+	paddingOuter = 12;
+	height = step * m - paddingInner + paddingOuter * 2;
 
 	stack = d3.layout.stack();
 	layers = stack( d3.range( n ).map( function ( d ) {
@@ -73,7 +76,7 @@ window.charts.months = function ( data, namespaces, colors ) {
 
 	y = d3.scale.ordinal()
 		.domain( d3.range( m ) )
-		.rangeRoundBands( [ 0, height ], 0.2 );
+		.rangeRoundBands( [ 0, height ], paddingInner / step, paddingOuter / step );
 
 	xAxis = d3.svg.axis()
 		.scale( x )
