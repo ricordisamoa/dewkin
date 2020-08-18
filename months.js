@@ -64,8 +64,8 @@ window.charts.months = function ( data, namespaces, colors ) {
 		return a;
 	} ) );
 
-	yStackMax = d3.max( layers, function ( layer ) {
-			return d3.max( layer, function ( d ) {
+	yStackMax = d3.max( layers, function ( l ) {
+			return d3.max( l, function ( d ) {
 				return d.y0 + d.y;
 			} );
 		} );
